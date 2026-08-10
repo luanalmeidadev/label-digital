@@ -1,0 +1,45 @@
+@import "tailwindcss";
+
+:root {
+  --label-wine: #8b0000;
+  --label-cream: #d2b48c;
+
+  --background: #fffdf9;
+  --surface: #ffffff;
+
+  --text-primary: #241b19;
+  --text-secondary: #756a66;
+
+  --border: #eee6df;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text-primary);
+  font-family: var(--font-archivo), Arial, Helvetica, sans-serif;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--label-cream);
+  color: var(--label-wine);
+}
