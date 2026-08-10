@@ -6,7 +6,7 @@ import PreorderBanner from "@/components/store/PreorderBanner";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function Home() {
-  const supabase = createSupabaseServerClient();
+  const supabase = await createSupabaseServerClient();
 
   const { data: categories, error } = await supabase
     .from("categories")
