@@ -11,6 +11,10 @@
   --text-secondary: #756a66;
 
   --border: #eee6df;
+
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
 }
 
 * {
@@ -23,9 +27,15 @@ html {
 
 body {
   margin: 0;
+
   background: var(--background);
   color: var(--text-primary);
-  font-family: var(--font-archivo), Arial, Helvetica, sans-serif;
+
+  font-family:
+    var(--font-archivo),
+    Arial,
+    Helvetica,
+    sans-serif;
 }
 
 button,
