@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  ImagePlus,
+  Pencil,
+  Trash2,
+} from "lucide-react";
 
 import {
   Dialog,
@@ -23,6 +27,7 @@ type EditProductDialogProps = {
   description: string | null;
   price: number;
   categoryId: string | null;
+  imageUrl: string | null;
   available: boolean;
   featured: boolean;
   active: boolean;
@@ -36,6 +41,7 @@ export default function EditProductDialog({
   description,
   price,
   categoryId,
+  imageUrl,
   available,
   featured,
   active,
@@ -45,18 +51,120 @@ export default function EditProductDialog({
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  const [preview, setPreview] = useState<string | null>(
+    imageUrl
+  );
+
+  const [temporaryPreview, setTemporaryPreview] =
+    useState<string | null>(null);
+
+  const [removeImage, setRemoveImage] = useState(false);
+
+  const fileInputRef =
+    useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (temporaryPreview) {
+        URL.revokeObjectURL(temporaryPreview);
+      }
+    };
+  }, [temporaryPreview]);
+
+  function resetImageState() {
+    if (temporaryPreview) {
+      URL.revokeObjectURL(temporaryPreview);
+    }
+
+    setTemporaryPreview(null);
+    setPreview(imageUrl);
+    setRemoveImage(false);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  function handleImageChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (temporaryPreview) {
+      URL.revokeObjectURL(temporaryPreview);
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+
+    setTemporaryPreview(objectUrl);
+    setPreview(objectUrl);
+    setRemoveImage(false);
+  }
+
+  function handleRemoveImage() {
+    if (temporaryPreview) {
+      URL.revokeObjectURL(temporaryPreview);
+    }
+
+    setTemporaryPreview(null);
+    setPreview(null);
+    setRemoveImage(true);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
   async function handleSubmit(formData: FormData) {
     try {
       setSaving(true);
+
+      formData.set(
+        "remove_image",
+        removeImage ? "true" : "false"
+      );
+
       await updateAction(formData);
+
+      setTemporaryPreview(null);
+      setRemoveImage(false);
       setOpen(false);
     } finally {
       setSaving(false);
     }
   }
 
+  function handleOpenChange(nextOpen: boolean) {
+  if (nextOpen) {
+    if (temporaryPreview) {
+      URL.revokeObjectURL(temporaryPreview);
+    }
+
+    setTemporaryPreview(null);
+    setPreview(imageUrl);
+    setRemoveImage(false);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }
+
+  if (!nextOpen && !saving) {
+    resetImageState();
+  }
+
+  setOpen(nextOpen);
+}
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
       <DialogTrigger
         render={
           <button
@@ -74,19 +182,90 @@ export default function EditProductDialog({
           <DialogTitle>Editar produto</DialogTitle>
 
           <DialogDescription>
-            Atualize as informações do produto.
+            Atualize as informações e a foto do produto.
           </DialogDescription>
         </DialogHeader>
 
-        <form action={handleSubmit} className="mt-4 space-y-5">
-          <input type="hidden" name="id" value={id} />
+        <form
+          action={handleSubmit}
+          className="mt-4 space-y-5"
+        >
+          <input
+            type="hidden"
+            name="id"
+            value={id}
+          />
 
+          {/* FOTO */}
           <div>
             <label className="text-sm font-bold text-[#241B19]">
+              Foto do produto
+            </label>
+
+            <div className="mt-2 grid gap-4 sm:grid-cols-[140px_1fr]">
+              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]">
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt={`Foto de ${name}`}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <ImagePlus
+                    size={32}
+                    className="text-[#D2B48C]"
+                  />
+                )}
+              </div>
+
+              <div className="flex flex-col justify-center gap-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  name="image"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={saving}
+                  onChange={handleImageChange}
+                  className="block w-full text-sm text-[#756A66] file:mr-4 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-[#8B0000]"
+                />
+
+                <p className="text-xs text-[#756A66]">
+                  JPG, PNG ou WebP. Máximo de 5 MB.
+                </p>
+
+                {preview && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    disabled={saving}
+                    className="flex w-fit items-center gap-2 text-xs font-bold text-red-600 transition hover:text-red-700 disabled:opacity-50"
+                  >
+                    <Trash2 size={14} />
+                    Remover foto
+                  </button>
+                )}
+
+                {removeImage && (
+                  <p className="text-xs font-semibold text-red-600">
+                    A foto será removida quando você
+                    salvar as alterações.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* NOME */}
+          <div>
+            <label
+              htmlFor={`product-name-${id}`}
+              className="text-sm font-bold text-[#241B19]"
+            >
               Nome do produto
             </label>
 
             <input
+              id={`product-name-${id}`}
               name="name"
               type="text"
               required
@@ -94,55 +273,76 @@ export default function EditProductDialog({
               maxLength={100}
               defaultValue={name}
               disabled={saving}
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000]"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
             />
           </div>
 
+          {/* CATEGORIA */}
           <div>
-            <label className="text-sm font-bold text-[#241B19]">
+            <label
+              htmlFor={`product-category-${id}`}
+              className="text-sm font-bold text-[#241B19]"
+            >
               Categoria
             </label>
 
             <select
+              id={`product-category-${id}`}
               name="category_id"
               required
               defaultValue={categoryId ?? ""}
               disabled={saving}
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000]"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
             >
-              <option value="" disabled>
+              <option
+                value=""
+                disabled
+              >
                 Selecione uma categoria
               </option>
 
               {categories.map((category) => (
-                <option key={category.id} value={category.id}>
+                <option
+                  key={category.id}
+                  value={category.id}
+                >
                   {category.name}
                 </option>
               ))}
             </select>
           </div>
 
+          {/* DESCRIÇÃO */}
           <div>
-            <label className="text-sm font-bold text-[#241B19]">
+            <label
+              htmlFor={`product-description-${id}`}
+              className="text-sm font-bold text-[#241B19]"
+            >
               Descrição
             </label>
 
             <textarea
+              id={`product-description-${id}`}
               name="description"
               rows={4}
               maxLength={500}
               defaultValue={description ?? ""}
               disabled={saving}
-              className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#8B0000]"
+              className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
             />
           </div>
 
+          {/* PREÇO */}
           <div>
-            <label className="text-sm font-bold text-[#241B19]">
+            <label
+              htmlFor={`product-price-${id}`}
+              className="text-sm font-bold text-[#241B19]"
+            >
               Preço
             </label>
 
             <input
+              id={`product-price-${id}`}
               name="price"
               type="number"
               min="0"
@@ -150,10 +350,11 @@ export default function EditProductDialog({
               required
               defaultValue={price}
               disabled={saving}
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000]"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
             />
           </div>
 
+          {/* STATUS */}
           <div className="grid gap-3 sm:grid-cols-3">
             <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#EEE6DF] p-4">
               <input
@@ -168,6 +369,7 @@ export default function EditProductDialog({
                 <p className="text-sm font-bold text-[#241B19]">
                   Disponível
                 </p>
+
                 <p className="text-xs text-[#756A66]">
                   Pode ser pedido hoje
                 </p>
@@ -187,6 +389,7 @@ export default function EditProductDialog({
                 <p className="text-sm font-bold text-[#241B19]">
                   Destaque
                 </p>
+
                 <p className="text-xs text-[#756A66]">
                   Aparece em evidência
                 </p>
@@ -206,6 +409,7 @@ export default function EditProductDialog({
                 <p className="text-sm font-bold text-[#241B19]">
                   Ativo
                 </p>
+
                 <p className="text-xs text-[#756A66]">
                   Exibido no sistema
                 </p>
@@ -216,9 +420,12 @@ export default function EditProductDialog({
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                resetImageState();
+                setOpen(false);
+              }}
               disabled={saving}
-              className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#756A66]"
+              className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#756A66] disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -226,9 +433,11 @@ export default function EditProductDialog({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#8B0000] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+              className="rounded-xl bg-[#8B0000] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {saving ? "Salvando..." : "Salvar alterações"}
+              {saving
+                ? "Salvando..."
+                : "Salvar alterações"}
             </button>
           </div>
         </form>

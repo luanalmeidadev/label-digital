@@ -212,6 +212,7 @@ export default async function ProdutosPage() {
                         active={product.active}
                         categories={categories ?? []}
                         updateAction={updateProduct}
+                        imageUrl={product.image_url}
                       />
 
                       <DeleteProductDialog

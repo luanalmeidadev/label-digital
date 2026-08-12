@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { ImagePlus, Plus } from "lucide-react";
 
 import {
   Dialog,
@@ -28,6 +28,7 @@ export default function NewProductDialog({
 }: NewProductDialogProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [preview, setPreview] = useState<string | null>(null);
 
   async function handleSubmit(formData: FormData) {
     try {
@@ -35,10 +36,25 @@ export default function NewProductDialog({
 
       await createAction(formData);
 
+      setPreview(null);
       setOpen(false);
     } finally {
       setSaving(false);
     }
+  }
+
+  function handleImageChange(
+    event: React.ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      setPreview(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(file);
+    setPreview(objectUrl);
   }
 
   return (
@@ -65,6 +81,44 @@ export default function NewProductDialog({
         </DialogHeader>
 
         <form action={handleSubmit} className="mt-4 space-y-5">
+          <div>
+            <label className="text-sm font-bold text-[#241B19]">
+              Foto do produto
+            </label>
+
+            <div className="mt-2 grid gap-3 sm:grid-cols-[120px_1fr]">
+              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]">
+                {preview ? (
+                  <img
+                    src={preview}
+                    alt="Prévia do produto"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <ImagePlus
+                    size={28}
+                    className="text-[#D2B48C]"
+                  />
+                )}
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="file"
+                  name="image"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={saving}
+                  onChange={handleImageChange}
+                  className="block w-full text-sm text-[#756A66] file:mr-4 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-[#8B0000]"
+                />
+              </div>
+            </div>
+
+            <p className="mt-2 text-xs text-[#756A66]">
+              JPG, PNG ou WebP. Máximo de 5 MB.
+            </p>
+          </div>
+
           <div>
             <label
               htmlFor="product-name"
@@ -218,7 +272,10 @@ export default function NewProductDialog({
           <div className="flex justify-end gap-3 pt-2">
             <button
               type="button"
-              onClick={() => setOpen(false)}
+              onClick={() => {
+                setPreview(null);
+                setOpen(false);
+              }}
               disabled={saving}
               className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#756A66] disabled:opacity-50"
             >
