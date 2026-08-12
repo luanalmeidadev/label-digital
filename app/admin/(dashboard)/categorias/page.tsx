@@ -1,10 +1,20 @@
-import { Plus, Tags } from "lucide-react";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  ArrowDown,
+  ArrowUp,
+  Plus,
+  Tags,
+  Trash2,
+} from "lucide-react";
+
 import EditCategoryDialog from "@/components/admin/EditCategoryDialog";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
+
 import {
   createCategory,
-  updateCategory,
+  deleteCategory,
+  moveCategory,
   toggleCategoryStatus,
+  updateCategory,
 } from "./actions";
 
 export default async function CategoriasPage() {
@@ -38,27 +48,27 @@ export default async function CategoriasPage() {
           </div>
 
           <form
-  action={createCategory}
-  className="flex w-full gap-2 sm:w-auto"
->
-  <input
-    type="text"
-    name="name"
-    required
-    minLength={2}
-    maxLength={50}
-    placeholder="Nome da categoria"
-    className="min-w-0 flex-1 rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#8B0000] sm:w-56"
-  />
+            action={createCategory}
+            className="flex w-full gap-2 sm:w-auto"
+          >
+            <input
+              type="text"
+              name="name"
+              required
+              minLength={2}
+              maxLength={50}
+              placeholder="Nome da categoria"
+              className="min-w-0 flex-1 rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#8B0000] sm:w-56"
+            />
 
-  <button
-    type="submit"
-    className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000]"
-  >
-    <Plus size={18} />
-    Adicionar
-  </button>
-</form>
+            <button
+              type="submit"
+              className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000]"
+            >
+              <Plus size={18} />
+              Adicionar
+            </button>
+          </form>
         </div>
 
         <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
@@ -81,63 +91,136 @@ export default async function CategoriasPage() {
           </div>
 
           <div className="divide-y divide-[#EEE6DF]">
-            {categories?.map((category) => (
-              <div
-                key={category.id}
-                className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex items-center gap-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF7F5] text-sm font-bold text-[#8B0000]">
-                    {category.sort_order}
+            {categories?.map((category, index) => {
+              const firstCategory = index === 0;
+              const lastCategory = index === categories.length - 1;
+
+              return (
+                <div
+                  key={category.id}
+                  className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF7F5] text-sm font-bold text-[#8B0000]">
+                      {category.sort_order}
+                    </div>
+
+                    <div>
+                      <p className="font-bold text-[#241B19]">
+                        {category.name}
+                      </p>
+
+                      <p className="mt-1 text-xs text-[#756A66]">
+                        /{category.slug}
+                      </p>
+                    </div>
                   </div>
 
-                  <div>
-                    <p className="font-bold text-[#241B19]">
-                      {category.name}
-                    </p>
+                  <div className="flex flex-wrap items-center gap-2 sm:justify-end">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-bold ${
+                        category.active
+                          ? "bg-green-100 text-green-700"
+                          : "bg-gray-100 text-gray-500"
+                      }`}
+                    >
+                      {category.active ? "Ativa" : "Inativa"}
+                    </span>
 
-                    <p className="mt-1 text-xs text-[#756A66]">
-                      /{category.slug}
-                    </p>
-                  </div>
-                </div>
+                    <form action={toggleCategoryStatus}>
+                      <input
+                        type="hidden"
+                        name="id"
+                        value={category.id}
+                      />
 
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-bold ${
-                      category.active
-                        ? "bg-green-100 text-green-700"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
-                  >
-                    {category.active ? "Ativa" : "Inativa"}
-                  </span>
+                      <input
+                        type="hidden"
+                        name="active"
+                        value={String(category.active)}
+                      />
 
-                  <form action={toggleCategoryStatus}>
-                    <input type="hidden" name="id" value={category.id} />
+                      <button
+                        type="submit"
+                        className="rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+                      >
+                        {category.active ? "Desativar" : "Ativar"}
+                      </button>
+                    </form>
 
-                    <input
-                      type="hidden"
-                      name="active"
-                      value={String(category.active)}
+                    <EditCategoryDialog
+                      id={category.id}
+                      name={category.name}
+                      updateAction={updateCategory}
                     />
 
-                    <button
-                      type="submit"
-                      className="rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
-                    >
-                      {category.active ? "Desativar" : "Ativar"}
-                    </button>
-                  </form>
+                    <div className="mx-1 hidden h-6 w-px bg-[#EEE6DF] sm:block" />
 
-                  <EditCategoryDialog
-                    id={category.id}
-                    name={category.name}
-                    updateAction={updateCategory}
-                  />
+                    <form action={moveCategory}>
+                      <input
+                        type="hidden"
+                        name="id"
+                        value={category.id}
+                      />
+
+                      <input
+                        type="hidden"
+                        name="direction"
+                        value="up"
+                      />
+
+                      <button
+                        type="submit"
+                        title="Mover para cima"
+                        disabled={firstCategory}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#EEE6DF] text-[#8B0000] transition hover:border-[#D2B48C] disabled:cursor-not-allowed disabled:opacity-30"
+                      >
+                        <ArrowUp size={15} />
+                      </button>
+                    </form>
+
+                    <form action={moveCategory}>
+                      <input
+                        type="hidden"
+                        name="id"
+                        value={category.id}
+                      />
+
+                      <input
+                        type="hidden"
+                        name="direction"
+                        value="down"
+                      />
+
+                      <button
+                        type="submit"
+                        title="Mover para baixo"
+                        disabled={lastCategory}
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#EEE6DF] text-[#8B0000] transition hover:border-[#D2B48C] disabled:cursor-not-allowed disabled:opacity-30"
+                      >
+                        <ArrowDown size={15} />
+                      </button>
+                    </form>
+
+                    <form action={deleteCategory}>
+                      <input
+                        type="hidden"
+                        name="id"
+                        value={category.id}
+                      />
+
+                      <button
+                        type="submit"
+                        title="Excluir categoria"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 transition hover:bg-red-50"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </form>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             {categories?.length === 0 && (
               <div className="p-10 text-center">
@@ -151,7 +234,8 @@ export default async function CategoriasPage() {
                 </p>
 
                 <p className="mt-2 text-sm text-[#756A66]">
-                  Crie a primeira categoria para começar a organizar o cardápio.
+                  Crie a primeira categoria para começar a organizar o
+                  cardápio.
                 </p>
               </div>
             )}
