@@ -1,6 +1,11 @@
 import { Plus, Tags } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { createCategory } from "./actions";
+import EditCategoryDialog from "@/components/admin/EditCategoryDialog";
+import {
+  createCategory,
+  updateCategory,
+  toggleCategoryStatus,
+} from "./actions";
 
 export default async function CategoriasPage() {
   const supabase = await createSupabaseServerClient();
@@ -108,12 +113,28 @@ export default async function CategoriasPage() {
                     {category.active ? "Ativa" : "Inativa"}
                   </span>
 
-                  <button
-                    type="button"
-                    className="rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
-                  >
-                    Editar
-                  </button>
+                  <form action={toggleCategoryStatus}>
+                    <input type="hidden" name="id" value={category.id} />
+
+                    <input
+                      type="hidden"
+                      name="active"
+                      value={String(category.active)}
+                    />
+
+                    <button
+                      type="submit"
+                      className="rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+                    >
+                      {category.active ? "Desativar" : "Ativar"}
+                    </button>
+                  </form>
+
+                  <EditCategoryDialog
+                    id={category.id}
+                    name={category.name}
+                    updateAction={updateCategory}
+                  />
                 </div>
               </div>
             ))}
