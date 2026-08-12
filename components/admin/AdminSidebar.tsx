@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  BadgeDollarSign,
   LayoutDashboard,
   Package,
   Tags,
@@ -44,6 +45,11 @@ const menuItems = [
     href: "/admin/entregas",
     icon: Truck,
   },
+  {
+  label: "Faturamento",
+  href: "/admin/faturamento",
+  icon: BadgeDollarSign,
+},
   {
     label: "Configurações",
     href: "/admin/configuracoes",

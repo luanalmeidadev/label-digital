@@ -115,12 +115,23 @@ export async function updateOrderStatus(
     );
   }
 
-  const { error } = await supabase
-    .from("orders")
-    .update({
-      status,
-    })
-    .eq("id", id);
+  const updateData: {
+  status: string;
+  completed_at?: string | null;
+} = {
+  status,
+};
+
+if (status === "completed") {
+  updateData.completed_at = new Date().toISOString();
+} else {
+  updateData.completed_at = null;
+}
+
+const { error } = await supabase
+  .from("orders")
+  .update(updateData)
+  .eq("id", id);
 
   if (error) {
     throw new Error(
