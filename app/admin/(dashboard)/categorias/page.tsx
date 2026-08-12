@@ -3,11 +3,11 @@ import {
   ArrowUp,
   Plus,
   Tags,
-  Trash2,
 } from "lucide-react";
 
 import EditCategoryDialog from "@/components/admin/EditCategoryDialog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import DeleteCategoryDialog from "@/components/admin/DeleteCategoryDialog";
 
 import {
   createCategory,
@@ -202,21 +202,11 @@ export default async function CategoriasPage() {
                       </button>
                     </form>
 
-                    <form action={deleteCategory}>
-                      <input
-                        type="hidden"
-                        name="id"
-                        value={category.id}
-                      />
-
-                      <button
-                        type="submit"
-                        title="Excluir categoria"
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-red-100 text-red-600 transition hover:bg-red-50"
-                      >
-                        <Trash2 size={15} />
-                      </button>
-                    </form>
+                    <DeleteCategoryDialog
+                      id={category.id}
+                      name={category.name}
+                      deleteAction={deleteCategory}
+                    />
                   </div>
                 </div>
               );
