@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useState,
   useTransition,
 } from "react";
@@ -9,17 +10,21 @@ import {
 import {
   ArrowLeft,
   CheckCircle2,
+  Home,
   Loader2,
   MapPin,
+  Plus,
   ShoppingBag,
   Store,
   Truck,
   UserCheck,
   X,
+  Trash2,
 } from "lucide-react";
 
 import {
   createOrder,
+  deleteCustomerAddress,
   findCustomerByPhone,
   markOrderAsSentToWhatsapp,
 } from "@/app/store/checkout/actions";
@@ -36,6 +41,28 @@ type CheckoutDrawerProps = {
   onBack: () => void;
 };
 
+type CheckoutStep =
+  | "customer"
+  | "address"
+  | "review";
+
+type AddressMode =
+  | "saved"
+  | "new";
+
+type SavedAddress = {
+  id: string;
+  label: string | null;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  neighborhood: string;
+  city: string;
+  reference: string | null;
+  isDefault: boolean;
+};
+
 type ViaCepResponse = {
   cep?: string;
   logradouro?: string;
@@ -46,16 +73,14 @@ type ViaCepResponse = {
   erro?: boolean;
 };
 
-type CheckoutStep =
-  | "customer"
-  | "address"
-  | "review";
-
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  }).format(value);
+  return new Intl.NumberFormat(
+    "pt-BR",
+    {
+      style: "currency",
+      currency: "BRL",
+    }
+  ).format(value);
 }
 
 function formatCep(value: string) {
@@ -84,7 +109,9 @@ function normalizeCity(value: string) {
     .trim();
 }
 
-function isSupportedCity(city: string) {
+function isSupportedCity(
+  city: string
+) {
   const normalized =
     normalizeCity(city);
 
@@ -106,16 +133,32 @@ export default function CheckoutDrawer({
     clearCart,
   } = useCart();
 
+  /*
+   * =========================================
+   * ETAPAS
+   * =========================================
+   */
+
   const [step, setStep] =
     useState<CheckoutStep>(
       "customer"
     );
 
-  const [firstName, setFirstName] =
-    useState("");
+  /*
+   * =========================================
+   * CLIENTE
+   * =========================================
+   */
 
-  const [lastName, setLastName] =
-    useState("");
+  const [
+    firstName,
+    setFirstName,
+  ] = useState("");
+
+  const [
+    lastName,
+    setLastName,
+  ] = useState("");
 
   const [phone, setPhone] =
     useState("");
@@ -135,6 +178,12 @@ export default function CheckoutDrawer({
     setCustomerLookupMessage,
   ] = useState("");
 
+  /*
+   * =========================================
+   * RECEBIMENTO
+   * =========================================
+   */
+
   const [
     fulfillmentType,
     setFulfillmentType,
@@ -142,6 +191,51 @@ export default function CheckoutDrawer({
     useState<FulfillmentType | null>(
       null
     );
+
+  /*
+   * =========================================
+   * ENDEREÇOS SALVOS
+   * =========================================
+   */
+
+  const [
+    savedAddresses,
+    setSavedAddresses,
+  ] =
+    useState<SavedAddress[]>(
+      []
+    );
+
+  const [
+    selectedAddressId,
+    setSelectedAddressId,
+  ] = useState<
+    string | null
+  >(null);
+
+  const [
+    addressMode,
+    setAddressMode,
+  ] =
+    useState<AddressMode>(
+      "new"
+    );
+
+  /*
+   * =========================================
+   * NOVO ENDEREÇO
+   * =========================================
+   */
+
+  const [
+    addressLabel,
+    setAddressLabel,
+  ] = useState("Casa");
+
+  const [
+    makeDefault,
+    setMakeDefault,
+  ] = useState(false);
 
   const [cep, setCep] =
     useState("");
@@ -152,11 +246,15 @@ export default function CheckoutDrawer({
   const [number, setNumber] =
     useState("");
 
-  const [complement, setComplement] =
-    useState("");
+  const [
+    complement,
+    setComplement,
+  ] = useState("");
 
-  const [neighborhood, setNeighborhood] =
-    useState("");
+  const [
+    neighborhood,
+    setNeighborhood,
+  ] = useState("");
 
   const [city, setCity] =
     useState("");
@@ -164,21 +262,33 @@ export default function CheckoutDrawer({
   const [uf, setUf] =
     useState("");
 
-  const [reference, setReference] =
-    useState("");
+  const [
+    reference,
+    setReference,
+  ] = useState("");
 
-  const [cepLoading, setCepLoading] =
-    useState(false);
+  const [
+    cepLoading,
+    setCepLoading,
+  ] = useState(false);
 
-  const [cepError, setCepError] =
-    useState("");
+  const [
+    cepError,
+    setCepError,
+  ] = useState("");
 
   const [
     citySupported,
     setCitySupported,
-  ] = useState<boolean | null>(
-    null
-  );
+  ] = useState<
+    boolean | null
+  >(null);
+
+  /*
+   * =========================================
+   * PEDIDO
+   * =========================================
+   */
 
   const [
     isPending,
@@ -190,9 +300,63 @@ export default function CheckoutDrawer({
     setOrderError,
   ] = useState("");
 
+  const [
+  deletingAddressId,
+  setDeletingAddressId,
+] = useState<string | null>(
+  null
+);
+
   /*
    * =========================================
-   * BUSCA AUTOMÁTICA DO CLIENTE
+   * ENDEREÇO SELECIONADO
+   * =========================================
+   */
+
+  const selectedSavedAddress =
+    useMemo(() => {
+      if (!selectedAddressId) {
+        return null;
+      }
+
+      return (
+        savedAddresses.find(
+          (address) =>
+            address.id ===
+            selectedAddressId
+        ) ?? null
+      );
+    }, [
+      savedAddresses,
+      selectedAddressId,
+    ]);
+
+  /*
+   * =========================================
+   * LIMPAR NOVO ENDEREÇO
+   * =========================================
+   */
+
+  function clearNewAddress() {
+    setAddressLabel("Casa");
+    setMakeDefault(false);
+
+    setCep("");
+    setStreet("");
+    setNumber("");
+    setComplement("");
+    setNeighborhood("");
+    setCity("");
+    setUf("");
+    setReference("");
+
+    setCepError("");
+    setCitySupported(null);
+  }
+
+  /*
+   * =========================================
+   * BUSCAR CLIENTE AUTOMATICAMENTE
    * =========================================
    */
 
@@ -200,35 +364,69 @@ export default function CheckoutDrawer({
     const digits =
       phone.replace(/\D/g, "");
 
-    setCustomerLookupMessage("");
+    setCustomerLookupMessage(
+      ""
+    );
 
     if (digits.length < 10) {
       setExistingCustomer(false);
+      setSavedAddresses([]);
+      setSelectedAddressId(
+        null
+      );
+      setAddressMode("new");
+
       return;
     }
 
     const timer =
       window.setTimeout(
         async () => {
-          setCustomerLoading(true);
+          setCustomerLoading(
+            true
+          );
 
           const result =
             await findCustomerByPhone(
               digits
             );
 
-          setCustomerLoading(false);
+          setCustomerLoading(
+            false
+          );
 
           if (!result.success) {
             setCustomerLookupMessage(
               result.error
             );
 
+            setExistingCustomer(
+              false
+            );
+
+            setSavedAddresses(
+              []
+            );
+
             return;
           }
 
           if (!result.found) {
-            setExistingCustomer(false);
+            setExistingCustomer(
+              false
+            );
+
+            setSavedAddresses(
+              []
+            );
+
+            setSelectedAddressId(
+              null
+            );
+
+            setAddressMode(
+              "new"
+            );
 
             setCustomerLookupMessage(
               "Novo cliente. Informe seu nome e sobrenome."
@@ -237,50 +435,128 @@ export default function CheckoutDrawer({
             return;
           }
 
+          /*
+           * Cliente encontrado.
+           */
           setFirstName(
-            result.customer.firstName
+            result.customer
+              .firstName
           );
 
           setLastName(
-            result.customer.lastName
+            result.customer
+              .lastName
           );
 
-          setExistingCustomer(true);
-
-          setCustomerLookupMessage(
-            "Cadastro encontrado."
+          setExistingCustomer(
+            true
           );
+
+          const addresses =
+            result.customer
+              .addresses ?? [];
+
+          setSavedAddresses(
+            addresses
+          );
+
+          /*
+           * Se houver endereço principal,
+           * selecionamos automaticamente.
+           *
+           * Caso contrário, usamos o
+           * primeiro da lista.
+           */
+          const defaultAddress =
+            addresses.find(
+              (address) =>
+                address.isDefault
+            ) ??
+            addresses[0] ??
+            null;
+
+          if (defaultAddress) {
+            setSelectedAddressId(
+              defaultAddress.id
+            );
+
+            setAddressMode(
+              "saved"
+            );
+          } else {
+            setSelectedAddressId(
+              null
+            );
+
+            setAddressMode(
+              "new"
+            );
+          }
+
+          if (
+            addresses.length > 0
+          ) {
+            setCustomerLookupMessage(
+              `Cadastro encontrado. ${addresses.length} endereço(s) salvo(s).`
+            );
+          } else {
+            setCustomerLookupMessage(
+              "Cadastro encontrado."
+            );
+          }
         },
         500
       );
 
     return () => {
-      window.clearTimeout(timer);
+      window.clearTimeout(
+        timer
+      );
     };
   }, [phone]);
 
-  if (!open) {
-    return null;
-  }
+  /*
+   * =========================================
+   * VALIDAÇÕES
+   * =========================================
+   */
 
   const customerValid =
-    firstName.trim().length >= 2 &&
-    lastName.trim().length >= 2 &&
+    firstName.trim().length >=
+      2 &&
+    lastName.trim().length >=
+      2 &&
     phone.replace(/\D/g, "")
       .length >= 10 &&
     fulfillmentType !== null;
 
-  const addressValid =
+  const newAddressValid =
     cep.replace(/\D/g, "")
       .length === 8 &&
-    street.trim().length >= 2 &&
-    number.trim().length >= 1 &&
-    neighborhood.trim().length >= 2 &&
+    street.trim().length >=
+      2 &&
+    number.trim().length >=
+      1 &&
+    neighborhood.trim()
+      .length >= 2 &&
     city.trim().length >= 2 &&
     uf.trim().length === 2 &&
     citySupported === true;
 
-  function clearAddress() {
+  const deliveryAddressValid =
+    addressMode === "saved"
+      ? Boolean(
+          selectedAddressId
+        )
+      : newAddressValid;
+
+  /*
+   * =========================================
+   * CEP
+   * =========================================
+   */
+
+  function clearCepAddress() {
     setStreet("");
     setNeighborhood("");
     setCity("");
@@ -295,7 +571,7 @@ export default function CheckoutDrawer({
     setCepError("");
 
     if (digits.length !== 8) {
-      clearAddress();
+      clearCepAddress();
 
       setCepError(
         "Informe um CEP com 8 dígitos."
@@ -320,7 +596,7 @@ export default function CheckoutDrawer({
         (await response.json()) as ViaCepResponse;
 
       if (data.erro) {
-        clearAddress();
+        clearCepAddress();
 
         setCepError(
           "CEP não encontrado."
@@ -340,8 +616,13 @@ export default function CheckoutDrawer({
         data.bairro ?? ""
       );
 
-      setCity(resolvedCity);
-      setUf(data.uf ?? "");
+      setCity(
+        resolvedCity
+      );
+
+      setUf(
+        data.uf ?? ""
+      );
 
       const supported =
         isSupportedCity(
@@ -358,7 +639,7 @@ export default function CheckoutDrawer({
         );
       }
     } catch {
-      clearAddress();
+      clearCepAddress();
 
       setCepError(
         "Não foi possível consultar o CEP agora. Tente novamente."
@@ -367,6 +648,12 @@ export default function CheckoutDrawer({
       setCepLoading(false);
     }
   }
+
+  /*
+   * =========================================
+   * NAVEGAÇÃO
+   * =========================================
+   */
 
   function handleCustomerContinue() {
     if (!customerValid) {
@@ -377,7 +664,47 @@ export default function CheckoutDrawer({
       fulfillmentType ===
       "delivery"
     ) {
+      /*
+       * Cliente com endereço salvo:
+       * mostramos a tela de seleção.
+       *
+       * Cliente sem endereço:
+       * mostramos o formulário novo.
+       */
+      if (
+        savedAddresses.length >
+        0
+      ) {
+        setAddressMode(
+          "saved"
+        );
+
+        if (
+          !selectedAddressId
+        ) {
+          const defaultAddress =
+            savedAddresses.find(
+              (address) =>
+                address.isDefault
+            ) ??
+            savedAddresses[0];
+
+          setSelectedAddressId(
+            defaultAddress.id
+          );
+        }
+      } else {
+        setAddressMode(
+          "new"
+        );
+
+        setSelectedAddressId(
+          null
+        );
+      }
+
       setStep("address");
+
       return;
     }
 
@@ -385,7 +712,9 @@ export default function CheckoutDrawer({
   }
 
   function handleAddressContinue() {
-    if (!addressValid) {
+    if (
+      !deliveryAddressValid
+    ) {
       return;
     }
 
@@ -393,12 +722,17 @@ export default function CheckoutDrawer({
   }
 
   function handleBack() {
-    if (step === "address") {
+    if (
+      step === "address"
+    ) {
       setStep("customer");
+
       return;
     }
 
-    if (step === "review") {
+    if (
+      step === "review"
+    ) {
       if (
         fulfillmentType ===
         "delivery"
@@ -414,6 +748,124 @@ export default function CheckoutDrawer({
     onBack();
   }
 
+  /*
+   * =========================================
+   * ESCOLHER ENDEREÇO SALVO
+   * =========================================
+   */
+
+  function selectSavedAddress(
+    addressId: string
+  ) {
+    setSelectedAddressId(
+      addressId
+    );
+
+    setAddressMode(
+      "saved"
+    );
+
+    setOrderError("");
+  }
+
+  /*
+   * =========================================
+   * DELETAR ENDEREÇO SALVO
+   * =========================================
+   */
+
+  async function handleDeleteAddress(
+  addressId: string
+) {
+  const confirmed =
+    window.confirm(
+      "Deseja excluir este endereço?"
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  setDeletingAddressId(
+    addressId
+  );
+
+  const result =
+    await deleteCustomerAddress(
+      addressId,
+      phone
+    );
+
+  setDeletingAddressId(null);
+
+  if (!result.success) {
+    setOrderError(
+      result.error ??
+        "Não foi possível excluir o endereço."
+    );
+
+    return;
+  }
+
+  const updatedAddresses =
+    savedAddresses.filter(
+      (address) =>
+        address.id !== addressId
+    );
+
+  setSavedAddresses(
+    updatedAddresses
+  );
+
+  if (
+    selectedAddressId ===
+    addressId
+  ) {
+    const nextAddress =
+      updatedAddresses[0];
+
+    if (nextAddress) {
+      setSelectedAddressId(
+        nextAddress.id
+      );
+
+      setAddressMode(
+        "saved"
+      );
+    } else {
+      setSelectedAddressId(
+        null
+      );
+
+      setAddressMode(
+        "new"
+      );
+    }
+  }
+}
+
+  /*
+   * =========================================
+   * ADICIONAR NOVO
+   * =========================================
+   */
+
+  function startNewAddress() {
+    setSelectedAddressId(
+      null
+    );
+
+    setAddressMode("new");
+
+    clearNewAddress();
+  }
+
+  /*
+   * =========================================
+   * CRIAR PEDIDO
+   * =========================================
+   */
+
   function handleCreateOrder() {
     if (isPending) {
       return;
@@ -421,164 +873,336 @@ export default function CheckoutDrawer({
 
     setOrderError("");
 
-    startTransition(async () => {
-      const result =
-        await createOrder({
-          firstName,
-          lastName,
-          phone,
+    startTransition(
+      async () => {
+        const result =
+          await createOrder({
+            firstName,
+            lastName,
+            phone,
 
-          orderType:
-            fulfillmentType ===
-            "delivery"
-              ? "delivery"
-              : "pickup",
+            orderType:
+              fulfillmentType ===
+              "delivery"
+                ? "delivery"
+                : "pickup",
 
-          address:
-            fulfillmentType ===
-            "delivery"
-              ? {
-                  zipCode: cep,
-                  street,
-                  number,
-                  complement,
-                  neighborhood,
-                  city,
-                  reference,
-                }
-              : undefined,
+            selectedAddressId:
+              fulfillmentType ===
+                "delivery" &&
+              addressMode ===
+                "saved"
+                ? selectedAddressId ??
+                  undefined
+                : undefined,
 
-          items: items.map(
-            (item) => ({
-              productId: item.id,
-              quantity:
-                item.quantity,
-            })
-          ),
-        });
+            address:
+              fulfillmentType ===
+                "delivery" &&
+              addressMode ===
+                "new"
+                ? {
+                    zipCode:
+                      cep,
+                    street,
+                    number,
+                    complement,
+                    neighborhood,
+                    city,
+                    reference,
 
-      if (!result.success) {
-        setOrderError(
-          result.error
-        );
+                    label:
+                      addressLabel,
 
-        return;
-      }
+                    isDefault:
+                      makeDefault,
+                  }
+                : undefined,
 
-      const itemLines =
-        items
-          .map(
-            (item) =>
-              `${item.quantity}x ${item.name} - ${formatCurrency(
-                item.price *
-                  item.quantity
-              )}`
+            items: items.map(
+              (item) => ({
+                productId:
+                  item.id,
+
+                quantity:
+                  item.quantity,
+              })
+            ),
+          });
+
+        if (!result.success) {
+          setOrderError(
+            result.error
+          );
+
+          return;
+        }
+
+        /*
+         * =====================================
+         * ITENS DA MENSAGEM
+         * =====================================
+         */
+
+        const itemLines =
+          items
+            .map(
+              (item) =>
+                `${item.quantity}x ${item.name} — ${formatCurrency(
+                  item.price *
+                    item.quantity
+                )}`
+            )
+            .join("\n");
+
+        const customerPhone =
+          phone.replace(
+            /\D/g,
+            ""
+          );
+
+        /*
+         * =====================================
+         * ENDEREÇO USADO
+         * =====================================
+         */
+
+        const deliveryStreet =
+          addressMode ===
+            "saved" &&
+          selectedSavedAddress
+            ? selectedSavedAddress.street
+            : street;
+
+        const deliveryNumber =
+          addressMode ===
+            "saved" &&
+          selectedSavedAddress
+            ? selectedSavedAddress.number
+            : number;
+
+        const deliveryComplement =
+          addressMode ===
+            "saved" &&
+          selectedSavedAddress
+            ? selectedSavedAddress.complement ??
+              ""
+            : complement;
+
+        const deliveryNeighborhood =
+          addressMode ===
+            "saved" &&
+          selectedSavedAddress
+            ? selectedSavedAddress.neighborhood
+            : neighborhood;
+
+        const deliveryCity =
+          addressMode ===
+            "saved" &&
+          selectedSavedAddress
+            ? selectedSavedAddress.city
+            : city;
+
+        const deliveryReference =
+          addressMode ===
+            "saved" &&
+          selectedSavedAddress
+            ? selectedSavedAddress.reference ??
+              ""
+            : reference;
+
+        const deliveryCep =
+          addressMode ===
+            "saved" &&
+          selectedSavedAddress
+            ? formatCep(
+                selectedSavedAddress.zipCode
+              )
+            : cep;
+
+        /*
+         * =====================================
+         * RECEBIMENTO
+         * =====================================
+         */
+
+        const receivingText =
+          fulfillmentType ===
+          "delivery"
+            ? [
+                "📍 *ENTREGA*",
+
+                `${deliveryStreet}, ${deliveryNumber}${
+                  deliveryComplement
+                    ? ` - ${deliveryComplement}`
+                    : ""
+                }`,
+
+                `${deliveryNeighborhood} - ${deliveryCity}/SC`,
+
+                `CEP: ${deliveryCep}`,
+
+                deliveryReference
+                  ? `Referência: ${deliveryReference}`
+                  : "",
+              ]
+                .filter(Boolean)
+                .join("\n")
+            : [
+                "📍 *RETIRADA NA LOJA*",
+                "Rua Capitão Augusto Vidal, 3600",
+                "Palhoça/SC",
+              ].join("\n");
+
+        /*
+         * =====================================
+         * MENSAGEM WHATSAPP
+         * =====================================
+         */
+
+        const message = [
+          "🍰 *LA'BEL CONFEITARIA*",
+
+          `*Pedido #${result.orderNumber}*`,
+
+          "",
+
+          "👤 *CLIENTE*",
+
+          `${firstName} ${lastName}`,
+
+          `📱 ${customerPhone}`,
+
+          "",
+
+          "🛍️ *ITENS*",
+
+          itemLines,
+
+          "",
+
+          receivingText,
+
+          "",
+
+          "💰 *RESUMO*",
+
+          `Produtos: ${formatCurrency(
+            subtotal
+          )}`,
+
+          fulfillmentType ===
+          "delivery"
+            ? result.deliveryFeeType ===
+              "fixed"
+              ? `Taxa de entrega: ${formatCurrency(
+                  result.deliveryFee
+                )}`
+              : "Taxa de entrega: *a consultar*"
+            : null,
+
+          fulfillmentType ===
+            "delivery" &&
+          result.deliveryFeeType ===
+            "fixed"
+            ? `*Total: ${formatCurrency(
+                result.total
+              )}*`
+            : `*Subtotal: ${formatCurrency(
+                subtotal
+              )}*`,
+
+          "",
+
+          "Podemos confirmar o pedido? 😊",
+        ]
+          .filter(
+            (line) =>
+              line !== null
           )
           .join("\n");
 
-      const receivingText =
-        fulfillmentType ===
-        "delivery"
-          ? [
-              "Entrega",
-              `${street}, ${number}${
-                complement
-                  ? ` - ${complement}`
-                  : ""
-              }`,
-              `${neighborhood} - ${city}/${uf}`,
-              reference
-                ? `Referência: ${reference}`
-                : "",
-            ]
-              .filter(Boolean)
-              .join("\n")
-          : [
-              "Retirada na loja",
-              "Rua Capitão Augusto Vidal, 3600 - Palhoça/SC",
-            ].join("\n");
+        /*
+         * =====================================
+         * WHATSAPP
+         * =====================================
+         */
 
-      const message = [
-        `Olá! Gostaria de confirmar o Pedido #${result.orderNumber}.`,
-        "",
-        `Cliente: ${firstName} ${lastName}`,
-        `WhatsApp: ${phone}`,
-        "",
-        "ITENS",
-        itemLines,
-        "",
-        receivingText,
-        "",
-        `Subtotal: ${formatCurrency(
-          subtotal
-        )}`,
-        fulfillmentType ===
-        "delivery"
-          ? "Taxa de entrega: a consultar"
-          : "",
-        "",
-        "Podemos confirmar o pedido?",
-      ]
-        .filter(
-          (line) =>
-            line !== ""
-        )
-        .join("\n");
+        const whatsappNumber =
+          "5548988681096";
 
-      const whatsappNumber =
-        "5548988681096";
+        const encodedMessage =
+          encodeURIComponent(
+            message
+          );
 
-      const encodedMessage =
-        encodeURIComponent(
-          message
-        );
+        const whatsappAppUrl =
+          `whatsapp://send?phone=${whatsappNumber}&text=${encodedMessage}`;
 
-      const whatsappAppUrl =
-        `whatsapp://send?phone=${whatsappNumber}&text=${encodedMessage}`;
+        const whatsappWebUrl =
+          `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
-      const whatsappWebUrl =
-        `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+        /*
+         * =====================================
+         * STATUS
+         * =====================================
+         */
 
-      const statusResult =
-        await markOrderAsSentToWhatsapp(
-          result.orderId
-        );
+        const statusResult =
+          await markOrderAsSentToWhatsapp(
+            result.orderId
+          );
 
-      if (
-        !statusResult.success
-      ) {
-        setOrderError(
-          statusResult.error ??
-            "Não foi possível atualizar o status do pedido."
-        );
+        if (
+          !statusResult.success
+        ) {
+          setOrderError(
+            statusResult.error ??
+              "Não foi possível atualizar o status do pedido."
+          );
 
-        return;
+          return;
+        }
+
+        /*
+         * Pedido criado.
+         */
+        clearCart();
+
+        const isMobile =
+          /Android|iPhone|iPad|iPod/i.test(
+            navigator.userAgent
+          );
+
+        if (isMobile) {
+          window.location.href =
+            whatsappAppUrl;
+        } else {
+          window.open(
+            whatsappWebUrl,
+            "_blank",
+            "noopener,noreferrer"
+          );
+        }
+
+        onClose();
       }
+    );
+  }
 
-      clearCart();
+  /*
+   * =========================================
+   * RENDER
+   * =========================================
+   */
 
-      const isMobile =
-        /Android|iPhone|iPad|iPod/i.test(
-          navigator.userAgent
-        );
-
-      if (isMobile) {
-        window.location.href =
-          whatsappAppUrl;
-      } else {
-        window.open(
-          whatsappWebUrl,
-          "_blank",
-          "noopener,noreferrer"
-        );
-      }
-
-      onClose();
-    });
+  if (!open) {
+    return null;
   }
 
   return (
     <div className="fixed inset-0 z-[60]">
+      {/* OVERLAY */}
       <button
         type="button"
         aria-label="Fechar checkout"
@@ -586,17 +1210,25 @@ export default function CheckoutDrawer({
         className="absolute inset-0 bg-black/50"
       />
 
+      {/* DRAWER */}
       <aside className="absolute bottom-0 right-0 flex max-h-[95vh] w-full flex-col rounded-t-3xl bg-[#FFFDF9] shadow-2xl sm:bottom-auto sm:top-0 sm:h-full sm:max-h-none sm:max-w-lg sm:rounded-none">
-        {/* CABEÇALHO */}
+        {/* =====================================
+            CABEÇALHO
+        ===================================== */}
+
         <div className="flex items-center justify-between border-b border-[#EEE6DF] p-5">
           <div className="flex items-center gap-3">
             <button
               type="button"
-              onClick={handleBack}
+              onClick={
+                handleBack
+              }
               aria-label="Voltar"
               className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EEE6DF] bg-white text-[#8B0000]"
             >
-              <ArrowLeft size={18} />
+              <ArrowLeft
+                size={18}
+              />
             </button>
 
             <div>
@@ -618,13 +1250,19 @@ export default function CheckoutDrawer({
 
           <button
             type="button"
-            onClick={onClose}
+            onClick={
+              onClose
+            }
             aria-label="Fechar checkout"
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EEE6DF] bg-white text-[#756A66]"
           >
             <X size={19} />
           </button>
         </div>
+
+        {/* =====================================
+            CONTEÚDO
+        ===================================== */}
 
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
           {/* RESUMO */}
@@ -642,7 +1280,8 @@ export default function CheckoutDrawer({
                 </p>
 
                 <p className="text-sm font-bold text-[#241B19]">
-                  {totalItems} item(ns)
+                  {totalItems}{" "}
+                  item(ns)
                 </p>
               </div>
             </div>
@@ -654,8 +1293,12 @@ export default function CheckoutDrawer({
             </p>
           </div>
 
-          {/* CLIENTE */}
-          {step === "customer" && (
+          {/* =================================
+              ETAPA 1 - CLIENTE
+          ================================= */}
+
+          {step ===
+            "customer" && (
             <>
               <section className="mt-7">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
@@ -666,15 +1309,16 @@ export default function CheckoutDrawer({
                   Identifique seu pedido
                 </h3>
 
-                <p className="mt-1 text-sm text-[#756A66]">
+                <p className="mt-1 text-sm leading-6 text-[#756A66]">
                   Informe primeiro seu
                   WhatsApp. Se você já
                   comprou com a
-                  La&apos;bel, buscamos
-                  seu cadastro
+                  La&apos;bel,
+                  buscamos seu cadastro
                   automaticamente.
                 </p>
 
+                {/* TELEFONE */}
                 <label className="mt-5 block">
                   <span className="mb-2 block text-xs font-bold text-[#49352C]">
                     WhatsApp
@@ -683,12 +1327,15 @@ export default function CheckoutDrawer({
                   <div className="relative">
                     <input
                       type="tel"
-                      value={phone}
+                      value={
+                        phone
+                      }
                       onChange={(
                         event
                       ) => {
                         setPhone(
-                          event.target
+                          event
+                            .target
                             .value
                         );
 
@@ -706,6 +1353,18 @@ export default function CheckoutDrawer({
                           setLastName(
                             ""
                           );
+
+                          setSavedAddresses(
+                            []
+                          );
+
+                          setSelectedAddressId(
+                            null
+                          );
+
+                          setAddressMode(
+                            "new"
+                          );
                         }
                       }}
                       placeholder="(48) 99999-9999"
@@ -716,7 +1375,9 @@ export default function CheckoutDrawer({
 
                     {customerLoading && (
                       <Loader2
-                        size={17}
+                        size={
+                          17
+                        }
                         className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-[#8B0000]"
                       />
                     )}
@@ -724,7 +1385,9 @@ export default function CheckoutDrawer({
                     {!customerLoading &&
                       existingCustomer && (
                         <UserCheck
-                          size={18}
+                          size={
+                            18
+                          }
                           className="absolute right-4 top-1/2 -translate-y-1/2 text-green-600"
                         />
                       )}
@@ -739,10 +1402,13 @@ export default function CheckoutDrawer({
                         : "bg-[#F7F0EA] text-[#756A66]"
                     }`}
                   >
-                    {customerLookupMessage}
+                    {
+                      customerLookupMessage
+                    }
                   </div>
                 )}
 
+                {/* NOME */}
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
                   <label className="block">
                     <span className="mb-2 block text-xs font-bold text-[#49352C]">
@@ -751,12 +1417,15 @@ export default function CheckoutDrawer({
 
                     <input
                       type="text"
-                      value={firstName}
+                      value={
+                        firstName
+                      }
                       onChange={(
                         event
                       ) =>
                         setFirstName(
-                          event.target
+                          event
+                            .target
                             .value
                         )
                       }
@@ -780,12 +1449,15 @@ export default function CheckoutDrawer({
 
                     <input
                       type="text"
-                      value={lastName}
+                      value={
+                        lastName
+                      }
                       onChange={(
                         event
                       ) =>
                         setLastName(
-                          event.target
+                          event
+                            .target
                             .value
                         )
                       }
@@ -815,6 +1487,7 @@ export default function CheckoutDrawer({
                 </h3>
 
                 <div className="mt-5 grid grid-cols-2 gap-3">
+                  {/* RETIRADA */}
                   <button
                     type="button"
                     onClick={() =>
@@ -838,7 +1511,9 @@ export default function CheckoutDrawer({
                       }`}
                     >
                       <Store
-                        size={19}
+                        size={
+                          19
+                        }
                       />
                     </div>
 
@@ -852,6 +1527,7 @@ export default function CheckoutDrawer({
                     </p>
                   </button>
 
+                  {/* ENTREGA */}
                   <button
                     type="button"
                     onClick={() =>
@@ -875,7 +1551,9 @@ export default function CheckoutDrawer({
                       }`}
                     >
                       <Truck
-                        size={19}
+                        size={
+                          19
+                        }
                       />
                     </div>
 
@@ -894,7 +1572,9 @@ export default function CheckoutDrawer({
                   "pickup" && (
                   <div className="mt-4 flex gap-3 rounded-2xl bg-[#F7F0EA] p-4">
                     <MapPin
-                      size={18}
+                      size={
+                        18
+                      }
                       className="mt-0.5 shrink-0 text-[#8B0000]"
                     />
 
@@ -907,8 +1587,9 @@ export default function CheckoutDrawer({
                       <p className="mt-1 text-xs leading-5 text-[#756A66]">
                         Rua Capitão
                         Augusto Vidal,
-                        3600 — Palhoça,
-                        Santa Catarina
+                        3600 —
+                        Palhoça, Santa
+                        Catarina
                       </p>
                     </div>
                   </div>
@@ -917,8 +1598,12 @@ export default function CheckoutDrawer({
             </>
           )}
 
-          {/* ENDEREÇO */}
-          {step === "address" && (
+          {/* =================================
+              ETAPA 2 - ENDEREÇO
+          ================================= */}
+
+          {step ===
+            "address" && (
             <section className="mt-7">
               <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
                 Entrega
@@ -928,227 +1613,569 @@ export default function CheckoutDrawer({
                 Onde devemos entregar?
               </h3>
 
-              <p className="mt-1 text-sm leading-6 text-[#756A66]">
-                Informe seu CEP e
-                preencheremos o endereço
-                automaticamente.
-              </p>
+              {/* ENDEREÇOS SALVOS */}
+              {savedAddresses.length >
+                0 && (
+                <div className="mt-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-bold text-[#241B19]">
+                      Endereços
+                      salvos
+                    </p>
 
-              <div className="mt-5">
-                <label className="block">
-                  <span className="mb-2 block text-xs font-bold text-[#49352C]">
-                    CEP
-                  </span>
+                    {addressMode ===
+                      "new" && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setAddressMode(
+                            "saved"
+                          );
 
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={cep}
-                      onChange={(
-                        event
+                          const defaultAddress =
+                            savedAddresses.find(
+                              (
+                                address
+                              ) =>
+                                address.isDefault
+                            ) ??
+                            savedAddresses[0];
+
+                          setSelectedAddressId(
+                            defaultAddress.id
+                          );
+                        }}
+                        className="text-xs font-bold text-[#8B0000]"
+                      >
+                        Usar salvo
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="mt-3 space-y-3">
+                    {savedAddresses.map(
+                      (
+                        address
                       ) => {
-                        setCep(
-                          formatCep(
-                            event.target
-                              .value
-                          )
+                        const active =
+                          addressMode ===
+                            "saved" &&
+                          selectedAddressId ===
+                            address.id;
+
+                        return (
+                          <button
+                            key={
+                              address.id
+                            }
+                            type="button"
+                            onClick={() =>
+                              selectSavedAddress(
+                                address.id
+                              )
+                            }
+                            className={`w-full rounded-2xl border p-4 text-left transition ${
+                              active
+                                ? "border-[#8B0000] bg-[#8B0000]/5"
+                                : "border-[#EEE6DF] bg-white"
+                            }`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div
+                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
+                                  active
+                                    ? "bg-[#8B0000] text-white"
+                                    : "bg-[#F7F0EA] text-[#8B0000]"
+                                }`}
+                              >
+                                <Home
+                                  size={
+                                    18
+                                  }
+                                />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <p className="font-bold text-[#241B19]">
+                                      {address.label ||
+                                        "Endereço"}
+                                    </p>
+
+                                    {address.isDefault && (
+                                      <span className="rounded-full bg-green-100 px-2 py-1 text-[10px] font-bold text-green-700">
+                                        Principal
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    onClick={(event) => {
+                                      event.stopPropagation();
+
+                                      void handleDeleteAddress(
+                                        address.id
+                                      );
+                                    }}
+                                    disabled={
+                                      deletingAddressId ===
+                                      address.id
+                                    }
+                                    aria-label={`Excluir ${address.label ?? "endereço"}`}
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-100 text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                                  >
+                                    {deletingAddressId ===
+                                    address.id ? (
+                                      <Loader2
+                                        size={15}
+                                        className="animate-spin"
+                                      />
+                                    ) : (
+                                      <Trash2 size={15} />
+                                    )}
+                                  </button>
+                                </div>
+
+                                <p className="mt-2 text-sm leading-5 text-[#756A66]">
+                                  {
+                                    address.street
+                                  }
+                                  ,{" "}
+                                  {
+                                    address.number
+                                  }
+                                </p>
+
+                                {address.complement && (
+                                  <p className="text-xs text-[#756A66]">
+                                    {
+                                      address.complement
+                                    }
+                                  </p>
+                                )}
+
+                                <p className="mt-1 text-xs text-[#756A66]">
+                                  {
+                                    address.neighborhood
+                                  }{" "}
+                                  —{" "}
+                                  {
+                                    address.city
+                                  }
+                                </p>
+                              </div>
+
+                              <div
+                                className={`mt-1 h-5 w-5 shrink-0 rounded-full border-2 ${
+                                  active
+                                    ? "border-[#8B0000] bg-[#8B0000] shadow-[inset_0_0_0_4px_white]"
+                                    : "border-[#D8CDC5]"
+                                }`}
+                              />
+                            </div>
+                          </button>
                         );
-
-                        setCepError("");
-                      }}
-                      onBlur={() => {
-                        if (
-                          cep.replace(
-                            /\D/g,
-                            ""
-                          ).length === 8
-                        ) {
-                          void searchCep();
-                        }
-                      }}
-                      placeholder="00000-000"
-                      inputMode="numeric"
-                      autoComplete="postal-code"
-                      maxLength={9}
-                      className="h-12 min-w-0 flex-1 rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none transition focus:border-[#8B0000]"
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        void searchCep()
                       }
-                      disabled={
-                        cepLoading
-                      }
-                      className="h-12 rounded-xl bg-[#8B0000] px-4 text-sm font-bold text-white disabled:opacity-50"
-                    >
-                      {cepLoading ? (
-                        <Loader2
-                          size={18}
-                          className="animate-spin"
-                        />
-                      ) : (
-                        "Buscar"
-                      )}
-                    </button>
+                    )}
                   </div>
-                </label>
 
-                {cepError && (
-                  <p className="mt-2 text-xs font-semibold text-red-600">
-                    {cepError}
+                  <button
+                    type="button"
+                    onClick={
+                      startNewAddress
+                    }
+                    className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#D2B48C] bg-white text-sm font-bold text-[#8B0000]"
+                  >
+                    <Plus
+                      size={17}
+                    />
+                    Adicionar novo
+                    endereço
+                  </button>
+                </div>
+              )}
+
+              {/* NOVO ENDEREÇO */}
+              {(savedAddresses.length ===
+                0 ||
+                addressMode ===
+                  "new") && (
+                <div
+                  className={
+                    savedAddresses.length >
+                    0
+                      ? "mt-7 border-t border-[#EEE6DF] pt-7"
+                      : "mt-5"
+                  }
+                >
+                  <p className="font-bold text-[#241B19]">
+                    {savedAddresses.length >
+                    0
+                      ? "Novo endereço"
+                      : "Informe seu endereço"}
                   </p>
-                )}
 
-                {citySupported ===
-                  true && (
-                  <div className="mt-3 flex items-center gap-2 rounded-xl bg-green-50 p-3 text-xs font-semibold text-green-700">
-                    <CheckCircle2
-                      size={16}
-                    />
+                  <p className="mt-1 text-sm leading-6 text-[#756A66]">
+                    Informe seu CEP e
+                    preencheremos os
+                    dados automaticamente.
+                  </p>
 
-                    Entregamos nesta
-                    região. A taxa será
-                    confirmada pelo
-                    WhatsApp.
+                  {/* NOME DO ENDEREÇO */}
+                  <div className="mt-5">
+                    <p className="mb-2 text-xs font-bold text-[#49352C]">
+                      Salvar como
+                    </p>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      {[
+                        "Casa",
+                        "Trabalho",
+                        "Outro",
+                      ].map(
+                        (
+                          label
+                        ) => (
+                          <button
+                            key={
+                              label
+                            }
+                            type="button"
+                            onClick={() =>
+                              setAddressLabel(
+                                label
+                              )
+                            }
+                            className={`h-10 rounded-xl border text-xs font-bold transition ${
+                              addressLabel ===
+                              label
+                                ? "border-[#8B0000] bg-[#8B0000]/5 text-[#8B0000]"
+                                : "border-[#EEE6DF] bg-white text-[#756A66]"
+                            }`}
+                          >
+                            {
+                              label
+                            }
+                          </button>
+                        )
+                      )}
+                    </div>
                   </div>
-                )}
-              </div>
 
-              {(street ||
-                city ||
-                neighborhood) && (
-                <div className="mt-6 space-y-4">
-                  <label className="block">
+                  {/* CEP */}
+                  <label className="mt-5 block">
                     <span className="mb-2 block text-xs font-bold text-[#49352C]">
-                      Rua
+                      CEP
                     </span>
 
-                    <input
-                      type="text"
-                      value={street}
-                      onChange={(
-                        event
-                      ) =>
-                        setStreet(
-                          event.target
-                            .value
-                        )
-                      }
-                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
-                    />
-                  </label>
-
-                  <div className="grid grid-cols-[120px_1fr] gap-3">
-                    <label>
-                      <span className="mb-2 block text-xs font-bold text-[#49352C]">
-                        Número
-                      </span>
-
-                      <input
-                        type="text"
-                        value={number}
-                        onChange={(
-                          event
-                        ) =>
-                          setNumber(
-                            event.target
-                              .value
-                          )
-                        }
-                        className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
-                      />
-                    </label>
-
-                    <label>
-                      <span className="mb-2 block text-xs font-bold text-[#49352C]">
-                        Complemento
-                      </span>
-
+                    <div className="flex gap-2">
                       <input
                         type="text"
                         value={
-                          complement
+                          cep
                         }
                         onChange={(
                           event
-                        ) =>
-                          setComplement(
-                            event.target
-                              .value
-                          )
+                        ) => {
+                          setCep(
+                            formatCep(
+                              event
+                                .target
+                                .value
+                            )
+                          );
+
+                          setCepError(
+                            ""
+                          );
+                        }}
+                        onBlur={() => {
+                          if (
+                            cep.replace(
+                              /\D/g,
+                              ""
+                            )
+                              .length ===
+                            8
+                          ) {
+                            void searchCep();
+                          }
+                        }}
+                        placeholder="00000-000"
+                        inputMode="numeric"
+                        autoComplete="postal-code"
+                        maxLength={
+                          9
                         }
-                        className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                        className="h-12 min-w-0 flex-1 rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none transition focus:border-[#8B0000]"
                       />
-                    </label>
-                  </div>
 
-                  <label>
-                    <span className="mb-2 block text-xs font-bold text-[#49352C]">
-                      Bairro
-                    </span>
-
-                    <input
-                      type="text"
-                      value={
-                        neighborhood
-                      }
-                      onChange={(
-                        event
-                      ) =>
-                        setNeighborhood(
-                          event.target
-                            .value
-                        )
-                      }
-                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
-                    />
+                      <button
+                        type="button"
+                        onClick={() =>
+                          void searchCep()
+                        }
+                        disabled={
+                          cepLoading
+                        }
+                        className="h-12 rounded-xl bg-[#8B0000] px-4 text-sm font-bold text-white disabled:opacity-50"
+                      >
+                        {cepLoading ? (
+                          <Loader2
+                            size={
+                              18
+                            }
+                            className="animate-spin"
+                          />
+                        ) : (
+                          "Buscar"
+                        )}
+                      </button>
+                    </div>
                   </label>
 
-                  <div className="grid grid-cols-[1fr_80px] gap-3">
-                    <input
-                      type="text"
-                      value={city}
-                      readOnly
-                      className="h-12 rounded-xl border border-[#E6DDD6] bg-[#F7F0EA] px-4 text-sm text-[#756A66]"
-                    />
-
-                    <input
-                      type="text"
-                      value={uf}
-                      readOnly
-                      className="h-12 rounded-xl border border-[#E6DDD6] bg-[#F7F0EA] px-4 text-sm text-[#756A66]"
-                    />
-                  </div>
-
-                  <label>
-                    <span className="mb-2 block text-xs font-bold text-[#49352C]">
-                      Referência
-                    </span>
-
-                    <textarea
-                      value={reference}
-                      onChange={(
-                        event
-                      ) =>
-                        setReference(
-                          event.target
-                            .value
-                        )
+                  {cepError && (
+                    <p className="mt-2 text-xs font-semibold text-red-600">
+                      {
+                        cepError
                       }
-                      rows={3}
-                      className="w-full resize-none rounded-xl border border-[#E6DDD6] bg-white px-4 py-3 text-sm outline-none focus:border-[#8B0000]"
-                    />
-                  </label>
+                    </p>
+                  )}
+
+                  {citySupported ===
+                    true && (
+                    <div className="mt-3 flex items-center gap-2 rounded-xl bg-green-50 p-3 text-xs font-semibold text-green-700">
+                      <CheckCircle2
+                        size={
+                          16
+                        }
+                      />
+
+                      Entregamos nesta
+                      região. A taxa
+                      será confirmada
+                      pelo WhatsApp.
+                    </div>
+                  )}
+
+                  {/* CAMPOS */}
+                  {(street ||
+                    city ||
+                    neighborhood) && (
+                    <div className="mt-6 space-y-4">
+                      {/* RUA */}
+                      <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-[#49352C]">
+                          Rua
+                        </span>
+
+                        <input
+                          type="text"
+                          value={
+                            street
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            setStreet(
+                              event
+                                .target
+                                .value
+                            )
+                          }
+                          placeholder="Rua"
+                          className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                        />
+                      </label>
+
+                      {/* NÚMERO / COMPLEMENTO */}
+                      <div className="grid grid-cols-[110px_1fr] gap-3 sm:grid-cols-2">
+                        <label>
+                          <span className="mb-2 block text-xs font-bold text-[#49352C]">
+                            Número
+                          </span>
+
+                          <input
+                            type="text"
+                            value={
+                              number
+                            }
+                            onChange={(
+                              event
+                            ) =>
+                              setNumber(
+                                event
+                                  .target
+                                  .value
+                              )
+                            }
+                            placeholder="123"
+                            inputMode="numeric"
+                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                          />
+                        </label>
+
+                        <label>
+                          <span className="mb-2 block text-xs font-bold text-[#49352C]">
+                            Complemento
+                          </span>
+
+                          <input
+                            type="text"
+                            value={
+                              complement
+                            }
+                            onChange={(
+                              event
+                            ) =>
+                              setComplement(
+                                event
+                                  .target
+                                  .value
+                              )
+                            }
+                            placeholder="Apto, bloco..."
+                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                          />
+                        </label>
+                      </div>
+
+                      {/* BAIRRO */}
+                      <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-[#49352C]">
+                          Bairro
+                        </span>
+
+                        <input
+                          type="text"
+                          value={
+                            neighborhood
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            setNeighborhood(
+                              event
+                                .target
+                                .value
+                            )
+                          }
+                          placeholder="Bairro"
+                          className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                        />
+                      </label>
+
+                      {/* CIDADE / UF */}
+                      <div className="grid grid-cols-[1fr_80px] gap-3">
+                        <label>
+                          <span className="mb-2 block text-xs font-bold text-[#49352C]">
+                            Cidade
+                          </span>
+
+                          <input
+                            type="text"
+                            value={
+                              city
+                            }
+                            readOnly
+                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-[#F7F0EA] px-4 text-sm text-[#756A66]"
+                          />
+                        </label>
+
+                        <label>
+                          <span className="mb-2 block text-xs font-bold text-[#49352C]">
+                            UF
+                          </span>
+
+                          <input
+                            type="text"
+                            value={
+                              uf
+                            }
+                            readOnly
+                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-[#F7F0EA] px-4 text-sm text-[#756A66]"
+                          />
+                        </label>
+                      </div>
+
+                      {/* REFERÊNCIA */}
+                      <label className="block">
+                        <span className="mb-2 block text-xs font-bold text-[#49352C]">
+                          Referência
+                        </span>
+
+                        <textarea
+                          value={
+                            reference
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            setReference(
+                              event
+                                .target
+                                .value
+                            )
+                          }
+                          placeholder="Ex.: portão preto, próximo à farmácia..."
+                          rows={3}
+                          className="w-full resize-none rounded-xl border border-[#E6DDD6] bg-white px-4 py-3 text-sm outline-none focus:border-[#8B0000]"
+                        />
+                      </label>
+
+                      {/* PADRÃO */}
+                      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4">
+                        <input
+                          type="checkbox"
+                          checked={
+                            makeDefault
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            setMakeDefault(
+                              event
+                                .target
+                                .checked
+                            )
+                          }
+                          className="mt-0.5 h-4 w-4 accent-[#8B0000]"
+                        />
+
+                        <div>
+                          <p className="text-sm font-bold text-[#241B19]">
+                            Usar como
+                            endereço
+                            principal
+                          </p>
+
+                          <p className="mt-1 text-xs leading-5 text-[#756A66]">
+                            Nas próximas
+                            compras este
+                            endereço
+                            ficará
+                            selecionado
+                            automaticamente.
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  )}
                 </div>
               )}
             </section>
           )}
 
-          {/* REVISÃO */}
-          {step === "review" && (
+          {/* =================================
+              ETAPA 3 - REVISÃO
+          ================================= */}
+
+          {step ===
+            "review" && (
             <div className="mt-7 space-y-5">
+              {/* CLIENTE */}
               <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
                   Cliente
@@ -1164,6 +2191,7 @@ export default function CheckoutDrawer({
                 </p>
               </section>
 
+              {/* RECEBIMENTO */}
               <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
                   Recebimento
@@ -1172,43 +2200,119 @@ export default function CheckoutDrawer({
                 {fulfillmentType ===
                 "pickup" ? (
                   <>
-                    <p className="mt-2 font-bold">
-                      Retirada na loja
-                    </p>
-
-                    <p className="mt-1 text-sm text-[#756A66]">
-                      Rua Capitão Augusto
-                      Vidal, 3600 —
-                      Palhoça/SC
-                    </p>
-                  </>
-                ) : (
-                  <>
-                    <p className="mt-2 font-bold">
-                      Entrega
+                    <p className="mt-2 font-bold text-[#241B19]">
+                      Retirada na
+                      loja
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-[#756A66]">
-                      {street},{" "}
-                      {number}
-                      {complement
-                        ? ` - ${complement}`
+                      Rua Capitão
+                      Augusto Vidal,
+                      3600 —
+                      Palhoça/SC
+                    </p>
+                  </>
+                ) : selectedSavedAddress &&
+                  addressMode ===
+                    "saved" ? (
+                  <>
+                    <div className="mt-2 flex items-center gap-2">
+                      <p className="font-bold text-[#241B19]">
+                        Entrega
+                      </p>
+
+                      <span className="rounded-full bg-[#F7F0EA] px-2 py-1 text-[10px] font-bold text-[#8B0000]">
+                        {selectedSavedAddress.label ||
+                          "Endereço"}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm leading-6 text-[#756A66]">
+                      {
+                        selectedSavedAddress.street
+                      }
+                      ,{" "}
+                      {
+                        selectedSavedAddress.number
+                      }
+
+                      {selectedSavedAddress.complement
+                        ? ` - ${selectedSavedAddress.complement}`
                         : ""}
+
                       <br />
-                      {neighborhood} —{" "}
-                      {city}/{uf}
+
+                      {
+                        selectedSavedAddress.neighborhood
+                      }{" "}
+                      —{" "}
+                      {
+                        selectedSavedAddress.city
+                      }
+                      /SC
                     </p>
 
-                    {reference && (
+                    {selectedSavedAddress.reference && (
                       <p className="mt-2 text-xs text-[#756A66]">
                         Referência:{" "}
-                        {reference}
+                        {
+                          selectedSavedAddress.reference
+                        }
                       </p>
                     )}
 
                     <div className="mt-3 rounded-xl bg-[#F7F0EA] p-3">
                       <p className="text-xs text-[#756A66]">
-                        Taxa de entrega
+                        Taxa de
+                        entrega
+                      </p>
+
+                      <p className="mt-1 text-sm font-bold text-[#8B0000]">
+                        A consultar
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="mt-2 flex items-center gap-2">
+                      <p className="font-bold text-[#241B19]">
+                        Entrega
+                      </p>
+
+                      <span className="rounded-full bg-[#F7F0EA] px-2 py-1 text-[10px] font-bold text-[#8B0000]">
+                        {
+                          addressLabel
+                        }
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-sm leading-6 text-[#756A66]">
+                      {street},{" "}
+                      {number}
+
+                      {complement
+                        ? ` - ${complement}`
+                        : ""}
+
+                      <br />
+
+                      {neighborhood}{" "}
+                      — {city}/{uf}
+                    </p>
+
+                    {reference && (
+                      <p className="mt-2 text-xs text-[#756A66]">
+                        Referência:{" "}
+                        {
+                          reference
+                        }
+                      </p>
+                    )}
+
+                    <div className="mt-3 rounded-xl bg-[#F7F0EA] p-3">
+                      <p className="text-xs text-[#756A66]">
+                        Taxa de
+                        entrega
                       </p>
 
                       <p className="mt-1 text-sm font-bold text-[#8B0000]">
@@ -1219,13 +2323,14 @@ export default function CheckoutDrawer({
                 )}
               </section>
 
+              {/* VALORES */}
               <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
-                <div className="flex justify-between">
+                <div className="flex justify-between gap-4">
                   <span className="text-sm text-[#756A66]">
                     Produtos
                   </span>
 
-                  <span className="font-bold">
+                  <span className="font-bold text-[#241B19]">
                     {formatCurrency(
                       subtotal
                     )}
@@ -1234,7 +2339,7 @@ export default function CheckoutDrawer({
 
                 {fulfillmentType ===
                   "delivery" && (
-                  <div className="mt-3 flex justify-between">
+                  <div className="mt-3 flex justify-between gap-4">
                     <span className="text-sm text-[#756A66]">
                       Entrega
                     </span>
@@ -1245,8 +2350,8 @@ export default function CheckoutDrawer({
                   </div>
                 )}
 
-                <div className="mt-4 flex justify-between border-t border-[#EEE6DF] pt-4">
-                  <span className="font-bold">
+                <div className="mt-4 flex justify-between gap-4 border-t border-[#EEE6DF] pt-4">
+                  <span className="font-bold text-[#241B19]">
                     Subtotal
                   </span>
 
@@ -1261,9 +2366,14 @@ export default function CheckoutDrawer({
           )}
         </div>
 
-        {/* RODAPÉ */}
+        {/* =====================================
+            RODAPÉ
+        ===================================== */}
+
         <div className="border-t border-[#EEE6DF] bg-white p-5">
-          {step === "customer" && (
+          {/* CLIENTE */}
+          {step ===
+            "customer" && (
             <button
               type="button"
               disabled={
@@ -1273,32 +2383,38 @@ export default function CheckoutDrawer({
               onClick={
                 handleCustomerContinue
               }
-              className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white disabled:opacity-40"
+              className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Continuar
             </button>
           )}
 
-          {step === "address" && (
+          {/* ENDEREÇO */}
+          {step ===
+            "address" && (
             <button
               type="button"
               disabled={
-                !addressValid
+                !deliveryAddressValid
               }
               onClick={
                 handleAddressContinue
               }
-              className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white disabled:opacity-40"
+              className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Revisar pedido
             </button>
           )}
 
-          {step === "review" && (
+          {/* REVISÃO */}
+          {step ===
+            "review" && (
             <div>
               {orderError && (
                 <div className="mb-3 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-600">
-                  {orderError}
+                  {
+                    orderError
+                  }
                 </div>
               )}
 
@@ -1310,15 +2426,19 @@ export default function CheckoutDrawer({
                 disabled={
                   isPending
                 }
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] text-sm font-bold text-white disabled:opacity-60"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPending ? (
                   <>
                     <Loader2
-                      size={17}
+                      size={
+                        17
+                      }
                       className="animate-spin"
                     />
-                    Criando pedido...
+
+                    Criando
+                    pedido...
                   </>
                 ) : (
                   "Enviar pedido pelo WhatsApp"
