@@ -130,9 +130,9 @@ export default async function ClientesPage() {
         </div>
 
         {/* CARDS */}
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+       <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
           {/* CLIENTES CADASTRADOS */}
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
               <UserRound size={20} />
             </div>
@@ -147,7 +147,7 @@ export default async function ClientesPage() {
           </article>
 
           {/* CLIENTES COM PEDIDOS */}
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
               <ShoppingBag size={20} />
             </div>
@@ -162,7 +162,7 @@ export default async function ClientesPage() {
           </article>
 
           {/* FATURAMENTO */}
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="col-span-2 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5 xl:col-span-1">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <ShoppingBag size={20} />
             </div>
@@ -269,7 +269,7 @@ export default async function ClientesPage() {
 
                     {/* ESTATÍSTICAS + BOTÃO */}
                     <div className="flex flex-col gap-4 xl:items-end">
-                      <div className="grid gap-3 sm:grid-cols-3 xl:min-w-[520px]">
+                      <div className="grid grid-cols-2 gap-3 xl:min-w-[520px] xl:grid-cols-3">
                         {/* PEDIDOS */}
                         <div className="rounded-xl bg-[#FFF7F5] p-4">
                           <p className="text-xs text-[#756A66]">
@@ -295,7 +295,7 @@ export default async function ClientesPage() {
                         </div>
 
                         {/* ÚLTIMO PEDIDO */}
-                        <div className="rounded-xl bg-[#FFF7F5] p-4">
+                        <div className="col-span-2 rounded-xl bg-[#FFF7F5] p-4 xl:col-span-1">
                           <p className="text-xs text-[#756A66]">
                             Último pedido
                           </p>

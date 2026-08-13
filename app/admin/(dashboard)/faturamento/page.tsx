@@ -291,13 +291,8 @@ export default async function FaturamentoPage({
           </p>
 
           <div className="flex flex-wrap gap-2">
-            {Object.entries(periodLabels)
-              .filter(
-                ([period]) =>
-                  period !== "custom"
-              )
-              .map(
-                ([period, label]) => {
+            {Object.entries(periodLabels).map(
+              ([period, label]) => {
                   const active =
                     selectedPeriod ===
                     period;
@@ -319,6 +314,7 @@ export default async function FaturamentoPage({
               )}
           </div>
 
+          {selectedPeriod === "custom" && (
           <form
             method="GET"
             className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 sm:flex-row sm:items-end"
@@ -341,9 +337,7 @@ export default async function FaturamentoPage({
                 id="from"
                 name="from"
                 type="date"
-                defaultValue={
-                  params.from ?? ""
-                }
+                defaultValue={params.from ?? ""}
                 required
                 className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none transition focus:border-[#8B0000]"
               />
@@ -361,9 +355,7 @@ export default async function FaturamentoPage({
                 id="to"
                 name="to"
                 type="date"
-                defaultValue={
-                  params.to ?? ""
-                }
+                defaultValue={params.to ?? ""}
                 required
                 className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none transition focus:border-[#8B0000]"
               />
@@ -376,6 +368,7 @@ export default async function FaturamentoPage({
               Aplicar período
             </button>
           </form>
+        )}
 
           {customRangeInvalid && (
             <div className="mt-3 rounded-xl border border-red-100 bg-red-50 p-3 text-sm font-semibold text-red-600">
@@ -385,37 +378,37 @@ export default async function FaturamentoPage({
           )}
         </section>
 
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+        <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <CircleDollarSign
                 size={20}
               />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Faturamento hoje
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
               {formatCurrency(
                 todayRevenue
               )}
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
               <CalendarDays
                 size={20}
               />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Faturamento do período
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
               {formatCurrency(
                 filteredRevenue
               )}
@@ -426,18 +419,18 @@ export default async function FaturamentoPage({
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
               <BadgeDollarSign
                 size={20}
               />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Faturamento total
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
               {formatCurrency(
                 totalRevenue
               )}
@@ -448,16 +441,16 @@ export default async function FaturamentoPage({
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
               <ReceiptText size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Ticket médio
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
               {formatCurrency(
                 averageTicket
               )}

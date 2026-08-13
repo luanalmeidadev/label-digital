@@ -447,14 +447,12 @@ export default async function ConfiguracoesPage() {
                     </p>
                   </div>
 
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
-                    <label className="flex h-11 items-center gap-2 rounded-xl border border-[#EEE6DF] px-3">
+                  <div className="grid grid-cols-2 gap-3 sm:flex sm:items-end">
+                    <label className="col-span-2 flex h-11 items-center gap-2 rounded-xl border border-[#EEE6DF] px-3 sm:col-span-1">
                       <input
                         type="checkbox"
                         name="is_open"
-                        defaultChecked={
-                          day.is_open
-                        }
+                        defaultChecked={day.is_open}
                         className="accent-[#8B0000]"
                       />
 
@@ -467,7 +465,7 @@ export default async function ConfiguracoesPage() {
                       defaultValue={normalizeTime(
                         day.opens_at
                       )}
-                      className="h-11 rounded-xl border border-[#DDD3CB] px-3"
+                      className="h-11 min-w-0 rounded-xl border border-[#DDD3CB] px-3"
                     />
 
                     <input
@@ -476,12 +474,12 @@ export default async function ConfiguracoesPage() {
                       defaultValue={normalizeTime(
                         day.closes_at
                       )}
-                      className="h-11 rounded-xl border border-[#DDD3CB] px-3"
+                      className="h-11 min-w-0 rounded-xl border border-[#DDD3CB] px-3"
                     />
 
                     <button
                       type="submit"
-                      className="h-11 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000]"
+                      className="col-span-2 h-11 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000] sm:col-span-1"
                     >
                       Salvar
                     </button>
@@ -661,7 +659,7 @@ export default async function ConfiguracoesPage() {
                               ""
                             }
                             placeholder="R$"
-                            className="h-10 w-28 rounded-lg border border-[#DDD3CB] px-3 text-sm"
+                            className="h-10 w-full rounded-lg border border-[#DDD3CB] px-3 text-sm sm:w-28"
                           />
 
                           <button
@@ -672,6 +670,7 @@ export default async function ConfiguracoesPage() {
                           </button>
                         </form>
 
+                      <div className="flex items-center gap-2">
                         {/* ATIVAR */}
 
                         <form
@@ -704,7 +703,7 @@ export default async function ConfiguracoesPage() {
                               : "Ativar"}
                           </button>
                         </form>
-
+        
                         {/* EXCLUIR */}
 
                         <form
@@ -730,6 +729,7 @@ export default async function ConfiguracoesPage() {
                             />
                           </button>
                         </form>
+                      </div>
                       </div>
                     </div>
                   </div>

@@ -137,59 +137,59 @@ export default async function EntregasPage() {
           </p>
         </div>
 
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+        <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
               <Truck size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+           <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm"> 
               Entregas
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
               {totalDeliveries}
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
               <Clock3 size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Aguardando saída
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
               {waitingDeliveries}
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
               <Truck size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Em rota
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
               {onRouteDeliveries}
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <CheckCircle2 size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Concluídas
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
               {completedDeliveries}
             </p>
           </article>

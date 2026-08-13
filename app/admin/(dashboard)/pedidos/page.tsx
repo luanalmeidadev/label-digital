@@ -1,7 +1,10 @@
+import Link from "next/link";
+
 import {
   CheckCircle2,
   Clock3,
   PackageCheck,
+  Printer,
   ShoppingBag,
   XCircle,
 } from "lucide-react";
@@ -22,8 +25,7 @@ const statusLabels: Record<string, string> = {
 };
 
 const statusClasses: Record<string, string> = {
-  created:
-    "bg-gray-100 text-gray-700",
+  created: "bg-gray-100 text-gray-700",
 
   sent_to_whatsapp:
     "bg-emerald-100 text-emerald-700",
@@ -165,59 +167,59 @@ export default async function PedidosPage() {
         </div>
 
         {/* INDICADORES */}
-        <section className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+        <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
               <ShoppingBag size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Total de pedidos
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
               {orders?.length ?? 0}
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
               <Clock3 size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Em andamento
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
               {openOrders.length}
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <CheckCircle2 size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Finalizados
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
               {completedOrders.length}
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <PackageCheck size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
               Faturamento realizado
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
               {formatCurrency(
                 completedRevenue
               )}
@@ -271,11 +273,19 @@ export default async function PedidosPage() {
                 const items =
                   order.order_items ?? [];
 
+                const canPrint = [
+                  "confirmed",
+                  "ready_for_pickup",
+                  "out_for_delivery",
+                  "completed",
+                ].includes(order.status);
+
                 return (
                   <article
                     key={order.id}
                     className="flex flex-col gap-4 p-5 xl:flex-row xl:items-center xl:justify-between"
                   >
+                    {/* DADOS */}
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
                         <h3 className="font-bold text-[#241B19]">
@@ -318,7 +328,8 @@ export default async function PedidosPage() {
                       </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-4 xl:justify-end">
+                    {/* TOTAL + AÇÕES */}
+                    <div className="flex flex-col gap-3 xl:items-end">
                       <div className="text-left xl:text-right">
                         <p className="text-xs text-[#756A66]">
                           Total
@@ -333,99 +344,112 @@ export default async function PedidosPage() {
                         </p>
                       </div>
 
-                      <OrderDetailsDialog
-                        order={{
-                          id: order.id,
+                      <div className="flex flex-wrap items-center gap-2">
+                        <OrderDetailsDialog
+                          order={{
+                            id: order.id,
 
-                          order_number:
-                            order.order_number,
+                            order_number:
+                              order.order_number,
 
-                          status:
-                            order.status,
+                            status:
+                              order.status,
 
-                          order_type:
-                            order.order_type,
+                            order_type:
+                              order.order_type,
 
-                          subtotal:
-                            Number(
-                              order.subtotal
-                            ),
+                            subtotal:
+                              Number(
+                                order.subtotal
+                              ),
 
-                          delivery_fee:
-                            Number(
-                              order.delivery_fee
-                            ),
+                            delivery_fee:
+                              Number(
+                                order.delivery_fee
+                              ),
 
-                          total:
-                            Number(
-                              order.total
-                            ),
+                            total:
+                              Number(
+                                order.total
+                              ),
 
-                          notes:
-                            order.notes,
+                            notes:
+                              order.notes,
 
-                          created_at:
-                            order.created_at,
+                            created_at:
+                              order.created_at,
 
-                          customer:
-                            customer
-                              ? {
-                                  first_name:
-                                    customer.first_name,
+                            customer:
+                              customer
+                                ? {
+                                    first_name:
+                                      customer.first_name,
 
-                                  last_name:
-                                    customer.last_name,
+                                    last_name:
+                                      customer.last_name,
 
-                                  phone:
-                                    customer.phone,
-                                }
-                              : null,
+                                    phone:
+                                      customer.phone,
+                                  }
+                                : null,
 
-                          address:
-                            address
-                              ? {
-                                  street:
-                                    address.street,
+                            address:
+                              address
+                                ? {
+                                    street:
+                                      address.street,
 
-                                  number:
-                                    address.number,
+                                    number:
+                                      address.number,
 
-                                  complement:
-                                    address.complement,
+                                    complement:
+                                      address.complement,
 
-                                  neighborhood:
-                                    address.neighborhood,
+                                    neighborhood:
+                                      address.neighborhood,
 
-                                  city:
-                                    address.city,
+                                    city:
+                                      address.city,
 
-                                  reference:
-                                    address.reference,
-                                }
-                              : null,
+                                    reference:
+                                      address.reference,
+                                  }
+                                : null,
 
-                          items:
-                            items.map(
-                              (item) => ({
-                                id: item.id,
+                            items:
+                              items.map(
+                                (item) => ({
+                                  id: item.id,
 
-                                product_name:
-                                  item.product_name,
+                                  product_name:
+                                    item.product_name,
 
-                                quantity:
-                                  item.quantity,
+                                  quantity:
+                                    item.quantity,
 
-                                unit_price:
-                                  Number(
-                                    item.unit_price
-                                  ),
-                              })
-                            ),
-                        }}
-                        updateStatusAction={
-                          updateOrderStatus
-                        }
-                      />
+                                  unit_price:
+                                    Number(
+                                      item.unit_price
+                                    ),
+                                })
+                              ),
+                          }}
+                          updateStatusAction={
+                            updateOrderStatus
+                          }
+                        />
+
+                        {canPrint && (
+                          <Link
+                            href={`/admin/pedidos/${order.id}/imprimir`}
+                            target="_blank"
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000] transition hover:bg-[#8B0000] hover:text-white"
+                          >
+                            <Printer size={16} />
+                            Imprimir
+                          </Link>
+                        )}
+                      </div>
                     </div>
                   </article>
                 );
