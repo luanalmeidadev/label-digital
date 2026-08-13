@@ -408,6 +408,14 @@ export default function CheckoutDrawer({
               []
             );
 
+            setSelectedAddressId(
+              null
+            );
+
+            setAddressMode(
+              "new"
+            );
+
             return;
           }
 
@@ -868,6 +876,14 @@ export default function CheckoutDrawer({
 
   function handleCreateOrder() {
     if (isPending) {
+      return;
+    }
+
+    if (items.length === 0) {
+      setOrderError(
+        "Sua sacola está vazia."
+      );
+
       return;
     }
 
@@ -2385,24 +2401,28 @@ export default function CheckoutDrawer({
               }
               className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Continuar
+              {customerLoading
+                ? "Consultando cadastro..."
+                : "Continuar"}
             </button>
           )}
 
           {/* ENDEREÇO */}
-          {step ===
-            "address" && (
+          {step === "address" && (
             <button
               type="button"
               disabled={
-                !deliveryAddressValid
+                !deliveryAddressValid ||
+                cepLoading
               }
               onClick={
                 handleAddressContinue
               }
               className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Revisar pedido
+              {cepLoading
+                ? "Consultando CEP..."
+                : "Revisar pedido"}
             </button>
           )}
 
