@@ -6,6 +6,8 @@ import { redirect } from "next/navigation";
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
 import {
   formatPreorderCurrency,
+  getPreorderMaxFlavors,
+  isAllowedPreorderQuantity,
   isPreorderRequestStatus,
   parsePreorderPrice,
   type PreorderRequest,
@@ -271,13 +273,13 @@ export async function createManualPreorderRequest(
 
   if (
     product &&
-    (quantity < (product.minimumQuantity ?? 1) ||
+    (!isAllowedPreorderQuantity(product, quantity) ||
       flavors.some(
         (flavor) => !product.flavors?.includes(flavor)
       ) ||
       (product.flavors?.length && flavors.length === 0) ||
-      (product.maxFlavors !== undefined &&
-        flavors.length > product.maxFlavors))
+      flavors.length >
+        getPreorderMaxFlavors(product, quantity))
   ) {
     return { error: "Revise a quantidade e os sabores escolhidos." };
   }
@@ -473,13 +475,13 @@ export async function updatePreorderRequestDetails(
 
   if (
     product &&
-    (quantity < (product.minimumQuantity ?? 1) ||
+    (!isAllowedPreorderQuantity(product, quantity) ||
       flavors.some(
         (flavor) => !product.flavors?.includes(flavor)
       ) ||
       (product.flavors?.length && flavors.length === 0) ||
-      (product.maxFlavors !== undefined &&
-        flavors.length > product.maxFlavors))
+      flavors.length >
+        getPreorderMaxFlavors(product, quantity))
   ) {
     return { error: "Revise a quantidade e os sabores escolhidos." };
   }

@@ -2,6 +2,9 @@
 
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
 import {
+  calculatePreorderTotal,
+  getPreorderMaxFlavors,
+  isAllowedPreorderQuantity,
   parsePreorderPrice,
   type PreorderRequest,
 } from "@/lib/preorder-request";
@@ -172,6 +175,9 @@ export async function createPreorderRequest(
   const option = product?.prices.find(
     (price) => price.label === optionLabel
   );
+  const maxFlavors = product
+    ? getPreorderMaxFlavors(product, quantity)
+    : 0;
 
   if (
     product &&
@@ -184,9 +190,28 @@ export async function createPreorderRequest(
   }
 
   if (
-    !Number.isInteger(quantity) ||
-    quantity < minimumQuantity ||
-    quantity > 10000
+    product &&
+    !isAllowedPreorderQuantity(product, quantity)
+  ) {
+    return {
+      success: false,
+      error: product.allowedQuantities?.length
+        ? product.quantityIncrement
+          ? `Escolha ${product.allowedQuantities.join(
+              ", "
+            )} ou, acima disso, quantidades de ${product.quantityIncrement} em ${product.quantityIncrement}.`
+          : `Escolha uma destas quantidades: ${product.allowedQuantities.join(
+              ", "
+            )} ${quantityUnit}.`
+        : `A quantidade mínima é ${minimumQuantity} ${quantityUnit}.`,
+    };
+  }
+
+  if (
+    !product &&
+    (!Number.isInteger(quantity) ||
+      quantity < minimumQuantity ||
+      quantity > 10000)
   ) {
     return {
       success: false,
@@ -201,8 +226,7 @@ export async function createPreorderRequest(
         (flavor) =>
           !product.flavors?.includes(flavor)
       ) ||
-      (product.maxFlavors !== undefined &&
-        flavors.length > product.maxFlavors))
+      flavors.length > maxFlavors)
   ) {
     return {
       success: false,
@@ -240,9 +264,15 @@ export async function createPreorderRequest(
       option?.label ?? "Personalizada",
     optionPrice:
       option?.value ?? "A confirmar",
-    total:
-      parsePreorderPrice(option?.value ?? "") *
-      quantity,
+    total: product
+      ? calculatePreorderTotal(
+          product,
+          option?.value ?? "",
+          quantity
+        )
+      : parsePreorderPrice(
+          option?.value ?? ""
+        ) * quantity,
     amountPaid: 0,
     quantity,
     quantityUnit,

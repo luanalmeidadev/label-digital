@@ -26,6 +26,12 @@ import {
 } from "@/components/ui/dialog";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
 import type { PreorderProduct } from "@/lib/preorder-menu";
+import {
+  calculatePreorderTotal,
+  formatPreorderCurrency,
+  getPreorderMaxFlavors,
+  isAllowedPreorderQuantity,
+} from "@/lib/preorder-request";
 
 type RequestProduct = Pick<
   PreorderProduct,
@@ -34,8 +40,12 @@ type RequestProduct = Pick<
   | "flavors"
   | "leadTimeDays"
   | "minimumQuantity"
+  | "allowedQuantities"
+  | "quantityIncrement"
   | "quantityUnit"
+  | "priceBaseQuantity"
   | "maxFlavors"
+  | "flavorQuantityStep"
 >;
 
 type PreorderWhatsAppButtonProps = {
@@ -109,6 +119,7 @@ function buildPreorderMessage({
   selectedOption,
   quantity,
   quantityUnit,
+  estimatedTotal,
   selectedFlavors,
   desiredDate,
   fulfillmentType,
@@ -122,6 +133,7 @@ function buildPreorderMessage({
   selectedOption: string;
   quantity: number;
   quantityUnit: string;
+  estimatedTotal: number;
   selectedFlavors: string[];
   desiredDate: string;
   fulfillmentType: FulfillmentType;
@@ -139,6 +151,11 @@ function buildPreorderMessage({
       ? `*Opção:* ${selectedOption}`
       : null,
     `*Quantidade:* ${quantity} ${quantityUnit}`,
+    estimatedTotal > 0
+      ? `*Valor estimado:* ${formatPreorderCurrency(
+          estimatedTotal
+        )}`
+      : null,
     selectedFlavors.length > 0
       ? `*Sabores:* ${selectedFlavors.join(", ")}`
       : null,
@@ -184,6 +201,8 @@ export default function PreorderWhatsAppButton({
   const [quantity, setQuantity] = useState(
     String(minimumQuantity)
   );
+  const [customQuantitySelected, setCustomQuantitySelected] =
+    useState(false);
   const [selectedFlavors, setSelectedFlavors] =
     useState<string[]>([]);
   const [desiredDate, setDesiredDate] =
@@ -200,6 +219,59 @@ export default function PreorderWhatsAppButton({
     () => getMinimumDate(leadTimeDays),
     [leadTimeDays]
   );
+  const estimatedTotal = useMemo(() => {
+    if (!product) {
+      return 0;
+    }
+
+    const selectedPrice = product.prices.find(
+      (price) => price.label === selectedOption
+    );
+
+    return calculatePreorderTotal(
+      product,
+      selectedPrice?.value ?? "",
+      Number(quantity)
+    );
+  }, [product, quantity, selectedOption]);
+  const maxFlavors = useMemo(
+    () =>
+      product
+        ? getPreorderMaxFlavors(
+            product,
+            Number(quantity)
+          )
+        : 0,
+    [product, quantity]
+  );
+  const maximumPresetQuantity = Math.max(
+    ...(product?.allowedQuantities?.length
+      ? product.allowedQuantities
+      : [minimumQuantity])
+  );
+  const customQuantityEnabled = Boolean(
+    product?.allowedQuantities?.length &&
+      product.quantityIncrement
+  );
+  const isCustomQuantity =
+    customQuantityEnabled &&
+    (customQuantitySelected ||
+      Number(quantity) > maximumPresetQuantity);
+
+  function updateQuantity(nextQuantity: string) {
+    setQuantity(nextQuantity);
+
+    if (product) {
+      const nextMaxFlavors =
+        getPreorderMaxFlavors(
+          product,
+          Number(nextQuantity)
+        );
+      setSelectedFlavors((current) =>
+        current.slice(0, nextMaxFlavors)
+      );
+    }
+  }
 
   function toggleFlavor(flavor: string) {
     setError("");
@@ -214,12 +286,13 @@ export default function PreorderWhatsAppButton({
     }
 
     if (
-      product?.maxFlavors &&
-      selectedFlavors.length >=
-        product.maxFlavors
+      maxFlavors > 0 &&
+      selectedFlavors.length >= maxFlavors
     ) {
       setError(
-        `Escolha no máximo ${product.maxFlavors} sabores.`
+        `Para esta quantidade, escolha no máximo ${maxFlavors} ${
+          maxFlavors === 1 ? "sabor" : "sabores"
+        }.`
       );
       return;
     }
@@ -256,11 +329,24 @@ export default function PreorderWhatsAppButton({
     }
 
     if (
-      !Number.isInteger(parsedQuantity) ||
-      parsedQuantity < minimumQuantity
+      product
+        ? !isAllowedPreorderQuantity(
+            product,
+            parsedQuantity
+          )
+        : !Number.isInteger(parsedQuantity) ||
+          parsedQuantity < minimumQuantity
     ) {
       setError(
-        `A quantidade mínima é ${minimumQuantity} ${quantityUnit}.`
+        product?.allowedQuantities?.length
+          ? product.quantityIncrement
+            ? `Escolha ${product.allowedQuantities.join(
+                ", "
+              )} ou use múltiplos de ${product.quantityIncrement} acima de ${maximumPresetQuantity}.`
+            : `Escolha uma destas quantidades: ${product.allowedQuantities.join(
+                ", "
+              )} ${quantityUnit}.`
+          : `A quantidade mínima é ${minimumQuantity} ${quantityUnit}.`
       );
       return;
     }
@@ -270,6 +356,15 @@ export default function PreorderWhatsAppButton({
       selectedFlavors.length === 0
     ) {
       setError("Escolha pelo menos um sabor.");
+      return;
+    }
+
+    if (selectedFlavors.length > maxFlavors) {
+      setError(
+        `Para esta quantidade, escolha no máximo ${maxFlavors} ${
+          maxFlavors === 1 ? "sabor" : "sabores"
+        }.`
+      );
       return;
     }
 
@@ -391,6 +486,7 @@ export default function PreorderWhatsAppButton({
         : "",
       quantity: parsedQuantity,
       quantityUnit,
+      estimatedTotal,
       selectedFlavors,
       desiredDate,
       fulfillmentType,
@@ -568,16 +664,58 @@ export default function PreorderWhatsAppButton({
                 Quantidade
               </span>
               <div className="mt-2 flex h-12 overflow-hidden rounded-xl border border-[#DDD3CC] bg-white focus-within:border-[#8B0000] focus-within:ring-2 focus-within:ring-[#8B0000]/10">
-                <input
-                  type="number"
-                  min={minimumQuantity}
-                  step="1"
-                  value={quantity}
-                  onChange={(event) =>
-                    setQuantity(event.target.value)
-                  }
-                  className="min-w-0 flex-1 px-4 text-sm outline-none"
-                />
+                {product?.allowedQuantities?.length ? (
+                  <select
+                    value={
+                      isCustomQuantity
+                        ? "__more__"
+                        : quantity
+                    }
+                    onChange={(event) => {
+                      const selectedCustomQuantity =
+                        event.target.value === "__more__";
+                      setCustomQuantitySelected(
+                        selectedCustomQuantity
+                      );
+                      const nextQuantity =
+                        selectedCustomQuantity
+                          ? String(
+                              maximumPresetQuantity +
+                                (product.quantityIncrement ?? 1)
+                            )
+                          : event.target.value;
+                      updateQuantity(nextQuantity);
+                    }}
+                    className="min-w-0 flex-1 bg-white px-4 text-sm outline-none"
+                  >
+                    {product.allowedQuantities.map(
+                      (allowedQuantity) => (
+                        <option
+                          key={allowedQuantity}
+                          value={allowedQuantity}
+                        >
+                          {allowedQuantity}
+                        </option>
+                      )
+                    )}
+                    {customQuantityEnabled && (
+                      <option value="__more__">
+                        Mais de {maximumPresetQuantity}
+                      </option>
+                    )}
+                  </select>
+                ) : (
+                  <input
+                    type="number"
+                    min={minimumQuantity}
+                    step="1"
+                    value={quantity}
+                    onChange={(event) =>
+                      updateQuantity(event.target.value)
+                    }
+                    className="min-w-0 flex-1 px-4 text-sm outline-none"
+                  />
+                )}
                 <span className="flex items-center border-l border-[#EEE6DF] bg-[#FFF9F3] px-3 text-xs font-semibold text-[#756A66]">
                   {quantityUnit}
                 </span>
@@ -608,13 +746,53 @@ export default function PreorderWhatsAppButton({
             </label>
           </div>
 
+          {isCustomQuantity && (
+            <label className="block">
+              <span className="text-sm font-bold text-[#241B19]">
+                Quantidade acima de {maximumPresetQuantity}
+              </span>
+              <div className="mt-2 flex h-12 overflow-hidden rounded-xl border border-[#DDD3CC] bg-white focus-within:border-[#8B0000] focus-within:ring-2 focus-within:ring-[#8B0000]/10">
+                <input
+                  type="number"
+                  min={
+                    maximumPresetQuantity +
+                    (product?.quantityIncrement ?? 1)
+                  }
+                  step={product?.quantityIncrement ?? 1}
+                  value={quantity}
+                  onChange={(event) =>
+                    updateQuantity(event.target.value)
+                  }
+                  className="min-w-0 flex-1 px-4 text-sm outline-none"
+                />
+                <span className="flex items-center border-l border-[#EEE6DF] bg-[#FFF9F3] px-3 text-xs font-semibold text-[#756A66]">
+                  {quantityUnit}
+                </span>
+              </div>
+              <span className="mt-1 block text-xs text-[#756A66]">
+                Use múltiplos de {product?.quantityIncrement ?? 1}.
+              </span>
+            </label>
+          )}
+
+          {estimatedTotal > 0 && (
+            <div className="rounded-xl border border-[#E8D2C1] bg-[#FFF9F3] px-4 py-3">
+              <p className="text-xs font-semibold text-[#756A66]">
+                Valor estimado
+              </p>
+              <p className="mt-1 text-lg font-bold text-[#8B0000]">
+                {formatPreorderCurrency(
+                  estimatedTotal
+                )}
+              </p>
+            </div>
+          )}
+
           {product?.flavors?.length ? (
             <fieldset>
               <legend className="text-sm font-bold text-[#241B19]">
-                Sabores
-                {product.maxFlavors
-                  ? ` · escolha até ${product.maxFlavors}`
-                  : ""}
+                Sabores · escolha até {maxFlavors}{" "}
+                {maxFlavors === 1 ? "sabor" : "sabores"}
               </legend>
               <div className="mt-2 flex flex-wrap gap-2">
                 {product.flavors.map((flavor) => {

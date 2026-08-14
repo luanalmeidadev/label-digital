@@ -1,3 +1,5 @@
+import type { PreorderProduct } from "@/lib/preorder-menu";
+
 export type PreorderRequestStatus =
   | "new"
   | "confirmed"
@@ -94,6 +96,94 @@ export function parsePreorderPrice(value: string) {
   const parsed = Number(normalized);
 
   return Number.isFinite(parsed) ? parsed : 0;
+}
+
+export function calculatePreorderTotal(
+  product: Pick<PreorderProduct, "priceBaseQuantity">,
+  priceValue: string,
+  quantity: number
+) {
+  const priceBaseQuantity =
+    product.priceBaseQuantity ?? 1;
+
+  return Number(
+    (
+      (parsePreorderPrice(priceValue) * quantity) /
+      priceBaseQuantity
+    ).toFixed(2)
+  );
+}
+
+export function isAllowedPreorderQuantity(
+  product: Pick<
+    PreorderProduct,
+    | "allowedQuantities"
+    | "minimumQuantity"
+    | "quantityIncrement"
+  >,
+  quantity: number
+) {
+  if (
+    !Number.isInteger(quantity) ||
+    quantity < (product.minimumQuantity ?? 1) ||
+    quantity > 10000
+  ) {
+    return false;
+  }
+
+  const allowedQuantities =
+    product.allowedQuantities ?? [];
+
+  if (allowedQuantities.includes(quantity)) {
+    return true;
+  }
+
+  if (!product.quantityIncrement) {
+    return allowedQuantities.length === 0;
+  }
+
+  const incrementBase = allowedQuantities.length
+    ? Math.max(...allowedQuantities)
+    : product.minimumQuantity ?? 1;
+
+  return (
+    (allowedQuantities.length
+      ? quantity > incrementBase
+      : quantity >= incrementBase) &&
+    (quantity - incrementBase) %
+      product.quantityIncrement ===
+      0
+  );
+}
+
+export function getPreorderMaxFlavors(
+  product: Pick<
+    PreorderProduct,
+    "flavors" | "flavorQuantityStep" | "maxFlavors"
+  >,
+  quantity: number
+) {
+  const registeredFlavors =
+    product.flavors?.length ?? 0;
+
+  if (registeredFlavors === 0) {
+    return 0;
+  }
+
+  const quantityLimit = product.flavorQuantityStep
+    ? Math.max(
+        1,
+        Math.floor(quantity / product.flavorQuantityStep)
+      )
+    : registeredFlavors;
+  const configuredLimit =
+    product.maxFlavors ?? registeredFlavors;
+
+  return Math.min(
+    quantityLimit,
+    configuredLimit,
+    registeredFlavors
+  );
 }
 
 export function formatPreorderCurrency(value: number) {

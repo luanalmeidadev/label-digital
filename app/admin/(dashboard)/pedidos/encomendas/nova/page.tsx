@@ -15,8 +15,12 @@ export default async function NovaEncomendaPage() {
       prices: product.prices,
       flavors: product.flavors,
       minimumQuantity: product.minimumQuantity,
+      allowedQuantities: product.allowedQuantities,
+      quantityIncrement: product.quantityIncrement,
       quantityUnit: product.quantityUnit,
+      priceBaseQuantity: product.priceBaseQuantity,
       maxFlavors: product.maxFlavors,
+      flavorQuantityStep: product.flavorQuantityStep,
       categoryName: category.name,
     }))
   );

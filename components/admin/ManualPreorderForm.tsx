@@ -12,6 +12,8 @@ import {
   type PreorderProduct,
 } from "@/lib/preorder-menu";
 import {
+  calculatePreorderTotal,
+  getPreorderMaxFlavors,
   parsePreorderPrice,
   type PreorderRequest,
 } from "@/lib/preorder-request";
@@ -22,8 +24,12 @@ type ManualProduct = Pick<
   | "prices"
   | "flavors"
   | "minimumQuantity"
+  | "allowedQuantities"
+  | "quantityIncrement"
   | "quantityUnit"
+  | "priceBaseQuantity"
   | "maxFlavors"
+  | "flavorQuantityStep"
 > & {
   categoryName: string;
 };
@@ -110,14 +116,33 @@ export default function ManualPreorderForm({
         1
     )
   );
+  const initialMaximumPresetQuantity = Math.max(
+    ...(initialProduct?.allowedQuantities?.length
+      ? initialProduct.allowedQuantities
+      : [initialProduct?.minimumQuantity ?? 1])
+  );
+  const [customQuantitySelected, setCustomQuantitySelected] =
+    useState(
+      Boolean(
+        initialProduct?.quantityIncrement &&
+          Number(
+            request?.quantity ??
+              initialProduct.minimumQuantity ??
+              1
+          ) > initialMaximumPresetQuantity
+      )
+    );
   const [total, setTotal] = useState(() =>
     request
       ? String(request.total)
       : String(
-          parsePreorderPrice(
-            initialProduct?.prices[0]?.value ?? ""
-          ) *
-            (initialProduct?.minimumQuantity ?? 1)
+          initialProduct
+            ? calculatePreorderTotal(
+                initialProduct,
+                initialProduct.prices[0]?.value ?? "",
+                initialProduct.minimumQuantity ?? 1
+              )
+            : 0
         )
   );
   const [customUnitPrice, setCustomUnitPrice] = useState(
@@ -137,6 +162,25 @@ export default function ManualPreorderForm({
   const [fulfillmentType, setFulfillmentType] = useState<"pickup" | "delivery">(
     request?.fulfillmentType ?? "pickup"
   );
+  const maxFlavors = selectedProduct
+    ? getPreorderMaxFlavors(
+        selectedProduct,
+        Number(quantity)
+      )
+    : 0;
+  const maximumPresetQuantity = Math.max(
+    ...(selectedProduct?.allowedQuantities?.length
+      ? selectedProduct.allowedQuantities
+      : [selectedProduct?.minimumQuantity ?? 1])
+  );
+  const customQuantityEnabled = Boolean(
+    selectedProduct?.allowedQuantities?.length &&
+      selectedProduct.quantityIncrement
+  );
+  const isCustomQuantity =
+    customQuantityEnabled &&
+    (customQuantitySelected ||
+      Number(quantity) > maximumPresetQuantity);
 
   function calculateTotal(
     product: ManualProduct | undefined,
@@ -144,20 +188,26 @@ export default function ManualPreorderForm({
     nextQuantity: number,
     customPrice = customUnitPrice
   ) {
-    const unitPrice = product
-      ? parsePreorderPrice(
-          product.prices.find((price) => price.label === nextOptionLabel)?.value ?? ""
+    const priceValue = product?.prices.find(
+      (price) => price.label === nextOptionLabel
+    )?.value;
+    const nextTotal = product
+      ? calculatePreorderTotal(
+          product,
+          priceValue ?? "",
+          nextQuantity
         )
-      : Number(customPrice);
+      : Number(customPrice) * nextQuantity;
 
-    if (Number.isFinite(unitPrice) && unitPrice > 0 && nextQuantity > 0) {
-      setTotal(String(Number((unitPrice * nextQuantity).toFixed(2))));
+    if (Number.isFinite(nextTotal) && nextTotal > 0) {
+      setTotal(String(Number(nextTotal.toFixed(2))));
     }
   }
 
   function selectProduct(nextName: string) {
     setProductName(nextName);
     setSelectedFlavors([]);
+    setCustomQuantitySelected(false);
 
     const nextProduct = products.find((product) => product.name === nextName);
 
@@ -174,6 +224,26 @@ export default function ManualPreorderForm({
     }
   }
 
+  function updateQuantity(nextQuantity: string) {
+    setQuantity(nextQuantity);
+    calculateTotal(
+      selectedProduct,
+      optionLabel,
+      Number(nextQuantity)
+    );
+
+    if (selectedProduct) {
+      const nextMaxFlavors =
+        getPreorderMaxFlavors(
+          selectedProduct,
+          Number(nextQuantity)
+        );
+      setSelectedFlavors((current) =>
+        current.slice(0, nextMaxFlavors)
+      );
+    }
+  }
+
   function toggleFlavor(flavor: string) {
     if (selectedFlavors.includes(flavor)) {
       setSelectedFlavors(selectedFlavors.filter((item) => item !== flavor));
@@ -181,8 +251,8 @@ export default function ManualPreorderForm({
     }
 
     if (
-      selectedProduct?.maxFlavors !== undefined &&
-      selectedFlavors.length >= selectedProduct.maxFlavors
+      maxFlavors > 0 &&
+      selectedFlavors.length >= maxFlavors
     ) {
       return;
     }
@@ -305,24 +375,98 @@ export default function ManualPreorderForm({
 
           <label className="block">
             <span className="text-sm font-bold text-[#241B19]">Quantidade</span>
-            <input
-              name="quantity"
-              type="number"
-              min={selectedProduct?.minimumQuantity ?? 1}
-              step="1"
-              required
-              value={quantity}
-              disabled={pending}
-              onChange={(event) => {
-                setQuantity(event.target.value);
-                calculateTotal(selectedProduct, optionLabel, Number(event.target.value));
-              }}
-              className={fieldClass}
-            />
+            {selectedProduct?.allowedQuantities?.length ? (
+              <select
+                name={
+                  isCustomQuantity
+                    ? undefined
+                    : "quantity"
+                }
+                required
+                value={
+                  isCustomQuantity
+                    ? "__more__"
+                    : quantity
+                }
+                disabled={pending}
+                onChange={(event) => {
+                  const selectedCustomQuantity =
+                    event.target.value === "__more__";
+                  setCustomQuantitySelected(
+                    selectedCustomQuantity
+                  );
+                  const nextQuantity =
+                    selectedCustomQuantity
+                      ? String(
+                          maximumPresetQuantity +
+                            (selectedProduct.quantityIncrement ?? 1)
+                        )
+                      : event.target.value;
+                  updateQuantity(nextQuantity);
+                }}
+                className={fieldClass}
+              >
+                {selectedProduct.allowedQuantities.map(
+                  (allowedQuantity) => (
+                    <option
+                      key={allowedQuantity}
+                      value={allowedQuantity}
+                    >
+                      {allowedQuantity}
+                    </option>
+                  )
+                )}
+                {customQuantityEnabled && (
+                  <option value="__more__">
+                    Mais de {maximumPresetQuantity}
+                  </option>
+                )}
+              </select>
+            ) : (
+              <input
+                name="quantity"
+                type="number"
+                min={selectedProduct?.minimumQuantity ?? 1}
+                step="1"
+                required
+                value={quantity}
+                disabled={pending}
+                onChange={(event) => {
+                  updateQuantity(event.target.value);
+                }}
+                className={fieldClass}
+              />
+            )}
             <span className="mt-1 block text-xs text-[#756A66]">
               {selectedProduct?.quantityUnit ?? "item(ns)"}
             </span>
           </label>
+          {isCustomQuantity && (
+            <label className="block">
+              <span className="text-sm font-bold text-[#241B19]">
+                Quantidade acima de {maximumPresetQuantity}
+              </span>
+              <input
+                name="quantity"
+                type="number"
+                min={
+                  maximumPresetQuantity +
+                  (selectedProduct?.quantityIncrement ?? 1)
+                }
+                step={selectedProduct?.quantityIncrement ?? 1}
+                required
+                value={quantity}
+                disabled={pending}
+                onChange={(event) =>
+                  updateQuantity(event.target.value)
+                }
+                className={fieldClass}
+              />
+              <span className="mt-1 block text-xs text-[#756A66]">
+                Use múltiplos de {selectedProduct?.quantityIncrement ?? 1}.
+              </span>
+            </label>
+          )}
           <label className="block">
             <span className="text-sm font-bold text-[#241B19]">Valor total da encomenda</span>
             <input
@@ -359,7 +503,8 @@ export default function ManualPreorderForm({
         {selectedProduct?.flavors?.length ? (
           <fieldset className="mt-5">
             <legend className="text-sm font-bold text-[#241B19]">
-              Sabores{selectedProduct.maxFlavors ? ` · até ${selectedProduct.maxFlavors}` : ""}
+              Sabores · até {maxFlavors}{" "}
+              {maxFlavors === 1 ? "sabor" : "sabores"}
             </legend>
             <div className="mt-3 flex flex-wrap gap-2">
               {selectedProduct.flavors.map((flavor) => {

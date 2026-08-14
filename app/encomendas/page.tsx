@@ -63,6 +63,11 @@ function ProductCard({
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 560px"
           className="object-cover transition duration-500 group-hover:scale-[1.03]"
+          style={{
+            objectPosition: `${
+              product.imagePositionX ?? 50
+            }% ${product.imagePositionY ?? 50}%`,
+          }}
         />
 
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />

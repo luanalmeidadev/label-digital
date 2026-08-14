@@ -8,14 +8,20 @@ export type PreorderProduct = {
   description: string;
   image: string;
   imageAlt: string;
+  imagePositionX?: number;
+  imagePositionY?: number;
   prices: PreorderPrice[];
   flavors?: string[];
   details?: string[];
   notice?: string;
   leadTimeDays?: number;
   minimumQuantity?: number;
+  allowedQuantities?: number[];
+  quantityIncrement?: number;
   quantityUnit?: string;
+  priceBaseQuantity?: number;
   maxFlavors?: number;
+  flavorQuantityStep?: number;
 };
 
 export type PreorderCategory = {
@@ -34,14 +40,14 @@ export const preorderCategories: PreorderCategory[] = [
       {
         name: "Linha premium",
         description:
-          "Escolha até quatro sabores no cento ou dois sabores no meio cento.",
+          "Escolha 25, 50, 75, 100 docinhos ou quantidades maiores em múltiplos de 25.",
         image:
           "/encomendas/doces-premium.jpeg",
         imageAlt:
           "Doces premium da La'Bel Confeitaria",
         prices: [
           {
-            label: "Cento",
+            label: "Valor do cento",
             value: "R$ 190,00",
           },
         ],
@@ -54,20 +60,24 @@ export const preorderCategories: PreorderCategory[] = [
           "Maracujá",
           "Romeu e Julieta",
         ],
-        quantityUnit: "cento(s)",
-        maxFlavors: 4,
+        minimumQuantity: 25,
+        allowedQuantities: [25, 50, 75, 100],
+        quantityIncrement: 25,
+        quantityUnit: "docinho(s)",
+        priceBaseQuantity: 100,
+        flavorQuantityStep: 25,
       },
       {
         name: "Linha gourmet",
         description:
-          "Escolha até quatro sabores no cento ou dois sabores no meio cento.",
+          "Escolha 25, 50, 75, 100 docinhos ou quantidades maiores em múltiplos de 25.",
         image:
           "/encomendas/doces-gourmet.jpeg",
         imageAlt:
           "Brigadeiros gourmet da La'Bel Confeitaria",
         prices: [
           {
-            label: "Cento",
+            label: "Valor do cento",
             value: "R$ 150,00",
           },
         ],
@@ -81,8 +91,12 @@ export const preorderCategories: PreorderCategory[] = [
           "Paçoca",
           "Chocolate branco",
         ],
-        quantityUnit: "cento(s)",
-        maxFlavors: 4,
+        minimumQuantity: 25,
+        allowedQuantities: [25, 50, 75, 100],
+        quantityIncrement: 25,
+        quantityUnit: "docinho(s)",
+        priceBaseQuantity: 100,
+        flavorQuantityStep: 25,
       },
       {
         name: "Doces personalizados",
@@ -115,14 +129,14 @@ export const preorderCategories: PreorderCategory[] = [
       {
         name: "Mini brownie",
         description:
-          "Escolha até quatro sabores no cento ou dois sabores no meio cento.",
+          "Escolha 25, 50, 75, 100 mini brownies ou quantidades maiores em múltiplos de 25.",
         image:
           "/encomendas/mini-brownie.jpeg",
         imageAlt:
           "Cento de mini brownies recheados",
         prices: [
           {
-            label: "Cento",
+            label: "Valor do cento",
             value: "R$ 160,00",
           },
         ],
@@ -132,8 +146,12 @@ export const preorderCategories: PreorderCategory[] = [
           "Brigadeiro",
           "Nutella",
         ],
-        quantityUnit: "cento(s)",
-        maxFlavors: 4,
+        minimumQuantity: 25,
+        allowedQuantities: [25, 50, 75, 100],
+        quantityIncrement: 25,
+        quantityUnit: "mini brownie(s)",
+        priceBaseQuantity: 100,
+        flavorQuantityStep: 25,
       },
       {
         name: "Brownie para evento",

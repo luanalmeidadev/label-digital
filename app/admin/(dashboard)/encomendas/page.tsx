@@ -117,6 +117,11 @@ export default async function AdminEncomendasPage() {
                           fill
                           sizes="80px"
                           className="object-cover"
+                          style={{
+                            objectPosition: `${
+                              product.imagePositionX ?? 50
+                            }% ${product.imagePositionY ?? 50}%`,
+                          }}
                         />
                       </div>
 
@@ -135,8 +140,19 @@ export default async function AdminEncomendasPage() {
                           ))}
                         </div>
                         <p className="mt-2 text-xs text-[#756A66]">
-                          Mínimo: {product.minimumQuantity ?? 1}{" "}
-                          {product.quantityUnit ?? "item(ns)"}
+                          {product.allowedQuantities?.length
+                            ? `Quantidades: ${product.allowedQuantities.join(
+                                ", "
+                              )}${
+                                product.quantityIncrement
+                                  ? ` e acima de ${Math.max(
+                                      ...product.allowedQuantities
+                                    )} em intervalos de ${product.quantityIncrement}`
+                                  : ""
+                              }`
+                            : `Mínimo: ${
+                                product.minimumQuantity ?? 1
+                              }`} {product.quantityUnit ?? "item(ns)"}
                           {product.flavors?.length
                             ? ` · ${product.flavors.length} sabores cadastrados`
                             : " · sem seleção de sabores"}

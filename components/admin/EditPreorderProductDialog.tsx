@@ -1,10 +1,14 @@
 "use client";
 
 import {
+  type ChangeEvent,
   type FormEvent,
+  useEffect,
+  useRef,
   useState,
 } from "react";
 import {
+  ImagePlus,
   Pencil,
   Plus,
   Trash2,
@@ -47,6 +51,27 @@ export default function EditPreorderProductDialog({
   })));
   const [flavorsText, setFlavorsText] =
     useState((product.flavors ?? []).join("\n"));
+  const [positionX, setPositionX] = useState(
+    product.imagePositionX ?? 50
+  );
+  const [positionY, setPositionY] = useState(
+    product.imagePositionY ?? 50
+  );
+  const [preview, setPreview] = useState(
+    product.image
+  );
+  const [temporaryPreview, setTemporaryPreview] =
+    useState<string | null>(null);
+  const fileInputRef =
+    useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (temporaryPreview) {
+        URL.revokeObjectURL(temporaryPreview);
+      }
+    };
+  }, [temporaryPreview]);
 
   function resetFields() {
     setPrices(
@@ -57,7 +82,37 @@ export default function EditPreorderProductDialog({
     setFlavorsText(
       (product.flavors ?? []).join("\n")
     );
+    if (temporaryPreview) {
+      URL.revokeObjectURL(temporaryPreview);
+    }
+    setTemporaryPreview(null);
+    setPreview(product.image);
+    setPositionX(product.imagePositionX ?? 50);
+    setPositionY(product.imagePositionY ?? 50);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
     setError("");
+  }
+
+  function handleImageChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const image = event.target.files?.[0];
+
+    if (!image) {
+      return;
+    }
+
+    if (temporaryPreview) {
+      URL.revokeObjectURL(temporaryPreview);
+    }
+
+    const objectUrl = URL.createObjectURL(image);
+    setTemporaryPreview(objectUrl);
+    setPreview(objectUrl);
   }
 
   function updatePrice(
@@ -165,7 +220,7 @@ export default function EditPreorderProductDialog({
             {product.name}
           </DialogTitle>
           <DialogDescription>
-            Altere preços, tamanhos, sabores e regras do pedido.
+            Altere a foto, preços, tamanhos, sabores e regras do pedido.
           </DialogDescription>
         </DialogHeader>
 
@@ -183,6 +238,102 @@ export default function EditPreorderProductDialog({
             name="product_name"
             value={product.name}
           />
+
+          <fieldset>
+            <legend className="text-sm font-bold text-[#241B19]">
+              Foto do produto
+            </legend>
+            <div className="mt-3 grid gap-4 sm:grid-cols-[150px_1fr]">
+              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]">
+                {preview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={preview}
+                    alt={`Prévia de ${product.name}`}
+                    className="h-full w-full object-cover"
+                    style={{
+                      objectPosition: `${positionX}% ${positionY}%`,
+                    }}
+                  />
+                ) : (
+                  <ImagePlus
+                    size={34}
+                    className="text-[#D2B48C]"
+                  />
+                )}
+              </div>
+
+              <div className="space-y-3">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  name="image"
+                  accept="image/jpeg,image/png,image/webp"
+                  disabled={saving}
+                  onChange={handleImageChange}
+                  className="block w-full text-sm text-[#756A66] file:mr-3 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-3 file:py-2.5 file:text-xs file:font-bold file:text-[#8B0000]"
+                />
+                <p className="text-xs leading-5 text-[#756A66]">
+                  JPG, PNG ou WebP, com até 5 MB. Se nenhuma foto for escolhida, a atual será mantida.
+                </p>
+
+                <label className="block">
+                  <span className="flex justify-between text-xs font-bold text-[#49352C]">
+                    Horizontal
+                    <span className="font-normal text-[#756A66]">
+                      {positionX}%
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={positionX}
+                    disabled={saving}
+                    onChange={(event) =>
+                      setPositionX(
+                        Number(event.target.value)
+                      )
+                    }
+                    className="mt-2 w-full accent-[#8B0000]"
+                  />
+                </label>
+
+                <label className="block">
+                  <span className="flex justify-between text-xs font-bold text-[#49352C]">
+                    Vertical
+                    <span className="font-normal text-[#756A66]">
+                      {positionY}%
+                    </span>
+                  </span>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={positionY}
+                    disabled={saving}
+                    onChange={(event) =>
+                      setPositionY(
+                        Number(event.target.value)
+                      )
+                    }
+                    className="mt-2 w-full accent-[#8B0000]"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <input
+              type="hidden"
+              name="image_position_x"
+              value={positionX}
+            />
+            <input
+              type="hidden"
+              name="image_position_y"
+              value={positionY}
+            />
+          </fieldset>
 
           <fieldset>
             <div className="flex items-center justify-between gap-3">
@@ -300,6 +451,71 @@ export default function EditPreorderProductDialog({
 
             <label className="block">
               <span className="text-sm font-bold text-[#241B19]">
+                Quantidades rápidas
+              </span>
+              <input
+                type="text"
+                name="allowed_quantities"
+                defaultValue={
+                  product.allowedQuantities?.join(", ") ?? ""
+                }
+                placeholder="Ex.: 25, 50, 75, 100"
+                disabled={saving}
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+              />
+              <span className="mt-1 block text-xs leading-5 text-[#756A66]">
+                Opções exibidas na caixa de seleção.
+              </span>
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-bold text-[#241B19]">
+                Incremento acima das opções
+              </span>
+              <input
+                type="number"
+                name="quantity_increment"
+                min="1"
+                max="10000"
+                step="1"
+                defaultValue={
+                  product.quantityIncrement ?? ""
+                }
+                placeholder="Ex.: 25"
+                disabled={saving}
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+              />
+              <span className="mt-1 block text-xs leading-5 text-[#756A66]">
+                Permite continuar acima da maior opção, nesse intervalo.
+              </span>
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-bold text-[#241B19]">
+                O preço corresponde a
+              </span>
+              <div className="mt-2 flex h-11 overflow-hidden rounded-xl border border-[#DDD3CC] focus-within:border-[#8B0000]">
+                <input
+                  type="number"
+                  name="price_base_quantity"
+                  min="1"
+                  max="10000"
+                  step="1"
+                  required
+                  defaultValue={
+                    product.priceBaseQuantity ?? 1
+                  }
+                  disabled={saving}
+                  className="min-w-0 flex-1 px-3 text-sm outline-none disabled:opacity-60"
+                />
+                <span className="flex items-center border-l border-[#EEE6DF] bg-[#FFF9F3] px-3 text-xs text-[#756A66]">
+                  itens
+                </span>
+              </div>
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-bold text-[#241B19]">
                 Unidade da quantidade
               </span>
               <input
@@ -357,6 +573,28 @@ export default function EditPreorderProductDialog({
                 disabled={saving}
                 className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
               />
+            </label>
+
+            <label className="block">
+              <span className="text-sm font-bold text-[#241B19]">
+                Quantidade para liberar 1 sabor
+              </span>
+              <input
+                type="number"
+                name="flavor_quantity_step"
+                min="1"
+                max="10000"
+                step="1"
+                defaultValue={
+                  product.flavorQuantityStep ?? ""
+                }
+                placeholder="Ex.: 25"
+                disabled={saving}
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+              />
+              <span className="mt-1 block text-xs leading-5 text-[#756A66]">
+                Ex.: 25 libera 1 sabor, 50 libera 2. Deixe vazio para não usar essa regra.
+              </span>
             </label>
           </div>
 
