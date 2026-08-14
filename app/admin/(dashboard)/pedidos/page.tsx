@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import OrderDetailsDialog from "@/components/admin/OrderDetailsDialog";
+import OrdersRealtime from "@/components/admin/OrdersRealtime";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 import { updateOrderStatus } from "./actions";
@@ -148,6 +149,8 @@ export default async function PedidosPage() {
 
   return (
     <main className="p-5 sm:p-8">
+      <OrdersRealtime />
+
       <div className="mx-auto max-w-7xl">
         {/* CABEÇALHO */}
         <div>
