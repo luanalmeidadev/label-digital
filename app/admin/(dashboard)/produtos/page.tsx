@@ -25,6 +25,8 @@ export default async function ProdutosPage() {
       description,
       price,
       image_url,
+      image_position_x,
+      image_position_y,
       available,
       featured,
       active,
@@ -114,6 +116,13 @@ export default async function ProdutosPage() {
                             src={product.image_url}
                             alt={product.name}
                             className="h-full w-full object-cover"
+                            style={{
+                              objectPosition: `${
+                                product.image_position_x ?? 50
+                              }% ${
+                                product.image_position_y ?? 50
+                              }%`,
+                            }}
                           />
                         ) : (
                           <ImageIcon size={24} className="text-[#D2B48C]" />
@@ -213,6 +222,12 @@ export default async function ProdutosPage() {
                         categories={categories ?? []}
                         updateAction={updateProduct}
                         imageUrl={product.image_url}
+                        imagePositionX={
+                          product.image_position_x ?? 50
+                        }
+                        imagePositionY={
+                          product.image_position_y ?? 50
+                        }
                       />
 
                       <DeleteProductDialog

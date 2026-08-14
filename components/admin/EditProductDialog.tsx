@@ -28,6 +28,8 @@ type EditProductDialogProps = {
   price: number;
   categoryId: string | null;
   imageUrl: string | null;
+  imagePositionX: number;
+  imagePositionY: number;
   available: boolean;
   featured: boolean;
   active: boolean;
@@ -42,6 +44,8 @@ export default function EditProductDialog({
   price,
   categoryId,
   imageUrl,
+  imagePositionX,
+  imagePositionY,
   available,
   featured,
   active,
@@ -50,6 +54,11 @@ export default function EditProductDialog({
 }: EditProductDialogProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [positionX, setPositionX] =
+  useState(imagePositionX);
+
+const [positionY, setPositionY] =
+  useState(imagePositionY);
 
   const [preview, setPreview] = useState<string | null>(
     imageUrl
@@ -79,6 +88,8 @@ export default function EditProductDialog({
     setTemporaryPreview(null);
     setPreview(imageUrl);
     setRemoveImage(false);
+    setPositionX(imagePositionX);
+    setPositionY(imagePositionY);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -147,6 +158,8 @@ export default function EditProductDialog({
     setTemporaryPreview(null);
     setPreview(imageUrl);
     setRemoveImage(false);
+    setPositionX(imagePositionX);
+    setPositionY(imagePositionY);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -209,6 +222,9 @@ export default function EditProductDialog({
                     src={preview}
                     alt={`Foto de ${name}`}
                     className="h-full w-full object-cover"
+                    style={{
+                      objectPosition: `${positionX}% ${positionY}%`,
+                    }}
                   />
                 ) : (
                   <ImagePlus
@@ -254,6 +270,84 @@ export default function EditProductDialog({
               </div>
             </div>
           </div>
+
+          {preview && (
+            <div className="rounded-2xl border border-[#EEE6DF] bg-[#FFFDF9] p-4">
+              <p className="text-sm font-bold text-[#241B19]">
+                Ajustar enquadramento
+              </p>
+
+              <p className="mt-1 text-xs leading-5 text-[#756A66]">
+                Ajuste a posição da foto até o produto ficar bem enquadrado.
+              </p>
+
+              <div className="mt-4 space-y-4">
+                <label className="block">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#49352C]">
+                      Horizontal
+                    </span>
+
+                    <span className="text-xs text-[#756A66]">
+                      {positionX}%
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={positionX}
+                    onChange={(event) =>
+                      setPositionX(
+                        Number(event.target.value)
+                      )
+                    }
+                    disabled={saving}
+                    className="mt-2 w-full accent-[#8B0000]"
+                  />
+                </label>
+
+                <label className="block">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[#49352C]">
+                      Vertical
+                    </span>
+
+                    <span className="text-xs text-[#756A66]">
+                      {positionY}%
+                    </span>
+                  </div>
+
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={positionY}
+                    onChange={(event) =>
+                      setPositionY(
+                        Number(event.target.value)
+                      )
+                    }
+                    disabled={saving}
+                    className="mt-2 w-full accent-[#8B0000]"
+                  />
+                </label>
+              </div>
+
+              <input
+                type="hidden"
+                name="image_position_x"
+                value={positionX}
+              />
+
+              <input
+                type="hidden"
+                name="image_position_y"
+                value={positionY}
+              />
+            </div>
+          )}
 
           {/* NOME */}
           <div>

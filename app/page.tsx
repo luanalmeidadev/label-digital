@@ -3,28 +3,26 @@ import Hero from "@/components/store/Hero";
 import CategoryGrid from "@/components/store/CategoryGrid";
 import MenuSections from "@/components/store/MenuSections";
 import PreorderBanner from "@/components/store/PreorderBanner";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CartProvider from "@/components/store/CartProvider";
 import CartUI from "@/components/store/CartUI";
 
-export default async function Home() {
-  const supabase = await createSupabaseServerClient();
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-  const { data: categories, error: categoriesError } =
-    await supabase
+export default async function Home() {
+  const supabase =
+    await createSupabaseServerClient();
+
+  const [
+    categoriesResult,
+    productsResult,
+  ] = await Promise.all([
+    supabase
       .from("categories")
       .select("id, name, slug")
       .eq("active", true)
-      .order("sort_order");
+      .order("sort_order"),
 
-  if (categoriesError) {
-    throw new Error(
-      "Não foi possível carregar as categorias."
-    );
-  }
-
-  const { data: products, error: productsError } =
-    await supabase
+    supabase
       .from("products")
       .select(`
         id,
@@ -33,41 +31,74 @@ export default async function Home() {
         description,
         price,
         image_url,
+        image_position_x,
+        image_position_y,
         product_type,
         available,
         featured
       `)
       .eq("active", true)
-      .order("sort_order");
+      .order("sort_order"),
+  ]);
 
-  if (productsError) {
-    throw new Error(
-      "Não foi possível carregar os produtos."
+  if (categoriesResult.error) {
+    console.error(
+      "Erro ao carregar categorias:",
+      categoriesResult.error
     );
   }
 
+  if (productsResult.error) {
+    console.error(
+      "Erro ao carregar produtos:",
+      productsResult.error
+    );
+  }
+
+  const categories =
+    categoriesResult.data ?? [];
+
+  const products =
+    productsResult.data ?? [];
+
+  const hasLoadError =
+    Boolean(categoriesResult.error) ||
+    Boolean(productsResult.error);
+
   return (
-  <CartProvider>
-    <main className="min-h-screen bg-[#FFFDF9]">
-      <Header />
-      <Hero />
+    <CartProvider>
+      <main className="min-h-screen bg-[#FFFDF9]">
+        <Header />
+        <Hero />
 
-      <div className="mx-auto max-w-6xl px-5">
-        <CategoryGrid
-          categories={categories ?? []}
-        />
+        <div className="mx-auto max-w-6xl px-5">
+          {hasLoadError && (
+            <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+              <p className="text-sm font-bold text-amber-800">
+                Algumas informações do cardápio não puderam ser carregadas.
+              </p>
 
-        <MenuSections
-          categories={categories ?? []}
-          products={products ?? []}
-        />
+              <p className="mt-1 text-xs leading-5 text-amber-700">
+                Atualize a página em alguns instantes. Se o problema continuar,
+                entre em contato com a La&apos;bel.
+              </p>
+            </div>
+          )}
 
-        <PreorderBanner />
-      </div>
+          <CategoryGrid
+            categories={categories}
+          />
 
-      <CartUI />
-      
-    </main>
-  </CartProvider>
-);
+          <MenuSections
+            categories={categories}
+            products={products}
+          />
+
+          <PreorderBanner />
+        </div>
+
+        <CartUI />
+      </main>
+    </CartProvider>
+  );
 }

@@ -198,6 +198,14 @@ export async function createProduct(
     formData.get("price")
   );
 
+  const imagePositionX = Number(
+    formData.get("image_position_x") ?? 50
+  );
+
+  const imagePositionY = Number(
+    formData.get("image_position_y") ?? 50
+  );
+
   const available =
     formData.get("available") === "on";
 
@@ -231,6 +239,19 @@ export async function createProduct(
   ) {
     throw new Error(
       "Informe um preço válido."
+    );
+  }
+
+  if (
+    Number.isNaN(imagePositionX) ||
+    imagePositionX < 0 ||
+    imagePositionX > 100 ||
+    Number.isNaN(imagePositionY) ||
+    imagePositionY < 0 ||
+    imagePositionY > 100
+  ) {
+    throw new Error(
+      "Posição da imagem inválida."
     );
   }
 
@@ -286,6 +307,8 @@ export async function createProduct(
         description || null,
       price,
       image_url: imageUrl,
+      image_position_x: imagePositionX,
+      image_position_y: imagePositionY,
       product_type: "ready",
       available,
       featured,
@@ -336,7 +359,15 @@ export async function updateProduct(
 
   const price = Number(
     formData.get("price")
-  );
+      );
+
+      const imagePositionX = Number(
+      formData.get("image_position_x") ?? 50
+    );
+
+    const imagePositionY = Number(
+      formData.get("image_position_y") ?? 50
+    );
 
   const available =
     formData.get("available") === "on";
@@ -382,6 +413,19 @@ export async function updateProduct(
   ) {
     throw new Error(
       "Preço inválido."
+    );
+  }
+
+  if (
+    Number.isNaN(imagePositionX) ||
+    imagePositionX < 0 ||
+    imagePositionX > 100 ||
+    Number.isNaN(imagePositionY) ||
+    imagePositionY < 0 ||
+    imagePositionY > 100
+  ) {
+    throw new Error(
+      "Posição da imagem inválida."
     );
   }
 
@@ -440,6 +484,8 @@ export async function updateProduct(
         description || null,
       price,
       image_url: nextImageUrl,
+      image_position_x: imagePositionX,
+      image_position_y: imagePositionY,
       available,
       featured,
       active,

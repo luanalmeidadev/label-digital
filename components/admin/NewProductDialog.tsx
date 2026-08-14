@@ -29,6 +29,11 @@ export default function NewProductDialog({
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState<string | null>(null);
+  const [imagePositionX, setImagePositionX] =
+  useState(50);
+
+const [imagePositionY, setImagePositionY] =
+  useState(50);
 
   async function handleSubmit(formData: FormData) {
     try {
@@ -37,6 +42,8 @@ export default function NewProductDialog({
       await createAction(formData);
 
       setPreview(null);
+      setImagePositionX(50);
+      setImagePositionY(50);
       setOpen(false);
     } finally {
       setSaving(false);
@@ -93,6 +100,9 @@ export default function NewProductDialog({
                     src={preview}
                     alt="Prévia do produto"
                     className="h-full w-full object-cover"
+                    style={{
+                      objectPosition: `${imagePositionX}% ${imagePositionY}%`,
+                    }}
                   />
                 ) : (
                   <ImagePlus
@@ -117,6 +127,84 @@ export default function NewProductDialog({
             <p className="mt-2 text-xs text-[#756A66]">
               JPG, PNG ou WebP. Máximo de 5 MB.
             </p>
+
+            {preview && (
+              <div className="mt-4 rounded-2xl border border-[#EEE6DF] bg-[#FFFDF9] p-4">
+                <p className="text-sm font-bold text-[#241B19]">
+                  Ajustar enquadramento
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-[#756A66]">
+                  Ajuste a posição da imagem até o produto ficar bem enquadrado.
+                </p>
+
+                <div className="mt-4 space-y-4">
+                  <label className="block">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#49352C]">
+                        Horizontal
+                      </span>
+
+                      <span className="text-xs text-[#756A66]">
+                        {imagePositionX}%
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={imagePositionX}
+                      onChange={(event) =>
+                        setImagePositionX(
+                          Number(event.target.value)
+                        )
+                      }
+                      disabled={saving}
+                      className="mt-2 w-full accent-[#8B0000]"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#49352C]">
+                        Vertical
+                      </span>
+
+                      <span className="text-xs text-[#756A66]">
+                        {imagePositionY}%
+                      </span>
+                    </div>
+
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      value={imagePositionY}
+                      onChange={(event) =>
+                        setImagePositionY(
+                          Number(event.target.value)
+                        )
+                      }
+                      disabled={saving}
+                      className="mt-2 w-full accent-[#8B0000]"
+                    />
+                  </label>
+                </div>
+
+                <input
+                  type="hidden"
+                  name="image_position_x"
+                  value={imagePositionX}
+                />
+
+                <input
+                  type="hidden"
+                  name="image_position_y"
+                  value={imagePositionY}
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -274,6 +362,8 @@ export default function NewProductDialog({
               type="button"
               onClick={() => {
                 setPreview(null);
+                setImagePositionX(50);
+                setImagePositionY(50);
                 setOpen(false);
               }}
               disabled={saving}
