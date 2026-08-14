@@ -15,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 
+import WhatsAppStatusButton from "@/components/admin/WhatsAppStatusButton";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +24,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  isNotifiableOrderStatus,
+  type OrderStatusNotification,
+  type UpdateOrderStatusResult,
+} from "@/lib/order-status";
 
 type OrderItem = {
   id: string;
@@ -65,7 +71,7 @@ type OrderDetailsDialogProps = {
 
   updateStatusAction: (
     formData: FormData
-  ) => Promise<void>;
+  ) => Promise<UpdateOrderStatusResult>;
 };
 
 const statusLabels: Record<string, string> = {
@@ -160,6 +166,12 @@ export default function OrderDetailsDialog({
 }: OrderDetailsDialogProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] =
+    useState("");
+  const [notification, setNotification] =
+    useState<OrderStatusNotification | null>(
+      null
+    );
 
   const nextStatus = getNextStatus(
     order.status,
@@ -170,27 +182,64 @@ export default function OrderDetailsDialog({
     order.status === "completed" ||
     order.status === "cancelled";
 
+  const currentNotification =
+    order.customer?.phone &&
+    isNotifiableOrderStatus(order.status)
+      ? {
+          orderId: order.id,
+          orderNumber: order.order_number,
+          phone: order.customer.phone,
+          status: order.status,
+        }
+      : null;
+
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+
+    if (!nextOpen) {
+      setActionError("");
+      setNotification(null);
+    }
+  }
+
   async function changeStatus(
     status: string
   ) {
     try {
       setSaving(true);
+      setActionError("");
 
       const formData = new FormData();
 
       formData.set("id", order.id);
       formData.set("status", status);
 
-      await updateStatusAction(formData);
+      const result =
+        await updateStatusAction(formData);
 
-      setOpen(false);
+      if (result.notification) {
+        setNotification(
+          result.notification
+        );
+      } else {
+        setOpen(false);
+      }
+    } catch (error) {
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar o pedido."
+      );
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
       <DialogTrigger
         render={
           <button
@@ -414,6 +463,41 @@ export default function OrderDetailsDialog({
               </p>
             </div>
 
+            {actionError && (
+              <div className="mt-4 rounded-xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
+                {actionError}
+              </div>
+            )}
+
+            {notification && (
+              <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2
+                    size={20}
+                    className="mt-0.5 shrink-0 text-emerald-600"
+                  />
+
+                  <div>
+                    <p className="font-bold text-emerald-700">
+                      Status atualizado
+                    </p>
+
+                    <p className="mt-1 text-sm leading-5 text-emerald-700">
+                      A mensagem está pronta. Abra o WhatsApp e toque em enviar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <WhatsAppStatusButton
+                    notification={notification}
+                    label="Abrir mensagem no WhatsApp"
+                    onOpen={() => setOpen(false)}
+                  />
+                </div>
+              </div>
+            )}
+
             {order.status === "completed" && (
               <div className="mt-4 rounded-xl border border-green-100 bg-green-50 p-4">
                 <div className="flex items-start gap-3">
@@ -458,7 +542,9 @@ export default function OrderDetailsDialog({
               </div>
             )}
 
-            {!locked && nextStatus && (
+            {!notification &&
+              !locked &&
+              nextStatus && (
               <div className="mt-4">
                 <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#756A66]">
                   Próxima etapa
@@ -483,7 +569,18 @@ export default function OrderDetailsDialog({
               </div>
             )}
 
-            {!locked && (
+            {!notification &&
+              currentNotification && (
+                <div className="mt-4">
+                  <WhatsAppStatusButton
+                    notification={
+                      currentNotification
+                    }
+                  />
+                </div>
+              )}
+
+            {!notification && !locked && (
               <div className="mt-4 border-t border-[#EEE6DF] pt-4">
                 <button
                   type="button"

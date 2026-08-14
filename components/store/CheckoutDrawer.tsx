@@ -1101,6 +1101,12 @@ export default function CheckoutDrawer({
 
           "",
 
+          "🔎 *ACOMPANHE SEU PEDIDO*",
+
+          `${window.location.origin}/pedido/${result.orderId}`,
+
+          "",
+
           "💰 *RESUMO*",
 
           `Produtos: ${formatCurrency(

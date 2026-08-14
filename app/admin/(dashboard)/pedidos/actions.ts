@@ -3,6 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import {
+  isNotifiableOrderStatus,
+  type UpdateOrderStatusResult,
+} from "@/lib/order-status";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const allowedStatuses = [
@@ -42,14 +46,16 @@ async function ensureAdmin() {
   return supabase;
 }
 
-function revalidateOrders() {
+function revalidateOrders(orderId: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/pedidos");
+  revalidatePath("/admin/entregas");
+  revalidatePath(`/pedido/${orderId}`);
 }
 
 export async function updateOrderStatus(
   formData: FormData
-) {
+): Promise<UpdateOrderStatusResult> {
   const supabase =
     await ensureAdmin();
 
@@ -75,7 +81,15 @@ export async function updateOrderStatus(
 
   const { data: order } = await supabase
     .from("orders")
-    .select("id, status, order_type")
+    .select(`
+      id,
+      order_number,
+      status,
+      order_type,
+      customers (
+        phone
+      )
+    `)
     .eq("id", id)
     .single();
 
@@ -116,22 +130,23 @@ export async function updateOrderStatus(
   }
 
   const updateData: {
-  status: string;
-  completed_at?: string | null;
-} = {
-  status,
-};
+    status: string;
+    completed_at?: string | null;
+  } = {
+    status,
+  };
 
-if (status === "completed") {
-  updateData.completed_at = new Date().toISOString();
-} else {
-  updateData.completed_at = null;
-}
+  if (status === "completed") {
+    updateData.completed_at =
+      new Date().toISOString();
+  } else {
+    updateData.completed_at = null;
+  }
 
-const { error } = await supabase
-  .from("orders")
-  .update(updateData)
-  .eq("id", id);
+  const { error } = await supabase
+    .from("orders")
+    .update(updateData)
+    .eq("id", id);
 
   if (error) {
     throw new Error(
@@ -139,5 +154,26 @@ const { error } = await supabase
     );
   }
 
-  revalidateOrders();
+  const customer = Array.isArray(
+    order.customers
+  )
+    ? order.customers[0]
+    : order.customers;
+
+  revalidateOrders(order.id);
+
+  return {
+    notification:
+      isNotifiableOrderStatus(status) &&
+      customer?.phone
+        ? {
+            orderId: order.id,
+            orderNumber: Number(
+              order.order_number
+            ),
+            phone: customer.phone,
+            status,
+          }
+        : null,
+  };
 }

@@ -150,6 +150,7 @@ export default function AdminSidebar() {
           alt="La'bel Confeitaria"
           width={105}
           height={42}
+          className="h-[42px] w-[105px]"
           priority
         />
 

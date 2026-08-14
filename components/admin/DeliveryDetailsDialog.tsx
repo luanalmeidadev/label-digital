@@ -9,6 +9,7 @@ import {
   UserRound,
 } from "lucide-react";
 
+import WhatsAppStatusButton from "@/components/admin/WhatsAppStatusButton";
 import {
   Dialog,
   DialogContent,
@@ -17,6 +18,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  isNotifiableOrderStatus,
+  type OrderStatusNotification,
+  type UpdateOrderStatusResult,
+} from "@/lib/order-status";
 
 type DeliveryDetailsDialogProps = {
   delivery: {
@@ -45,7 +51,7 @@ type DeliveryDetailsDialogProps = {
 
   updateStatusAction: (
     formData: FormData
-  ) => Promise<void>;
+  ) => Promise<UpdateOrderStatusResult>;
 };
 
 const statusLabels: Record<string, string> = {
@@ -104,28 +110,74 @@ export default function DeliveryDetailsDialog({
 }: DeliveryDetailsDialogProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [actionError, setActionError] =
+    useState("");
+  const [notification, setNotification] =
+    useState<OrderStatusNotification | null>(
+      null
+    );
 
   const nextAction =
     getNextDeliveryAction(delivery.status);
 
+  const currentNotification =
+    delivery.customer?.phone &&
+    isNotifiableOrderStatus(
+      delivery.status
+    )
+      ? {
+          orderId: delivery.id,
+          orderNumber:
+            delivery.order_number,
+          phone: delivery.customer.phone,
+          status: delivery.status,
+        }
+      : null;
+
+  function handleOpenChange(nextOpen: boolean) {
+    setOpen(nextOpen);
+
+    if (!nextOpen) {
+      setActionError("");
+      setNotification(null);
+    }
+  }
+
   async function changeStatus(status: string) {
     try {
       setSaving(true);
+      setActionError("");
 
       const formData = new FormData();
       formData.set("id", delivery.id);
       formData.set("status", status);
 
-      await updateStatusAction(formData);
+      const result =
+        await updateStatusAction(formData);
 
-      setOpen(false);
+      if (result.notification) {
+        setNotification(
+          result.notification
+        );
+      } else {
+        setOpen(false);
+      }
+    } catch (error) {
+      setActionError(
+        error instanceof Error
+          ? error.message
+          : "Não foi possível atualizar a entrega."
+      );
     } finally {
       setSaving(false);
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={handleOpenChange}
+    >
       <DialogTrigger
         render={
           <button
@@ -256,6 +308,41 @@ export default function DeliveryDetailsDialog({
               <p className="font-bold">Andamento da entrega</p>
             </div>
 
+            {actionError && (
+              <div className="mt-4 rounded-xl border border-red-100 bg-red-50 p-4 text-sm font-semibold text-red-700">
+                {actionError}
+              </div>
+            )}
+
+            {notification && (
+              <div className="mt-4 rounded-2xl border border-emerald-100 bg-emerald-50 p-4">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2
+                    size={20}
+                    className="mt-0.5 shrink-0 text-emerald-600"
+                  />
+
+                  <div>
+                    <p className="font-bold text-emerald-700">
+                      Status atualizado
+                    </p>
+
+                    <p className="mt-1 text-sm leading-5 text-emerald-700">
+                      A mensagem está pronta. Abra o WhatsApp e toque em enviar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <WhatsAppStatusButton
+                    notification={notification}
+                    label="Abrir mensagem no WhatsApp"
+                    onOpen={() => setOpen(false)}
+                  />
+                </div>
+              </div>
+            )}
+
             {nextAction ? (
               <button
                 type="button"
@@ -280,6 +367,17 @@ export default function DeliveryDetailsDialog({
                   : "A entrega ainda não está pronta para avançar nesta etapa."}
               </div>
             )}
+
+            {!notification &&
+              currentNotification && (
+                <div className="mt-4">
+                  <WhatsAppStatusButton
+                    notification={
+                      currentNotification
+                    }
+                  />
+                </div>
+              )}
           </section>
         </div>
       </DialogContent>
