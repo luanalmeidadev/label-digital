@@ -17,6 +17,7 @@ import {
 } from "@/lib/preorder-request-store";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
+import { reserveNextPreorderNumber } from "@/lib/sales-number-store";
 
 export type ManualPreorderFormState = {
   error: string;
@@ -294,9 +295,8 @@ export async function createManualPreorderRequest(
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  const requestNumber = `ENC-${now
-    .slice(0, 10)
-    .replace(/-/g, "")}-${id.slice(0, 4).toUpperCase()}`;
+  const requestNumber =
+    await reserveNextPreorderNumber();
   const unitPrice = isCustom
     ? customUnitPrice
     : parsePreorderPrice(option?.value ?? "");

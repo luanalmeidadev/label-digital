@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { reserveNextDailyOrderNumber } from "@/lib/sales-number-store";
 
 type CheckoutItem = {
   productId: string;
@@ -1002,6 +1003,8 @@ export async function createOrder(
 
     const total =
       subtotal + deliveryFee;
+    const orderNumber =
+      await reserveNextDailyOrderNumber();
 
     const {
       data: order,
@@ -1009,6 +1012,9 @@ export async function createOrder(
     } = await supabase
       .from("orders")
       .insert({
+        order_number:
+          orderNumber,
+
         customer_id:
           customerId,
 

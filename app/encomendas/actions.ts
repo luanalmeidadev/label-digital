@@ -7,6 +7,7 @@ import {
 } from "@/lib/preorder-request";
 import { savePreorderRequest } from "@/lib/preorder-request-store";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
+import { reserveNextPreorderNumber } from "@/lib/sales-number-store";
 
 export type CreatePreorderRequestResult = {
   success: boolean;
@@ -223,12 +224,8 @@ export async function createPreorderRequest(
 
   const id = crypto.randomUUID();
   const now = new Date().toISOString();
-  const dateCode = now
-    .slice(0, 10)
-    .replace(/-/g, "");
-  const requestNumber = `ENC-${dateCode}-${id
-    .slice(0, 4)
-    .toUpperCase()}`;
+  const requestNumber =
+    await reserveNextPreorderNumber();
   const request: PreorderRequest = {
     id,
     requestNumber,
