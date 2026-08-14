@@ -38,8 +38,11 @@ export default function WhatsAppStatusButton({
         trackingUrl,
       });
 
-    const encodedMessage =
-      encodeURIComponent(message);
+    const whatsappParams =
+      new URLSearchParams({
+        phone,
+        text: message,
+      }).toString();
 
     const isMobile =
       /Android|iPhone|iPad|iPod/i.test(
@@ -47,10 +50,10 @@ export default function WhatsAppStatusButton({
       );
 
     if (isMobile) {
-      window.location.href = `whatsapp://send?phone=${phone}&text=${encodedMessage}`;
+      window.location.href = `whatsapp://send?${whatsappParams}`;
     } else {
       window.open(
-        `https://wa.me/${phone}?text=${encodedMessage}`,
+        `https://web.whatsapp.com/send?${whatsappParams}`,
         "_blank",
         "noopener,noreferrer"
       );
@@ -70,4 +73,3 @@ export default function WhatsAppStatusButton({
     </button>
   );
 }
-

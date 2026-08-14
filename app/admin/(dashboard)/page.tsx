@@ -2,13 +2,18 @@ import Link from "next/link";
 
 import {
   BadgeDollarSign,
+  CakeSlice,
+  CalendarRange,
   CircleDollarSign,
   Package,
   ShoppingBag,
   Users,
+  WalletCards,
 } from "lucide-react";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { listPreorderRequests } from "@/lib/preorder-request-store";
+import { getPreorderPaymentStatus } from "@/lib/preorder-request";
 import { logoutAdmin } from "../logout/actions";
 
 const statusLabels: Record<string, string> = {
@@ -257,6 +262,88 @@ export default async function AdminPage() {
 
   /*
    * =========================================
+   * ENCOMENDAS
+   * =========================================
+   */
+
+  const preorderRequests =
+    await listPreorderRequests();
+  const openPreorders = preorderRequests.filter(
+    (request) =>
+      request.status !== "completed" &&
+      request.status !== "cancelled"
+  );
+  const todayDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Sao_Paulo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+  const nextWeek = new Date(todayStart);
+  nextWeek.setDate(nextWeek.getDate() + 7);
+  const nextWeekDate = `${nextWeek.getFullYear()}-${String(
+    nextWeek.getMonth() + 1
+  ).padStart(2, "0")}-${String(nextWeek.getDate()).padStart(2, "0")}`;
+  const upcomingPreordersCount = openPreorders.filter(
+    (request) =>
+      request.desiredDate >= todayDate &&
+      request.desiredDate <= nextWeekDate
+  ).length;
+  const pendingDepositCount = openPreorders.filter(
+    (request) => {
+      const paymentStatus =
+        getPreorderPaymentStatus(request);
+      return (
+        paymentStatus === "awaiting_deposit" ||
+        paymentStatus === "partial"
+      );
+    }
+  ).length;
+  const todayPreordersCount = preorderRequests.filter(
+    (request) => {
+      const createdAt = new Date(request.createdAt);
+      return (
+        createdAt >= todayStart &&
+        createdAt < tomorrowStart
+      );
+    }
+  ).length;
+  const completedPreorders = preorderRequests.filter(
+    (request) =>
+      request.status === "completed" &&
+      request.completedAt
+  );
+  const todayPreorderRevenue = completedPreorders
+    .filter((request) => {
+      const completedAt = new Date(
+        request.completedAt!
+      );
+      return (
+        completedAt >= todayStart &&
+        completedAt < tomorrowStart
+      );
+    })
+    .reduce(
+      (sum, request) => sum + request.total,
+      0
+    );
+  const monthPreorderRevenue = completedPreorders
+    .filter(
+      (request) =>
+        new Date(request.completedAt!) >=
+        monthStart
+    )
+    .reduce(
+      (sum, request) => sum + request.total,
+      0
+    );
+  const combinedTodayRevenue =
+    todayRevenue + todayPreorderRevenue;
+  const combinedMonthRevenue =
+    monthRevenue + monthPreorderRevenue;
+
+  /*
+   * =========================================
    * ÚLTIMOS PEDIDOS
    * =========================================
    */
@@ -314,6 +401,11 @@ export default async function AdminPage() {
       icon: ShoppingBag,
     },
     {
+      label: "Encomendas hoje",
+      value: String(todayPreordersCount),
+      icon: CakeSlice,
+    },
+    {
       label: "Clientes",
       value: String(
         customersCount ?? 0
@@ -323,7 +415,7 @@ export default async function AdminPage() {
     {
       label: "Faturamento hoje",
       value: formatCurrency(
-        todayRevenue
+        combinedTodayRevenue
       ),
       icon: CircleDollarSign,
     },
@@ -363,7 +455,7 @@ export default async function AdminPage() {
         </div>
 
         {/* CARDS PRINCIPAIS */}
-        <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">
           {stats.map((stat) => {
             const Icon = stat.icon;
 
@@ -391,7 +483,7 @@ export default async function AdminPage() {
         </section>
 
         {/* RESUMO OPERACIONAL */}
-        <section className="mt-6 grid gap-4 sm:grid-cols-2">
+        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
@@ -415,6 +507,62 @@ export default async function AdminPage() {
 
           <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
+                <CakeSlice size={19} />
+              </div>
+
+              <div>
+                <p className="text-sm text-[#756A66]">
+                  Encomendas em andamento
+                </p>
+
+                <p className="mt-1 text-xl font-bold text-[#241B19]">
+                  {openPreorders.length}
+                </p>
+              </div>
+            </div>
+          </article>
+
+          <Link
+            href="/admin/pedidos/encomendas/calendario"
+            className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm transition hover:border-[#D2B48C]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
+                <CalendarRange size={19} />
+              </div>
+              <div>
+                <p className="text-sm text-[#756A66]">
+                  Próximos 7 dias
+                </p>
+                <p className="mt-1 text-xl font-bold text-[#241B19]">
+                  {upcomingPreordersCount}
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <Link
+            href="/admin/pedidos/encomendas"
+            className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm transition hover:border-[#D2B48C]"
+          >
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-700">
+                <WalletCards size={19} />
+              </div>
+              <div>
+                <p className="text-sm text-[#756A66]">
+                  Sinais pendentes
+                </p>
+                <p className="mt-1 text-xl font-bold text-[#241B19]">
+                  {pendingDepositCount}
+                </p>
+              </div>
+            </div>
+          </Link>
+
+          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-700">
                 <BadgeDollarSign
                   size={19}
@@ -428,12 +576,63 @@ export default async function AdminPage() {
 
                 <p className="mt-1 text-xl font-bold text-[#241B19]">
                   {formatCurrency(
-                    monthRevenue
+                    combinedMonthRevenue
                   )}
                 </p>
               </div>
             </div>
           </article>
+        </section>
+
+        <section className="mt-6 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
+          <div className="border-b border-[#EEE6DF] p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+              Resumo financeiro
+            </p>
+            <h2 className="mt-1 text-xl font-bold text-[#241B19]">
+              Faturamento deste mês
+            </h2>
+          </div>
+
+          <div className="grid gap-px bg-[#EEE6DF] md:grid-cols-3">
+            <Link
+              href="/admin/faturamento?source=daily&period=month"
+              className="bg-white p-5 transition hover:bg-[#FFFDF9]"
+            >
+              <p className="inline-flex items-center gap-2 text-sm font-bold text-[#756A66]">
+                <ShoppingBag size={17} className="text-[#8B0000]" />
+                Vendas diárias
+              </p>
+              <p className="mt-2 text-2xl font-bold text-[#241B19]">
+                {formatCurrency(monthRevenue)}
+              </p>
+            </Link>
+
+            <Link
+              href="/admin/faturamento?source=preorders&period=month"
+              className="bg-white p-5 transition hover:bg-[#FFFDF9]"
+            >
+              <p className="inline-flex items-center gap-2 text-sm font-bold text-[#756A66]">
+                <CakeSlice size={17} className="text-[#8B0000]" />
+                Encomendas
+              </p>
+              <p className="mt-2 text-2xl font-bold text-[#241B19]">
+                {formatCurrency(monthPreorderRevenue)}
+              </p>
+            </Link>
+
+            <Link
+              href="/admin/faturamento?source=daily&period=month"
+              className="bg-[#8B0000] p-5 text-white transition hover:bg-[#700000]"
+            >
+              <p className="text-sm font-bold text-white/75">
+                Total consolidado
+              </p>
+              <p className="mt-2 text-2xl font-bold">
+                {formatCurrency(combinedMonthRevenue)}
+              </p>
+            </Link>
+          </div>
         </section>
 
         {/* CONTEÚDO INFERIOR */}
@@ -582,6 +781,15 @@ export default async function AdminPage() {
                 className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
               >
                 Produtos
+
+                <span>→</span>
+              </Link>
+
+              <Link
+                href="/admin/pedidos/encomendas"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+              >
+                Agenda de encomendas
 
                 <span>→</span>
               </Link>

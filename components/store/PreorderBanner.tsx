@@ -1,4 +1,5 @@
 import { ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 export default function PreorderBanner() {
   return (
@@ -13,17 +14,16 @@ export default function PreorderBanner() {
         </h2>
 
         <p className="mt-3 max-w-xl text-sm leading-6 text-[#49352C]">
-          A área de encomendas será separada dos produtos disponíveis no dia.
+          Bolos, doces, brownies e sobremesas feitos especialmente para a sua celebração.
         </p>
 
-        <button
-          type="button"
-          disabled
-          className="mt-6 flex items-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white opacity-60"
+        <Link
+          href="/encomendas"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000]"
         >
           Ver encomendas
           <ChevronRight size={18} />
-        </button>
+        </Link>
       </div>
     </section>
   );

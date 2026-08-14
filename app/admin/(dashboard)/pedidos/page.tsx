@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 
 import OrderDetailsDialog from "@/components/admin/OrderDetailsDialog";
+import OrdersPanelTabs from "@/components/admin/OrdersPanelTabs";
 import OrdersRealtime from "@/components/admin/OrdersRealtime";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -168,6 +169,8 @@ export default async function PedidosPage() {
             etapa do atendimento.
           </p>
         </div>
+
+        <OrdersPanelTabs active="daily" />
 
         {/* INDICADORES */}
         <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">

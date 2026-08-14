@@ -51,21 +51,21 @@ export function buildOrderStatusWhatsAppMessage({
   const statusMessage =
     status === "confirmed"
       ? [
-          `Pedido #${orderNumber} confirmado! ✅`,
+          `Pedido #${orderNumber} confirmado! \u2705`,
           "",
           "Já estamos preparando seu pedido.",
           "Avisaremos por aqui quando houver uma nova atualização.",
         ]
       : status === "out_for_delivery"
         ? [
-            "🛵 Seu pedido saiu para entrega!",
+            "\u{1F6F5} Seu pedido saiu para entrega!",
             `Pedido #${orderNumber}`,
             "",
-            "Agora é só aguardar. ❤️",
+            "Agora é só aguardar. \u2764\uFE0F",
             "Obrigado por escolher a La’Bel!",
           ]
         : [
-            "🎁 Seu pedido está pronto para retirada!",
+            "\u{1F381} Seu pedido está pronto para retirada!",
             `Pedido #${orderNumber}`,
             "",
             "Você já pode vir buscar seu pedido na loja.",
@@ -73,11 +73,11 @@ export function buildOrderStatusWhatsAppMessage({
           ];
 
   return [
-    "🍰 *LA’BEL CONFEITARIA*",
+    "\u{1F370} *LA’BEL CONFEITARIA*",
     "",
     ...statusMessage,
     "",
-    "🔎 *Acompanhe o pedido:*",
+    "\u{1F50E} *Acompanhe o pedido:*",
     trackingUrl,
   ].join("\n");
 }

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 
 import {
   BadgeDollarSign,
+  CakeSlice,
   LayoutDashboard,
   Menu,
   Package,
@@ -28,6 +29,11 @@ const menuItems = [
     label: "Produtos",
     href: "/admin/produtos",
     icon: Package,
+  },
+  {
+    label: "Encomendas",
+    href: "/admin/encomendas",
+    icon: CakeSlice,
   },
   {
     label: "Categorias",
@@ -64,10 +70,6 @@ const menuItems = [
 export default function AdminSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     if (!mobileOpen) {
@@ -128,6 +130,7 @@ export default function AdminSidebar() {
               alt="La'bel Confeitaria"
               width={150}
               height={60}
+              className="h-[60px] w-[150px]"
               priority
             />
 
@@ -189,6 +192,7 @@ export default function AdminSidebar() {
                   alt="La'bel Confeitaria"
                   width={135}
                   height={55}
+                  className="h-[55px] w-[135px]"
                   priority
                 />
 
