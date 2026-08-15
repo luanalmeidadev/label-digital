@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   CalendarDays,
   CakeSlice,
@@ -6,15 +5,23 @@ import {
 } from "lucide-react";
 
 import EditPreorderProductDialog from "@/components/admin/EditPreorderProductDialog";
+import EditPreorderHeroDialog from "@/components/admin/EditPreorderHeroDialog";
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
+import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 
-import { updatePreorderProduct } from "./actions";
+import {
+  updatePreorderHero,
+  updatePreorderProduct,
+} from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminEncomendasPage() {
-  const categories =
-    await getPreorderCatalog();
+  const [categories, imageSettings] =
+    await Promise.all([
+      getPreorderCatalog(),
+      getImageDisplaySettings(),
+    ]);
   const productCount = categories.reduce(
     (total, category) =>
       total + category.products.length,
@@ -35,6 +42,24 @@ export default async function AdminEncomendasPage() {
             Gerencie os tamanhos, preços, sabores, quantidades e prazos exibidos no cardápio de encomendas.
           </p>
         </div>
+
+        <section className="mt-8 grid items-center gap-5 rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm lg:grid-cols-[1fr_360px] lg:p-6">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+              Destaque da página
+            </p>
+            <h2 className="mt-2 text-xl font-bold text-[#241B19]">
+              Imagem principal das encomendas
+            </h2>
+            <p className="mt-2 max-w-xl text-sm leading-6 text-[#756A66]">
+              Clique na foto para trocar o arquivo, centralizar o bolo ou ajustar a distância com o zoom.
+            </p>
+          </div>
+          <EditPreorderHeroDialog
+            settings={imageSettings.preorderHero}
+            updateAction={updatePreorderHero}
+          />
+        </section>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
           <div className="flex items-center gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
@@ -110,20 +135,12 @@ export default async function AdminEncomendasPage() {
                     className="flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between"
                   >
                     <div className="flex min-w-0 items-center gap-4">
-                      <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#F7F0EA]">
-                        <Image
-                          src={product.image}
-                          alt={product.imageAlt}
-                          fill
-                          sizes="80px"
-                          className="object-cover"
-                          style={{
-                            objectPosition: `${
-                              product.imagePositionX ?? 50
-                            }% ${product.imagePositionY ?? 50}%`,
-                          }}
-                        />
-                      </div>
+                      <EditPreorderProductDialog
+                        categoryId={category.id}
+                        product={product}
+                        updateAction={updatePreorderProduct}
+                        triggerMode="image"
+                      />
 
                       <div className="min-w-0">
                         <h3 className="font-bold text-[#241B19]">
@@ -157,16 +174,12 @@ export default async function AdminEncomendasPage() {
                             ? ` · ${product.flavors.length} sabores cadastrados`
                             : " · sem seleção de sabores"}
                         </p>
+                        <p className="mt-1 text-[10px] font-semibold text-[#A3948D]">
+                          Clique na foto para editar e enquadrar
+                        </p>
                       </div>
                     </div>
 
-                    <div className="shrink-0">
-                      <EditPreorderProductDialog
-                        categoryId={category.id}
-                        product={product}
-                        updateAction={updatePreorderProduct}
-                      />
-                    </div>
                   </article>
                 ))}
               </div>

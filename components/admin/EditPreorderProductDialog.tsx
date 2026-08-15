@@ -8,7 +8,6 @@ import {
   useState,
 } from "react";
 import {
-  ImagePlus,
   Pencil,
   Plus,
   Trash2,
@@ -22,7 +21,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import ImagePositionEditor from "@/components/admin/ImagePositionEditor";
 import type { UpdatePreorderProductResult } from "@/app/admin/(dashboard)/encomendas/actions";
+import {
+  getImageFramingStyle,
+  normalizeImageZoom,
+} from "@/lib/image-framing";
 import type {
   PreorderPrice,
   PreorderProduct,
@@ -31,6 +35,7 @@ import type {
 type EditPreorderProductDialogProps = {
   categoryId: string;
   product: PreorderProduct;
+  triggerMode?: "button" | "image";
   updateAction: (
     formData: FormData
   ) => Promise<UpdatePreorderProductResult>;
@@ -39,6 +44,7 @@ type EditPreorderProductDialogProps = {
 export default function EditPreorderProductDialog({
   categoryId,
   product,
+  triggerMode = "button",
   updateAction,
 }: EditPreorderProductDialogProps) {
   const [open, setOpen] = useState(false);
@@ -56,6 +62,9 @@ export default function EditPreorderProductDialog({
   );
   const [positionY, setPositionY] = useState(
     product.imagePositionY ?? 50
+  );
+  const [zoom, setZoom] = useState(
+    normalizeImageZoom(product.imageZoom ?? 100)
   );
   const [preview, setPreview] = useState(
     product.image
@@ -89,6 +98,9 @@ export default function EditPreorderProductDialog({
     setPreview(product.image);
     setPositionX(product.imagePositionX ?? 50);
     setPositionY(product.imagePositionY ?? 50);
+    setZoom(
+      normalizeImageZoom(product.imageZoom ?? 100)
+    );
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -206,12 +218,42 @@ export default function EditPreorderProductDialog({
         render={
           <button
             type="button"
-            className="inline-flex items-center gap-2 rounded-xl border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C] hover:bg-[#FFF7F5]"
+            aria-label={
+              triggerMode === "image"
+                ? `Editar foto e opções de ${product.name}`
+                : undefined
+            }
+            className={
+              triggerMode === "image"
+                ? "group relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#F7F0EA]"
+                : "inline-flex items-center gap-2 rounded-xl border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C] hover:bg-[#FFF7F5]"
+            }
           />
         }
       >
-        <Pencil size={15} />
-        Editar opções
+        {triggerMode === "image" ? (
+          <>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={product.image}
+              alt={product.imageAlt}
+              className="h-full w-full object-cover transition group-hover:brightness-75"
+              style={getImageFramingStyle(
+                product.imagePositionX ?? 50,
+                product.imagePositionY ?? 50,
+                product.imageZoom ?? 100
+              )}
+            />
+            <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/25 group-hover:opacity-100">
+              <Pencil size={20} />
+            </span>
+          </>
+        ) : (
+          <>
+            <Pencil size={15} />
+            Editar opções
+          </>
+        )}
       </DialogTrigger>
 
       <DialogContent className="max-h-[92vh] overflow-y-auto p-0 sm:max-w-2xl">
@@ -243,84 +285,39 @@ export default function EditPreorderProductDialog({
             <legend className="text-sm font-bold text-[#241B19]">
               Foto do produto
             </legend>
-            <div className="mt-3 grid gap-4 sm:grid-cols-[150px_1fr]">
-              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]">
-                {preview ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={preview}
-                    alt={`Prévia de ${product.name}`}
-                    className="h-full w-full object-cover"
-                    style={{
-                      objectPosition: `${positionX}% ${positionY}%`,
-                    }}
-                  />
-                ) : (
-                  <ImagePlus
-                    size={34}
-                    className="text-[#D2B48C]"
-                  />
-                )}
-              </div>
+            <div className="mt-3 space-y-4">
+              <input
+                ref={fileInputRef}
+                type="file"
+                name="image"
+                accept="image/jpeg,image/png,image/webp"
+                disabled={saving}
+                onChange={handleImageChange}
+                className="block w-full text-sm text-[#756A66] file:mr-3 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-3 file:py-2.5 file:text-xs file:font-bold file:text-[#8B0000]"
+              />
+              <p className="text-xs leading-5 text-[#756A66]">
+                JPG, PNG ou WebP, com até 5 MB. Se nenhuma foto for escolhida, a atual será mantida.
+              </p>
 
-              <div className="space-y-3">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  name="image"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={saving}
-                  onChange={handleImageChange}
-                  className="block w-full text-sm text-[#756A66] file:mr-3 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-3 file:py-2.5 file:text-xs file:font-bold file:text-[#8B0000]"
-                />
-                <p className="text-xs leading-5 text-[#756A66]">
-                  JPG, PNG ou WebP, com até 5 MB. Se nenhuma foto for escolhida, a atual será mantida.
-                </p>
-
-                <label className="block">
-                  <span className="flex justify-between text-xs font-bold text-[#49352C]">
-                    Horizontal
-                    <span className="font-normal text-[#756A66]">
-                      {positionX}%
-                    </span>
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={positionX}
-                    disabled={saving}
-                    onChange={(event) =>
-                      setPositionX(
-                        Number(event.target.value)
-                      )
-                    }
-                    className="mt-2 w-full accent-[#8B0000]"
-                  />
-                </label>
-
-                <label className="block">
-                  <span className="flex justify-between text-xs font-bold text-[#49352C]">
-                    Vertical
-                    <span className="font-normal text-[#756A66]">
-                      {positionY}%
-                    </span>
-                  </span>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={positionY}
-                    disabled={saving}
-                    onChange={(event) =>
-                      setPositionY(
-                        Number(event.target.value)
-                      )
-                    }
-                    className="mt-2 w-full accent-[#8B0000]"
-                  />
-                </label>
-              </div>
+              <ImagePositionEditor
+                src={preview}
+                alt={`Prévia de ${product.name}`}
+                positionX={positionX}
+                positionY={positionY}
+                zoom={zoom}
+                onPositionXChange={setPositionX}
+                onPositionYChange={setPositionY}
+                onZoomChange={setZoom}
+                disabled={saving}
+                previewClassName="aspect-[4/3] rounded-2xl"
+                resetPositionX={
+                  product.imagePositionX ?? 50
+                }
+                resetPositionY={
+                  product.imagePositionY ?? 50
+                }
+                resetZoom={product.imageZoom ?? 100}
+              />
             </div>
 
             <input
@@ -332,6 +329,11 @@ export default function EditPreorderProductDialog({
               type="hidden"
               name="image_position_y"
               value={positionY}
+            />
+            <input
+              type="hidden"
+              name="image_zoom"
+              value={zoom}
             />
           </fieldset>
 

@@ -10,7 +10,9 @@ import {
   Truck,
 } from "lucide-react";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import AdminAccountsManager from "@/components/admin/AdminAccountsManager";
+import { listAdminAccounts } from "@/lib/admin-accounts";
+import { getAdminAccess } from "@/lib/admin-auth";
 
 import {
   createDeliveryZone,
@@ -57,8 +59,12 @@ function formatCurrency(
 }
 
 export default async function ConfiguracoesPage() {
-  const supabase =
-    await createSupabaseServerClient();
+  const access = await getAdminAccess();
+  const supabase = access.supabase;
+  const accounts =
+    access.role === "admin"
+      ? await listAdminAccounts()
+      : [];
 
   const {
     data: settings,
@@ -159,6 +165,13 @@ export default async function ConfiguracoesPage() {
             do cardápio.
           </p>
         </div>
+
+        {access.role === "admin" && (
+          <AdminAccountsManager
+            accounts={accounts}
+            currentUserId={access.user.id}
+          />
+        )}
 
         {/* ======================================
             DADOS DA LOJA

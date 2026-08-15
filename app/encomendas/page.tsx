@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import { getImageFramingStyle } from "@/lib/image-framing";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -14,6 +15,7 @@ import {
 
 import PreorderWhatsAppButton from "@/components/store/PreorderWhatsAppButton";
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
+import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 import type { PreorderProduct } from "@/lib/preorder-menu";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -62,12 +64,12 @@ function ProductCard({
           alt={product.imageAlt}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 560px"
-          className="object-cover transition duration-500 group-hover:scale-[1.03]"
-          style={{
-            objectPosition: `${
-              product.imagePositionX ?? 50
-            }% ${product.imagePositionY ?? 50}%`,
-          }}
+          className="object-cover transition duration-500"
+          style={getImageFramingStyle(
+            product.imagePositionX ?? 50,
+            product.imagePositionY ?? 50,
+            product.imageZoom ?? 100
+          )}
         />
 
         <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 to-transparent" />
@@ -140,10 +142,15 @@ function ProductCard({
 }
 
 export default async function EncomendasPage() {
-  const [whatsapp, preorderCategories] =
+  const [
+    whatsapp,
+    preorderCategories,
+    imageSettings,
+  ] =
     await Promise.all([
       getStoreWhatsApp(),
       getPreorderCatalog(),
+      getImageDisplaySettings(),
     ]);
 
   return (
@@ -159,7 +166,7 @@ export default async function EncomendasPage() {
               alt="La'Bel Confeitaria"
               width={175}
               height={70}
-              priority
+              loading="eager"
               className="h-[56px] w-[140px] sm:h-[70px] sm:w-[175px]"
             />
           </Link>
@@ -213,14 +220,19 @@ export default async function EncomendasPage() {
           </div>
 
           <div className="relative mx-auto w-full max-w-lg">
-            <div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] border border-white/15 shadow-2xl">
+            <div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] border border-white/15 bg-[#F7F0EA] shadow-2xl">
               <Image
-                src="/encomendas/bolo-espatulado.jpeg"
+                src={imageSettings.preorderHero.image}
                 alt="Bolo personalizado da La'Bel Confeitaria"
                 fill
-                priority
+                loading="eager"
                 sizes="(max-width: 1024px) 100vw, 520px"
                 className="object-cover"
+                style={getImageFramingStyle(
+                  imageSettings.preorderHero.positionX,
+                  imageSettings.preorderHero.positionY,
+                  imageSettings.preorderHero.zoom
+                )}
               />
             </div>
 

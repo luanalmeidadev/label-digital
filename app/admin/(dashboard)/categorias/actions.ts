@@ -1,8 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPermission } from "@/lib/admin-auth";
+
+async function requireCatalogAccess() {
+  const access =
+    await requireAdminPermission("catalog");
+  return access.supabase;
+}
 
 function createSlug(value: string) {
   return value
@@ -16,25 +21,7 @@ function createSlug(value: string) {
 }
 
 export async function createCategory(formData: FormData) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error("Acesso não autorizado.");
-  }
+  const supabase = await requireCatalogAccess();
 
   const name = String(formData.get("name") ?? "").trim();
 
@@ -82,25 +69,7 @@ export async function createCategory(formData: FormData) {
   revalidatePath("/admin/categorias");
 }
 export async function updateCategory(formData: FormData) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error("Acesso não autorizado.");
-  }
+  const supabase = await requireCatalogAccess();
 
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
@@ -143,25 +112,7 @@ export async function updateCategory(formData: FormData) {
 }
 
 export async function toggleCategoryStatus(formData: FormData) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error("Acesso não autorizado.");
-  }
+  const supabase = await requireCatalogAccess();
 
   const id = String(formData.get("id") ?? "");
   const active = String(formData.get("active") ?? "") === "true";
@@ -186,25 +137,7 @@ export async function toggleCategoryStatus(formData: FormData) {
 }
 
 export async function moveCategory(formData: FormData) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error("Acesso não autorizado.");
-  }
+  const supabase = await requireCatalogAccess();
 
   const id = String(formData.get("id") ?? "");
   const direction = String(formData.get("direction") ?? "");
@@ -272,25 +205,7 @@ export async function moveCategory(formData: FormData) {
 }
 
 export async function deleteCategory(formData: FormData) {
-  const supabase = await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error("Acesso não autorizado.");
-  }
+  const supabase = await requireCatalogAccess();
 
   const id = String(formData.get("id") ?? "");
 

@@ -1,35 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { requireAdminPermission } from "@/lib/admin-auth";
 
 async function ensureAdmin() {
-  const supabase =
-    await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error(
-      "Acesso não autorizado."
-    );
-  }
-
-  return supabase;
+  const access =
+    await requireAdminPermission("settings");
+  return access.supabase;
 }
 
 function revalidateSettings() {

@@ -15,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import ImagePositionEditor from "@/components/admin/ImagePositionEditor";
+import { getImageFramingStyle } from "@/lib/image-framing";
 
 type Category = {
   id: string;
@@ -30,6 +32,8 @@ type EditProductDialogProps = {
   imageUrl: string | null;
   imagePositionX: number;
   imagePositionY: number;
+  imageZoom: number;
+  triggerMode?: "button" | "image";
   available: boolean;
   featured: boolean;
   active: boolean;
@@ -46,6 +50,8 @@ export default function EditProductDialog({
   imageUrl,
   imagePositionX,
   imagePositionY,
+  imageZoom,
+  triggerMode = "button",
   available,
   featured,
   active,
@@ -59,6 +65,8 @@ export default function EditProductDialog({
 
 const [positionY, setPositionY] =
   useState(imagePositionY);
+
+  const [zoom, setZoom] = useState(imageZoom);
 
   const [preview, setPreview] = useState<string | null>(
     imageUrl
@@ -90,6 +98,7 @@ const [positionY, setPositionY] =
     setRemoveImage(false);
     setPositionX(imagePositionX);
     setPositionY(imagePositionY);
+    setZoom(imageZoom);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -160,6 +169,7 @@ const [positionY, setPositionY] =
     setRemoveImage(false);
     setPositionX(imagePositionX);
     setPositionY(imagePositionY);
+    setZoom(imageZoom);
 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -182,12 +192,49 @@ const [positionY, setPositionY] =
         render={
           <button
             type="button"
-            className="flex items-center gap-2 rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+            aria-label={
+              triggerMode === "image"
+                ? `Editar foto e produto ${name}`
+                : undefined
+            }
+            className={
+              triggerMode === "image"
+                ? "group relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]"
+                : "flex items-center gap-2 rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+            }
           />
         }
       >
-        <Pencil size={15} />
-        Editar
+        {triggerMode === "image" ? (
+          <>
+            {imageUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={imageUrl}
+                alt={name}
+                className="h-full w-full object-cover transition group-hover:brightness-75"
+                style={getImageFramingStyle(
+                  imagePositionX,
+                  imagePositionY,
+                  imageZoom
+                )}
+              />
+            ) : (
+              <ImagePlus
+                size={28}
+                className="text-[#D2B48C]"
+              />
+            )}
+            <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/25 group-hover:opacity-100">
+              <Pencil size={20} />
+            </span>
+          </>
+        ) : (
+          <>
+            <Pencil size={15} />
+            Editar
+          </>
+        )}
       </DialogTrigger>
 
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
@@ -215,26 +262,8 @@ const [positionY, setPositionY] =
               Foto do produto
             </label>
 
-            <div className="mt-2 grid gap-4 sm:grid-cols-[140px_1fr]">
-              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]">
-                {preview ? (
-                  <img
-                    src={preview}
-                    alt={`Foto de ${name}`}
-                    className="h-full w-full object-cover"
-                    style={{
-                      objectPosition: `${positionX}% ${positionY}%`,
-                    }}
-                  />
-                ) : (
-                  <ImagePlus
-                    size={32}
-                    className="text-[#D2B48C]"
-                  />
-                )}
-              </div>
-
-              <div className="flex flex-col justify-center gap-3">
+            <div className="mt-2 space-y-4">
+              <div className="space-y-3">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -268,73 +297,29 @@ const [positionY, setPositionY] =
                   </p>
                 )}
               </div>
+
+              {preview && (
+                <ImagePositionEditor
+                  src={preview}
+                  alt={`Prévia de ${name}`}
+                  positionX={positionX}
+                  positionY={positionY}
+                  zoom={zoom}
+                  onPositionXChange={setPositionX}
+                  onPositionYChange={setPositionY}
+                  onZoomChange={setZoom}
+                  disabled={saving}
+                  previewClassName="mx-auto aspect-[3/4] w-full max-w-[360px] rounded-2xl"
+                  resetPositionX={imagePositionX}
+                  resetPositionY={imagePositionY}
+                  resetZoom={imageZoom}
+                />
+              )}
             </div>
           </div>
 
           {preview && (
-            <div className="rounded-2xl border border-[#EEE6DF] bg-[#FFFDF9] p-4">
-              <p className="text-sm font-bold text-[#241B19]">
-                Ajustar enquadramento
-              </p>
-
-              <p className="mt-1 text-xs leading-5 text-[#756A66]">
-                Ajuste a posição da foto até o produto ficar bem enquadrado.
-              </p>
-
-              <div className="mt-4 space-y-4">
-                <label className="block">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#49352C]">
-                      Horizontal
-                    </span>
-
-                    <span className="text-xs text-[#756A66]">
-                      {positionX}%
-                    </span>
-                  </div>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={positionX}
-                    onChange={(event) =>
-                      setPositionX(
-                        Number(event.target.value)
-                      )
-                    }
-                    disabled={saving}
-                    className="mt-2 w-full accent-[#8B0000]"
-                  />
-                </label>
-
-                <label className="block">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[#49352C]">
-                      Vertical
-                    </span>
-
-                    <span className="text-xs text-[#756A66]">
-                      {positionY}%
-                    </span>
-                  </div>
-
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={positionY}
-                    onChange={(event) =>
-                      setPositionY(
-                        Number(event.target.value)
-                      )
-                    }
-                    disabled={saving}
-                    className="mt-2 w-full accent-[#8B0000]"
-                  />
-                </label>
-              </div>
-
+            <>
               <input
                 type="hidden"
                 name="image_position_x"
@@ -346,7 +331,13 @@ const [positionY, setPositionY] =
                 name="image_position_y"
                 value={positionY}
               />
-            </div>
+
+              <input
+                type="hidden"
+                name="image_zoom"
+                value={zoom}
+              />
+            </>
           )}
 
           {/* NOME */}

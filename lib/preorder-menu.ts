@@ -10,6 +10,7 @@ export type PreorderProduct = {
   imageAlt: string;
   imagePositionX?: number;
   imagePositionY?: number;
+  imageZoom?: number;
   prices: PreorderPrice[];
   flavors?: string[];
   details?: string[];

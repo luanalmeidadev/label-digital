@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { ImagePlus, Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Plus } from "lucide-react";
 
 import {
   Dialog,
@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import ImagePositionEditor from "@/components/admin/ImagePositionEditor";
 
 type Category = {
   id: string;
@@ -35,15 +36,30 @@ export default function NewProductDialog({
 const [imagePositionY, setImagePositionY] =
   useState(50);
 
+  const [imageZoom, setImageZoom] = useState(100);
+
+  useEffect(() => {
+    return () => {
+      if (preview) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
+  function resetImageState() {
+    setPreview(null);
+    setImagePositionX(50);
+    setImagePositionY(50);
+    setImageZoom(100);
+  }
+
   async function handleSubmit(formData: FormData) {
     try {
       setSaving(true);
 
       await createAction(formData);
 
-      setPreview(null);
-      setImagePositionX(50);
-      setImagePositionY(50);
+      resetImageState();
       setOpen(false);
     } finally {
       setSaving(false);
@@ -65,7 +81,16 @@ const [imagePositionY, setImagePositionY] =
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen && !saving) {
+          resetImageState();
+        }
+
+        setOpen(nextOpen);
+      }}
+    >
       <DialogTrigger
         render={
           <button
@@ -93,104 +118,37 @@ const [imagePositionY, setImagePositionY] =
               Foto do produto
             </label>
 
-            <div className="mt-2 grid gap-3 sm:grid-cols-[120px_1fr]">
-              <div className="flex aspect-square items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]">
-                {preview ? (
-                  <img
-                    src={preview}
-                    alt="Prévia do produto"
-                    className="h-full w-full object-cover"
-                    style={{
-                      objectPosition: `${imagePositionX}% ${imagePositionY}%`,
-                    }}
-                  />
-                ) : (
-                  <ImagePlus
-                    size={28}
-                    className="text-[#D2B48C]"
-                  />
-                )}
-              </div>
-
-              <div className="flex items-center">
-                <input
-                  type="file"
-                  name="image"
-                  accept="image/jpeg,image/png,image/webp"
-                  disabled={saving}
-                  onChange={handleImageChange}
-                  className="block w-full text-sm text-[#756A66] file:mr-4 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-[#8B0000]"
-                />
-              </div>
-            </div>
+            <input
+              type="file"
+              name="image"
+              accept="image/jpeg,image/png,image/webp"
+              disabled={saving}
+              onChange={handleImageChange}
+              className="mt-2 block w-full text-sm text-[#756A66] file:mr-4 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-[#8B0000]"
+            />
 
             <p className="mt-2 text-xs text-[#756A66]">
               JPG, PNG ou WebP. Máximo de 5 MB.
             </p>
 
             {preview && (
-              <div className="mt-4 rounded-2xl border border-[#EEE6DF] bg-[#FFFDF9] p-4">
-                <p className="text-sm font-bold text-[#241B19]">
-                  Ajustar enquadramento
+              <div className="mt-4">
+                <p className="mb-3 text-xs leading-5 text-[#756A66]">
+                  Prévia no formato vertical usado no cardápio. Arraste a foto para posicionar.
                 </p>
 
-                <p className="mt-1 text-xs leading-5 text-[#756A66]">
-                  Ajuste a posição da imagem até o produto ficar bem enquadrado.
-                </p>
-
-                <div className="mt-4 space-y-4">
-                  <label className="block">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#49352C]">
-                        Horizontal
-                      </span>
-
-                      <span className="text-xs text-[#756A66]">
-                        {imagePositionX}%
-                      </span>
-                    </div>
-
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={imagePositionX}
-                      onChange={(event) =>
-                        setImagePositionX(
-                          Number(event.target.value)
-                        )
-                      }
-                      disabled={saving}
-                      className="mt-2 w-full accent-[#8B0000]"
-                    />
-                  </label>
-
-                  <label className="block">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[#49352C]">
-                        Vertical
-                      </span>
-
-                      <span className="text-xs text-[#756A66]">
-                        {imagePositionY}%
-                      </span>
-                    </div>
-
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={imagePositionY}
-                      onChange={(event) =>
-                        setImagePositionY(
-                          Number(event.target.value)
-                        )
-                      }
-                      disabled={saving}
-                      className="mt-2 w-full accent-[#8B0000]"
-                    />
-                  </label>
-                </div>
+                <ImagePositionEditor
+                  src={preview}
+                  alt="Prévia do novo produto"
+                  positionX={imagePositionX}
+                  positionY={imagePositionY}
+                  zoom={imageZoom}
+                  onPositionXChange={setImagePositionX}
+                  onPositionYChange={setImagePositionY}
+                  onZoomChange={setImageZoom}
+                  disabled={saving}
+                  previewClassName="mx-auto aspect-[3/4] w-full max-w-[360px] rounded-2xl"
+                />
 
                 <input
                   type="hidden"
@@ -202,6 +160,12 @@ const [imagePositionY, setImagePositionY] =
                   type="hidden"
                   name="image_position_y"
                   value={imagePositionY}
+                />
+
+                <input
+                  type="hidden"
+                  name="image_zoom"
+                  value={imageZoom}
                 />
               </div>
             )}
@@ -361,9 +325,7 @@ const [imagePositionY, setImagePositionY] =
             <button
               type="button"
               onClick={() => {
-                setPreview(null);
-                setImagePositionX(50);
-                setImagePositionY(50);
+                resetImageState();
                 setOpen(false);
               }}
               disabled={saving}

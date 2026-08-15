@@ -7,6 +7,7 @@ import CartProvider from "@/components/store/CartProvider";
 import CartUI from "@/components/store/CartUI";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 
 export default async function Home() {
   const supabase =
@@ -58,8 +59,17 @@ export default async function Home() {
   const categories =
     categoriesResult.data ?? [];
 
-  const products =
-    productsResult.data ?? [];
+  const imageSettings =
+    await getImageDisplaySettings();
+  const products = (productsResult.data ?? []).map(
+    (product) => ({
+      ...product,
+      image_zoom:
+        imageSettings.dailyProductZoom[
+          product.id
+        ] ?? 100,
+    })
+  );
 
   const hasLoadError =
     Boolean(categoriesResult.error) ||
@@ -102,4 +112,3 @@ export default async function Home() {
     </CartProvider>
   );
 }
-

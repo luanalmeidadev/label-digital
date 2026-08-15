@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getImageFramingStyle } from "@/lib/image-framing";
 
 import AddToCartButton from "./AddToCartButton";
 
@@ -17,6 +18,7 @@ type Product = {
   image_url: string | null;
   image_position_x: number;
   image_position_y: number;
+  image_zoom: number;
   product_type: string;
   available: boolean;
   featured: boolean;
@@ -111,13 +113,11 @@ function ProductCard({
               fill
               sizes="(max-width: 640px) 120px, 160px"
               className="object-cover"
-              style={{
-                objectPosition: `${
-                  product.image_position_x ?? 50
-                }% ${
-                  product.image_position_y ?? 50
-                }%`,
-              }}
+              style={getImageFramingStyle(
+                product.image_position_x ?? 50,
+                product.image_position_y ?? 50,
+                product.image_zoom ?? 100
+              )}
             />
           ) : (
             <div className="flex h-full flex-col items-center justify-center px-3 text-center">

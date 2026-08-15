@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { requireAdminPermission } from "@/lib/admin-auth";
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
 import {
   formatPreorderCurrency,
@@ -17,7 +18,6 @@ import {
   getPreorderRequest,
   savePreorderRequest,
 } from "@/lib/preorder-request-store";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
 import { reserveNextPreorderNumber } from "@/lib/sales-number-store";
 
@@ -30,25 +30,7 @@ export type EditPreorderFormState = {
 };
 
 async function requireAdmin() {
-  const supabase =
-    await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error("Acesso não autorizado.");
-  }
+  await requireAdminPermission("orders");
 }
 
 function revalidateRequest(id: string) {

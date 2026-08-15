@@ -1,9 +1,13 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
+import { requireAdminPermission } from "@/lib/admin-auth";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  removeDailyProductZoom,
+  setDailyProductZoom,
+} from "@/lib/image-display-settings-store";
 
 const PRODUCT_BUCKET = "product-images";
 
@@ -20,30 +24,9 @@ const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
 /* ------------------------------------------------ */
 
 async function ensureAdmin() {
-  const supabase =
-    await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error(
-      "Acesso não autorizado."
-    );
-  }
-
-  return supabase;
+  const access =
+    await requireAdminPermission("catalog");
+  return access.supabase;
 }
 
 /* ------------------------------------------------ */
@@ -206,6 +189,10 @@ export async function createProduct(
     formData.get("image_position_y") ?? 50
   );
 
+  const imageZoom = Number(
+    formData.get("image_zoom") ?? 100
+  );
+
   const available =
     formData.get("available") === "on";
 
@@ -248,7 +235,10 @@ export async function createProduct(
     imagePositionX > 100 ||
     Number.isNaN(imagePositionY) ||
     imagePositionY < 0 ||
-    imagePositionY > 100
+    imagePositionY > 100 ||
+    Number.isNaN(imageZoom) ||
+    imageZoom < 100 ||
+    imageZoom > 180
   ) {
     throw new Error(
       "Posição da imagem inválida."
@@ -298,7 +288,7 @@ export async function createProduct(
   const nextSortOrder =
     (lastProduct?.sort_order ?? 0) + 1;
 
-  const { error } = await supabase
+  const { data: createdProduct, error } = await supabase
     .from("products")
     .insert({
       name,
@@ -314,9 +304,11 @@ export async function createProduct(
       featured,
       active,
       sort_order: nextSortOrder,
-    });
+    })
+    .select("id")
+    .single();
 
-  if (error) {
+  if (error || !createdProduct) {
     if (uploadedPath) {
       await supabase.storage
         .from(PRODUCT_BUCKET)
@@ -326,6 +318,30 @@ export async function createProduct(
     throw new Error(
       "Não foi possível cadastrar o produto."
     );
+  }
+
+  if (imageZoom !== 100) {
+    try {
+      await setDailyProductZoom(
+        createdProduct.id,
+        imageZoom
+      );
+    } catch {
+      await supabase
+        .from("products")
+        .delete()
+        .eq("id", createdProduct.id);
+
+      if (uploadedPath) {
+        await supabase.storage
+          .from(PRODUCT_BUCKET)
+          .remove([uploadedPath]);
+      }
+
+      throw new Error(
+        "Não foi possível salvar o enquadramento da imagem."
+      );
+    }
   }
 
   revalidateProducts();
@@ -367,6 +383,10 @@ export async function updateProduct(
 
     const imagePositionY = Number(
       formData.get("image_position_y") ?? 50
+    );
+
+    const imageZoom = Number(
+      formData.get("image_zoom") ?? 100
     );
 
   const available =
@@ -422,7 +442,10 @@ export async function updateProduct(
     imagePositionX > 100 ||
     Number.isNaN(imagePositionY) ||
     imagePositionY < 0 ||
-    imagePositionY > 100
+    imagePositionY > 100 ||
+    Number.isNaN(imageZoom) ||
+    imageZoom < 100 ||
+    imageZoom > 180
   ) {
     throw new Error(
       "Posição da imagem inválida."
@@ -527,6 +550,8 @@ export async function updateProduct(
       oldImageUrl
     );
   }
+
+  await setDailyProductZoom(id, imageZoom);
 
   revalidateProducts();
 }
@@ -676,6 +701,8 @@ export async function deleteProduct(
       imageUrl
     );
   }
+
+  await removeDailyProductZoom(id);
 
   revalidateProducts();
 }

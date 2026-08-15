@@ -1,9 +1,10 @@
-import { ImageIcon, Package } from "lucide-react";
+import { Package } from "lucide-react";
 
 import DeleteProductDialog from "@/components/admin/DeleteProductDialog";
 import EditProductDialog from "@/components/admin/EditProductDialog";
 import NewProductDialog from "@/components/admin/NewProductDialog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 
 import {
   createProduct,
@@ -52,6 +53,9 @@ export default async function ProdutosPage() {
   if (categoriesError) {
     throw new Error("Não foi possível carregar as categorias.");
   }
+
+  const imageSettings =
+    await getImageDisplaySettings();
 
   return (
     <main className="p-5 sm:p-8">
@@ -110,24 +114,31 @@ export default async function ProdutosPage() {
                     className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between"
                   >
                     <div className="flex items-center gap-4">
-                      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]">
-                        {product.image_url ? (
-                          <img
-                            src={product.image_url}
-                            alt={product.name}
-                            className="h-full w-full object-cover"
-                            style={{
-                              objectPosition: `${
-                                product.image_position_x ?? 50
-                              }% ${
-                                product.image_position_y ?? 50
-                              }%`,
-                            }}
-                          />
-                        ) : (
-                          <ImageIcon size={24} className="text-[#D2B48C]" />
-                        )}
-                      </div>
+                      <EditProductDialog
+                        id={product.id}
+                        name={product.name}
+                        description={product.description}
+                        price={Number(product.price)}
+                        categoryId={product.category_id}
+                        available={product.available}
+                        featured={product.featured}
+                        active={product.active}
+                        categories={categories ?? []}
+                        updateAction={updateProduct}
+                        imageUrl={product.image_url}
+                        imagePositionX={
+                          product.image_position_x ?? 50
+                        }
+                        imagePositionY={
+                          product.image_position_y ?? 50
+                        }
+                        imageZoom={
+                          imageSettings.dailyProductZoom[
+                            product.id
+                          ] ?? 100
+                        }
+                        triggerMode="image"
+                      />
 
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
@@ -151,6 +162,9 @@ export default async function ProdutosPage() {
                             style: "currency",
                             currency: "BRL",
                           }).format(Number(product.price))}
+                        </p>
+                        <p className="mt-1 text-[10px] font-semibold text-[#A3948D]">
+                          Clique na foto para editar e enquadrar
                         </p>
                       </div>
                     </div>
@@ -209,26 +223,6 @@ export default async function ProdutosPage() {
                           {product.active ? "Desativar" : "Ativar"}
                         </button>
                       </form>
-
-                      <EditProductDialog
-                        id={product.id}
-                        name={product.name}
-                        description={product.description}
-                        price={Number(product.price)}
-                        categoryId={product.category_id}
-                        available={product.available}
-                        featured={product.featured}
-                        active={product.active}
-                        categories={categories ?? []}
-                        updateAction={updateProduct}
-                        imageUrl={product.image_url}
-                        imagePositionX={
-                          product.image_position_x ?? 50
-                        }
-                        imagePositionY={
-                          product.image_position_y ?? 50
-                        }
-                      />
 
                       <DeleteProductDialog
                         id={product.id}

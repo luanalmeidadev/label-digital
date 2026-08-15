@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
+import { requireAdminPermission } from "@/lib/admin-auth";
 import {
   getPreorderCatalogForUpdate,
   savePreorderCatalog,
@@ -11,7 +11,10 @@ import type {
   PreorderCategory,
   PreorderPrice,
 } from "@/lib/preorder-menu";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  getImageDisplaySettings,
+  saveImageDisplaySettings,
+} from "@/lib/image-display-settings-store";
 
 const PRODUCT_IMAGE_BUCKET = "product-images";
 const ALLOWED_IMAGE_TYPES = [
@@ -27,27 +30,9 @@ export type UpdatePreorderProductResult = {
 };
 
 async function requireAdmin() {
-  const supabase =
-    await createSupabaseServerClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error("Acesso não autorizado.");
-  }
-
-  return supabase;
+  const access =
+    await requireAdminPermission("catalog");
+  return access.supabase;
 }
 
 function parseAllowedQuantities(
@@ -113,14 +98,17 @@ function validateImage(image: File) {
   }
 }
 
-function createImagePath(image: File) {
+function createImagePath(
+  image: File,
+  folder = "preorders"
+) {
   const extension =
     image.name
       .split(".")
       .pop()
       ?.toLowerCase() ?? "jpg";
 
-  return `preorders/${crypto.randomUUID()}.${extension}`;
+  return `${folder}/${crypto.randomUUID()}.${extension}`;
 }
 
 function extractStoragePath(imageUrl: string) {
@@ -274,6 +262,9 @@ export async function updatePreorderProduct(
   const imagePositionY = Number(
     formData.get("image_position_y") ?? 50
   );
+  const imageZoom = Number(
+    formData.get("image_zoom") ?? 100
+  );
   const newImage = formData.get("image");
 
   if (!categoryId || !productName) {
@@ -375,7 +366,10 @@ export async function updatePreorderProduct(
     imagePositionX > 100 ||
     !Number.isFinite(imagePositionY) ||
     imagePositionY < 0 ||
-    imagePositionY > 100
+    imagePositionY > 100 ||
+    !Number.isFinite(imageZoom) ||
+    imageZoom < 100 ||
+    imageZoom > 180
   ) {
     return {
       success: false,
@@ -495,6 +489,7 @@ export async function updatePreorderProduct(
   product.image = nextImage;
   product.imagePositionX = imagePositionX;
   product.imagePositionY = imagePositionY;
+  product.imageZoom = imageZoom;
 
   try {
     await savePreorderCatalog(catalog);
@@ -526,6 +521,133 @@ export async function updatePreorderProduct(
       if (error) {
         console.error(
           "Erro ao remover imagem antiga da encomenda:",
+          error.message
+        );
+      }
+    }
+  }
+
+  revalidatePath("/encomendas");
+  revalidatePath("/admin/encomendas");
+
+  return { success: true };
+}
+
+export async function updatePreorderHero(
+  formData: FormData
+): Promise<UpdatePreorderProductResult> {
+  const supabase = await requireAdmin();
+  const positionX = Number(
+    formData.get("image_position_x") ?? 50
+  );
+  const positionY = Number(
+    formData.get("image_position_y") ?? 50
+  );
+  const zoom = Number(
+    formData.get("image_zoom") ?? 100
+  );
+  const newImage = formData.get("image");
+
+  if (
+    !Number.isFinite(positionX) ||
+    positionX < 0 ||
+    positionX > 100 ||
+    !Number.isFinite(positionY) ||
+    positionY < 0 ||
+    positionY > 100 ||
+    !Number.isFinite(zoom) ||
+    zoom < 100 ||
+    zoom > 180
+  ) {
+    return {
+      success: false,
+      error: "Revise o enquadramento da imagem.",
+    };
+  }
+
+  const settings = await getImageDisplaySettings();
+  const oldImage = settings.preorderHero.image;
+  let nextImage = oldImage;
+  let uploadedImagePath: string | null = null;
+
+  if (
+    newImage instanceof File &&
+    newImage.size > 0
+  ) {
+    try {
+      validateImage(newImage);
+      uploadedImagePath = createImagePath(
+        newImage,
+        "preorders/hero"
+      );
+      const { error } = await supabase.storage
+        .from(PRODUCT_IMAGE_BUCKET)
+        .upload(uploadedImagePath, newImage, {
+          contentType: newImage.type,
+          upsert: false,
+        });
+
+      if (error) {
+        throw new Error(
+          `Não foi possível enviar a imagem: ${error.message}`
+        );
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage
+        .from(PRODUCT_IMAGE_BUCKET)
+        .getPublicUrl(uploadedImagePath);
+
+      nextImage = publicUrl;
+    } catch (error) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Não foi possível enviar a imagem.",
+      };
+    }
+  }
+
+  settings.preorderHero = {
+    image: nextImage,
+    positionX,
+    positionY,
+    zoom,
+  };
+
+  try {
+    await saveImageDisplaySettings(settings);
+  } catch (error) {
+    if (uploadedImagePath) {
+      await supabase.storage
+        .from(PRODUCT_IMAGE_BUCKET)
+        .remove([uploadedImagePath]);
+    }
+
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Não foi possível salvar a imagem principal.",
+    };
+  }
+
+  if (nextImage !== oldImage) {
+    const oldImagePath =
+      extractStoragePath(oldImage);
+
+    if (oldImagePath) {
+      const { error } = await supabase.storage
+        .from(PRODUCT_IMAGE_BUCKET)
+        .remove([oldImagePath]);
+
+      if (error) {
+        console.error(
+          "Erro ao remover imagem principal antiga:",
           error.message
         );
       }

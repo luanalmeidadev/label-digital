@@ -1,13 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
+import { requireAnyAdminPermission } from "@/lib/admin-auth";
 import {
   isNotifiableOrderStatus,
   type UpdateOrderStatusResult,
 } from "@/lib/order-status";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const allowedStatuses = [
   "created",
@@ -20,30 +19,11 @@ const allowedStatuses = [
 ];
 
 async function ensureAdmin() {
-  const supabase =
-    await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/admin/login");
-  }
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("id")
-    .eq("id", user.id)
-    .single();
-
-  if (!admin) {
-    throw new Error(
-      "Acesso não autorizado."
-    );
-  }
-
-  return supabase;
+  const access = await requireAnyAdminPermission([
+    "orders",
+    "deliveries",
+  ]);
+  return access.supabase;
 }
 
 function revalidateOrders(orderId: string) {

@@ -17,9 +17,19 @@ import {
   Truck,
   Users,
   X,
+  type LucideIcon,
 } from "lucide-react";
+import type {
+  AdminPermission,
+  AdminRole,
+} from "@/lib/admin-permissions";
 
-const menuItems = [
+const menuItems: Array<{
+  label: string;
+  href: string;
+  icon: LucideIcon;
+  permission?: AdminPermission;
+}> = [
   {
     label: "Visão geral",
     href: "/admin",
@@ -29,45 +39,61 @@ const menuItems = [
     label: "Produtos",
     href: "/admin/produtos",
     icon: Package,
+    permission: "catalog",
   },
   {
     label: "Encomendas",
     href: "/admin/encomendas",
     icon: CakeSlice,
+    permission: "catalog",
   },
   {
     label: "Categorias",
     href: "/admin/categorias",
     icon: Tags,
+    permission: "catalog",
   },
   {
     label: "Pedidos",
     href: "/admin/pedidos",
     icon: ShoppingBag,
+    permission: "orders",
   },
   {
     label: "Clientes",
     href: "/admin/clientes",
     icon: Users,
+    permission: "customers",
   },
   {
     label: "Entregas",
     href: "/admin/entregas",
     icon: Truck,
+    permission: "deliveries",
   },
   {
     label: "Faturamento",
     href: "/admin/faturamento",
     icon: BadgeDollarSign,
+    permission: "billing",
   },
   {
     label: "Configurações",
     href: "/admin/configuracoes",
     icon: Settings,
+    permission: "settings",
   },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({
+  permissions,
+  role,
+  name,
+}: {
+  permissions: AdminPermission[];
+  role: AdminRole;
+  name: string;
+}) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -92,7 +118,13 @@ export default function AdminSidebar() {
 
   const navigation = (
     <nav className="space-y-1">
-      {menuItems.map((item) => {
+      {menuItems
+        .filter(
+          (item) =>
+            !item.permission ||
+            permissions.includes(item.permission)
+        )
+        .map((item) => {
         const Icon = item.icon;
         const active = isActive(item.href);
 
@@ -112,7 +144,7 @@ export default function AdminSidebar() {
             {item.label}
           </Link>
         );
-      })}
+        })}
     </nav>
   );
 
@@ -135,7 +167,12 @@ export default function AdminSidebar() {
             />
 
             <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#D2B48C]">
-              Administração
+              {role === "admin"
+                ? "Administração"
+                : "Atendimento"}
+            </p>
+            <p className="mt-1 truncate text-xs text-white/60">
+              {name}
             </p>
           </div>
 
@@ -197,7 +234,12 @@ export default function AdminSidebar() {
                 />
 
                 <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#D2B48C]">
-                  Administração
+                  {role === "admin"
+                    ? "Administração"
+                    : "Atendimento"}
+                </p>
+                <p className="mt-1 max-w-[190px] truncate text-xs text-white/60">
+                  {name}
                 </p>
               </div>
 

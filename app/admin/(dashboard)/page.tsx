@@ -11,7 +11,8 @@ import {
   WalletCards,
 } from "lucide-react";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getAdminAccess } from "@/lib/admin-auth";
+import { hasAdminPermission } from "@/lib/admin-permissions";
 import { listPreorderRequests } from "@/lib/preorder-request-store";
 import { getPreorderPaymentStatus } from "@/lib/preorder-request";
 import { logoutAdmin } from "../logout/actions";
@@ -51,18 +52,33 @@ function formatDate(value: string) {
 }
 
 export default async function AdminPage() {
-  const supabase =
-    await createSupabaseServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const { data: admin } = await supabase
-    .from("admin_profiles")
-    .select("name")
-    .eq("id", user!.id)
-    .single();
+  const access = await getAdminAccess();
+  const supabase = access.supabase;
+  const admin = access.profile;
+  const canAccessCatalog = hasAdminPermission(
+    access.permissions,
+    "catalog"
+  );
+  const canAccessOrders = hasAdminPermission(
+    access.permissions,
+    "orders"
+  );
+  const canAccessCustomers = hasAdminPermission(
+    access.permissions,
+    "customers"
+  );
+  const canAccessDeliveries = hasAdminPermission(
+    access.permissions,
+    "deliveries"
+  );
+  const canAccessBilling = hasAdminPermission(
+    access.permissions,
+    "billing"
+  );
+  const canAccessSettings = hasAdminPermission(
+    access.permissions,
+    "settings"
+  );
 
   /*
    * =========================================
@@ -386,39 +402,46 @@ export default async function AdminPage() {
    */
 
   const stats = [
-    {
+    ...(canAccessCatalog
+      ? [{
       label: "Produtos ativos",
       value: String(
         activeProductsCount ?? 0
       ),
       icon: Package,
-    },
-    {
+      }]
+      : []),
+    ...(canAccessOrders
+      ? [{
       label: "Pedidos hoje",
       value: String(
         todayOrdersCount ?? 0
       ),
       icon: ShoppingBag,
-    },
-    {
+      }, {
       label: "Encomendas hoje",
       value: String(todayPreordersCount),
       icon: CakeSlice,
-    },
-    {
+      }]
+      : []),
+    ...(canAccessCustomers
+      ? [{
       label: "Clientes",
       value: String(
         customersCount ?? 0
       ),
       icon: Users,
-    },
-    {
+      }]
+      : []),
+    ...(canAccessBilling
+      ? [{
       label: "Faturamento hoje",
       value: formatCurrency(
         combinedTodayRevenue
       ),
       icon: CircleDollarSign,
-    },
+      }]
+      : []),
   ];
 
   return (
@@ -483,7 +506,9 @@ export default async function AdminPage() {
         </section>
 
         {/* RESUMO OPERACIONAL */}
+        {(canAccessOrders || canAccessBilling) && (
         <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+          {canAccessOrders && (
           <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
@@ -504,7 +529,9 @@ export default async function AdminPage() {
               </div>
             </div>
           </article>
+          )}
 
+          {canAccessOrders && (
           <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
@@ -522,7 +549,9 @@ export default async function AdminPage() {
               </div>
             </div>
           </article>
+          )}
 
+          {canAccessOrders && (
           <Link
             href="/admin/pedidos/encomendas/calendario"
             className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm transition hover:border-[#D2B48C]"
@@ -541,7 +570,9 @@ export default async function AdminPage() {
               </div>
             </div>
           </Link>
+          )}
 
+          {canAccessOrders && (
           <Link
             href="/admin/pedidos/encomendas"
             className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm transition hover:border-[#D2B48C]"
@@ -560,7 +591,9 @@ export default async function AdminPage() {
               </div>
             </div>
           </Link>
+          )}
 
+          {canAccessBilling && (
           <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-700">
@@ -582,8 +615,11 @@ export default async function AdminPage() {
               </div>
             </div>
           </article>
+          )}
         </section>
+        )}
 
+        {canAccessBilling && (
         <section className="mt-6 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
           <div className="border-b border-[#EEE6DF] p-5">
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
@@ -634,10 +670,18 @@ export default async function AdminPage() {
             </Link>
           </div>
         </section>
+        )}
 
         {/* CONTEÚDO INFERIOR */}
-        <section className="mt-8 grid gap-6 xl:grid-cols-[1.4fr_1fr]">
+        <section
+          className={`mt-8 grid gap-6 ${
+            canAccessOrders
+              ? "xl:grid-cols-[1.4fr_1fr]"
+              : "xl:grid-cols-1"
+          }`}
+        >
           {/* PEDIDOS RECENTES */}
+          {canAccessOrders && (
           <div className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
             <div className="flex items-center justify-between border-b border-[#EEE6DF] p-6">
               <div>
@@ -650,12 +694,14 @@ export default async function AdminPage() {
                 </h2>
               </div>
 
+              {canAccessOrders && (
               <Link
                 href="/admin/pedidos"
                 className="text-sm font-bold text-[#8B0000] transition hover:underline"
               >
                 Ver todos
               </Link>
+              )}
             </div>
 
             {recentOrders &&
@@ -750,6 +796,7 @@ export default async function AdminPage() {
               </div>
             )}
           </div>
+          )}
 
           {/* ACESSOS RÁPIDOS */}
           <div className="rounded-3xl bg-[#D2B48C] p-6">
@@ -767,6 +814,7 @@ export default async function AdminPage() {
             </p>
 
             <div className="mt-6 grid gap-3">
+              {canAccessOrders && (
               <Link
                 href="/admin/pedidos"
                 className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
@@ -775,7 +823,9 @@ export default async function AdminPage() {
 
                 <span>→</span>
               </Link>
+              )}
 
+              {canAccessCatalog && (
               <Link
                 href="/admin/produtos"
                 className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
@@ -784,7 +834,9 @@ export default async function AdminPage() {
 
                 <span>→</span>
               </Link>
+              )}
 
+              {canAccessOrders && (
               <Link
                 href="/admin/pedidos/encomendas"
                 className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
@@ -793,7 +845,9 @@ export default async function AdminPage() {
 
                 <span>→</span>
               </Link>
+              )}
 
+              {canAccessCustomers && (
               <Link
                 href="/admin/clientes"
                 className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
@@ -802,7 +856,20 @@ export default async function AdminPage() {
 
                 <span>→</span>
               </Link>
+              )}
 
+              {canAccessDeliveries && (
+              <Link
+                href="/admin/entregas"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+              >
+                Entregas
+
+                <span>→</span>
+              </Link>
+              )}
+
+              {canAccessBilling && (
               <Link
                 href="/admin/faturamento"
                 className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
@@ -811,6 +878,18 @@ export default async function AdminPage() {
 
                 <span>→</span>
               </Link>
+              )}
+
+              {canAccessSettings && (
+              <Link
+                href="/admin/configuracoes"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+              >
+                Configurações
+
+                <span>→</span>
+              </Link>
+              )}
             </div>
           </div>
         </section>
