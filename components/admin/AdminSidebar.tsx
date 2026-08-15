@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -23,6 +22,7 @@ import type {
   AdminPermission,
   AdminRole,
 } from "@/lib/admin-permissions";
+import BrandLogo from "@/components/brand/BrandLogo";
 
 const menuItems: Array<{
   label: string;
@@ -157,14 +157,7 @@ export default function AdminSidebar({
       <aside className="hidden min-h-screen w-64 shrink-0 border-r border-white/10 bg-[#8B0000] lg:block">
         <div className="flex h-full flex-col px-4 py-6">
           <div className="mb-8 px-3">
-            <Image
-              src="/brand/logo-creme.svg"
-              alt="La'bel Confeitaria"
-              width={150}
-              height={60}
-              className="h-[60px] w-[150px]"
-              priority
-            />
+            <BrandLogo variant="sidebar" eager />
 
             <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#D2B48C]">
               {role === "admin"
@@ -185,14 +178,7 @@ export default function AdminSidebar({
       ===================================== */}
 
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#EEE6DF] bg-[#8B0000] px-4 lg:hidden">
-        <Image
-          src="/brand/logo-creme.svg"
-          alt="La'bel Confeitaria"
-          width={105}
-          height={42}
-          className="h-[42px] w-[105px]"
-          priority
-        />
+        <BrandLogo variant="mobile" eager />
 
         <button
           type="button"
@@ -224,14 +210,7 @@ export default function AdminSidebar({
           <aside className="relative z-10 flex h-full w-[84%] max-w-xs flex-col bg-[#8B0000] px-4 py-5 shadow-2xl">
             <div className="mb-7 flex items-start justify-between gap-4 px-2">
               <div>
-                <Image
-                  src="/brand/logo-creme.svg"
-                  alt="La'bel Confeitaria"
-                  width={135}
-                  height={55}
-                  className="h-[55px] w-[135px]"
-                  priority
-                />
+                <BrandLogo variant="drawer" eager />
 
                 <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#D2B48C]">
                   {role === "admin"

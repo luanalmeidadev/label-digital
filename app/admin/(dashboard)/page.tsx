@@ -10,11 +10,13 @@ import {
   Users,
   WalletCards,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import { getAdminAccess } from "@/lib/admin-auth";
 import { hasAdminPermission } from "@/lib/admin-permissions";
 import { listPreorderRequests } from "@/lib/preorder-request-store";
 import { getPreorderPaymentStatus } from "@/lib/preorder-request";
+import { cn } from "@/lib/utils";
 import { logoutAdmin } from "../logout/actions";
 
 const statusLabels: Record<string, string> = {
@@ -49,6 +51,75 @@ function formatDate(value: string) {
     dateStyle: "short",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+type MetricTone =
+  | "brand"
+  | "amber"
+  | "orange"
+  | "blue"
+  | "red"
+  | "green";
+
+type OverviewMetric = {
+  label: string;
+  value: string;
+  icon: LucideIcon;
+  href?: string;
+  tone?: MetricTone;
+};
+
+const metricToneClasses: Record<MetricTone, string> = {
+  brand: "bg-[#8B0000]/10 text-[#8B0000]",
+  amber: "bg-amber-100 text-amber-700",
+  orange: "bg-orange-100 text-orange-700",
+  blue: "bg-blue-100 text-blue-700",
+  red: "bg-red-100 text-red-700",
+  green: "bg-green-100 text-green-700",
+};
+
+function OverviewMetricCard({ metric }: { metric: OverviewMetric }) {
+  const Icon = metric.icon;
+  const cardClassName =
+    "flex min-h-40 flex-col rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:min-h-44 sm:p-5";
+
+  const content = (
+    <>
+      <div
+        className={cn(
+          "flex h-11 w-11 items-center justify-center rounded-xl",
+          metricToneClasses[metric.tone ?? "brand"]
+        )}
+      >
+        <Icon size={21} strokeWidth={1.9} />
+      </div>
+
+      <div className="mt-auto pt-4">
+        <p className="min-h-10 text-sm leading-5 text-[#756A66]">
+          {metric.label}
+        </p>
+        <p className="mt-1 text-xl font-bold leading-tight text-[#241B19] sm:text-2xl">
+          {metric.value}
+        </p>
+      </div>
+    </>
+  );
+
+  if (metric.href) {
+    return (
+      <Link
+        href={metric.href}
+        className={cn(
+          cardClassName,
+          "transition duration-200 hover:-translate-y-0.5 hover:border-[#D2B48C] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8B0000]"
+        )}
+      >
+        {content}
+      </Link>
+    );
+  }
+
+  return <article className={cardClassName}>{content}</article>;
 }
 
 export default async function AdminPage() {
@@ -401,7 +472,7 @@ export default async function AdminPage() {
    * =========================================
    */
 
-  const stats = [
+  const stats: OverviewMetric[] = [
     ...(canAccessCatalog
       ? [{
       label: "Produtos ativos",
@@ -444,6 +515,49 @@ export default async function AdminPage() {
       : []),
   ];
 
+  const operationalStats: OverviewMetric[] = [
+    ...(canAccessOrders
+      ? [
+          {
+            label: "Pedidos em andamento",
+            value: String(openOrdersCount ?? 0),
+            icon: ShoppingBag,
+            tone: "amber" as const,
+          },
+          {
+            label: "Encomendas em andamento",
+            value: String(openPreorders.length),
+            icon: CakeSlice,
+            tone: "orange" as const,
+          },
+          {
+            label: "Próximos 7 dias",
+            value: String(upcomingPreordersCount),
+            icon: CalendarRange,
+            href: "/admin/pedidos/encomendas/calendario",
+            tone: "blue" as const,
+          },
+          {
+            label: "Sinais pendentes",
+            value: String(pendingDepositCount),
+            icon: WalletCards,
+            href: "/admin/pedidos/encomendas",
+            tone: "red" as const,
+          },
+        ]
+      : []),
+    ...(canAccessBilling
+      ? [
+          {
+            label: "Faturamento deste mês",
+            value: formatCurrency(combinedMonthRevenue),
+            icon: BadgeDollarSign,
+            tone: "green" as const,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <main className="p-5 sm:p-8">
       <div className="mx-auto max-w-7xl">
@@ -478,144 +592,28 @@ export default async function AdminPage() {
         </div>
 
         {/* CARDS PRINCIPAIS */}
-        <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-5">
-          {stats.map((stat) => {
-            const Icon = stat.icon;
-
-            return (
-              <article
-                key={stat.label}
-                className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
-                    <Icon size={21} />
-                  </div>
-                </div>
-
-                <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
-                  {stat.label}
-                </p>
-
-                <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
-                  {stat.value}
-                </p>
-              </article>
-            );
-          })}
+        <section className="mt-8">
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+            Indicadores principais
+          </h2>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
+            {stats.map((metric) => (
+              <OverviewMetricCard key={metric.label} metric={metric} />
+            ))}
+          </div>
         </section>
 
         {/* RESUMO OPERACIONAL */}
-        {(canAccessOrders || canAccessBilling) && (
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          {canAccessOrders && (
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-                <ShoppingBag
-                  size={19}
-                />
-              </div>
-
-              <div>
-                <p className="text-sm text-[#756A66]">
-                  Pedidos em andamento
-                </p>
-
-                <p className="mt-1 text-xl font-bold text-[#241B19]">
-                  {openOrdersCount ??
-                    0}
-                </p>
-              </div>
-            </div>
-          </article>
-          )}
-
-          {canAccessOrders && (
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
-                <CakeSlice size={19} />
-              </div>
-
-              <div>
-                <p className="text-sm text-[#756A66]">
-                  Encomendas em andamento
-                </p>
-
-                <p className="mt-1 text-xl font-bold text-[#241B19]">
-                  {openPreorders.length}
-                </p>
-              </div>
-            </div>
-          </article>
-          )}
-
-          {canAccessOrders && (
-          <Link
-            href="/admin/pedidos/encomendas/calendario"
-            className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm transition hover:border-[#D2B48C]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
-                <CalendarRange size={19} />
-              </div>
-              <div>
-                <p className="text-sm text-[#756A66]">
-                  Próximos 7 dias
-                </p>
-                <p className="mt-1 text-xl font-bold text-[#241B19]">
-                  {upcomingPreordersCount}
-                </p>
-              </div>
-            </div>
-          </Link>
-          )}
-
-          {canAccessOrders && (
-          <Link
-            href="/admin/pedidos/encomendas"
-            className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm transition hover:border-[#D2B48C]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-700">
-                <WalletCards size={19} />
-              </div>
-              <div>
-                <p className="text-sm text-[#756A66]">
-                  Sinais pendentes
-                </p>
-                <p className="mt-1 text-xl font-bold text-[#241B19]">
-                  {pendingDepositCount}
-                </p>
-              </div>
-            </div>
-          </Link>
-          )}
-
-          {canAccessBilling && (
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-5 shadow-sm">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-green-700">
-                <BadgeDollarSign
-                  size={19}
-                />
-              </div>
-
-              <div>
-                <p className="text-sm text-[#756A66]">
-                  Faturamento deste mês
-                </p>
-
-                <p className="mt-1 text-xl font-bold text-[#241B19]">
-                  {formatCurrency(
-                    combinedMonthRevenue
-                  )}
-                </p>
-              </div>
-            </div>
-          </article>
-          )}
+        {operationalStats.length > 0 && (
+        <section className="mt-6">
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+            Operação e agenda
+          </h2>
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
+            {operationalStats.map((metric) => (
+              <OverviewMetricCard key={metric.label} metric={metric} />
+            ))}
+          </div>
         </section>
         )}
 

@@ -13,6 +13,7 @@ import {
   Sparkles,
 } from "lucide-react";
 
+import BrandLogo from "@/components/brand/BrandLogo";
 import PreorderWhatsAppButton from "@/components/store/PreorderWhatsAppButton";
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
@@ -161,14 +162,7 @@ export default async function EncomendasPage() {
             href="/"
             aria-label="Voltar para o cardápio do dia"
           >
-            <Image
-              src="/brand/logo-creme.svg"
-              alt="La'Bel Confeitaria"
-              width={175}
-              height={70}
-              loading="eager"
-              className="h-[56px] w-[140px] sm:h-[70px] sm:w-[175px]"
-            />
+            <BrandLogo eager />
           </Link>
 
           <Link
@@ -396,13 +390,7 @@ export default async function EncomendasPage() {
 
       <footer className="bg-[#241B19] text-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-9 sm:flex-row sm:items-center sm:justify-between">
-          <Image
-            src="/brand/logo-creme.svg"
-            alt="La'Bel Confeitaria"
-            width={150}
-            height={60}
-            className="h-[54px] w-[135px]"
-          />
+          <BrandLogo variant="footer" />
 
           <div className="flex flex-col gap-3 text-sm text-white/75 sm:flex-row sm:items-center sm:gap-6">
             <a

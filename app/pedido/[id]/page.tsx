@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -12,6 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 
+import BrandLogo from "@/components/brand/BrandLogo";
 import OrderTrackingRefresh from "@/components/store/OrderTrackingRefresh";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -165,14 +165,7 @@ export default async function OrderTrackingPage({
             className="inline-flex"
             aria-label="Voltar ao cardápio da La’Bel"
           >
-            <Image
-              src="/brand/logo-creme.svg"
-              alt="La’Bel Confeitaria"
-              width={125}
-              height={50}
-              className="h-[50px] w-[125px]"
-              priority
-            />
+            <BrandLogo variant="order" eager />
           </Link>
 
           <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-[#F7E8DA]">

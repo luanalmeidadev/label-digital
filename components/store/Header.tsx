@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { ShoppingBag } from "lucide-react";
 
+import BrandLogo from "@/components/brand/BrandLogo";
 import { useCart } from "./CartProvider";
 
 export default function Header() {
@@ -11,14 +11,7 @@ export default function Header() {
   return (
     <header className="bg-[#8B0000]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <Image
-          src="/brand/logo-creme.svg"
-          alt="La'bel Confeitaria"
-          width={180}
-          height={70}
-          priority
-          className="h-[56px] w-[145px] sm:h-[68px] sm:w-[175px]"
-        />
+        <BrandLogo eager />
 
         <button
           type="button"

@@ -5,6 +5,7 @@ import MenuSections from "@/components/store/MenuSections";
 import PreorderBanner from "@/components/store/PreorderBanner";
 import CartProvider from "@/components/store/CartProvider";
 import CartUI from "@/components/store/CartUI";
+import StoreRealtimeRefresh from "@/components/store/StoreRealtimeRefresh";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
@@ -76,7 +77,20 @@ export default async function Home() {
     Boolean(productsResult.error);
 
   return (
-    <CartProvider>
+    <CartProvider
+      catalogProducts={
+        productsResult.error
+          ? undefined
+          : products.map((product) => ({
+              id: product.id,
+              name: product.name,
+              price: Number(product.price),
+              image_url: product.image_url,
+              available: product.available,
+            }))
+      }
+    >
+      <StoreRealtimeRefresh />
       <main className="min-h-screen bg-[#FFFDF9]">
         <Header />
         <Hero />

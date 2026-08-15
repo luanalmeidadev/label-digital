@@ -18,6 +18,10 @@ export type CartItem = CartProduct & {
   quantity: number;
 };
 
+type CatalogProduct = CartProduct & {
+  available: boolean;
+};
+
 type CartContextType = {
   items: CartItem[];
   totalItems: number;
@@ -34,32 +38,95 @@ const CartContext =
 
 const STORAGE_KEY = "label-cart";
 
+function synchronizeCart(
+  items: CartItem[],
+  catalogProducts: CatalogProduct[]
+) {
+  const catalog = new Map(
+    catalogProducts.map((product) => [product.id, product])
+  );
+
+  const synchronizedItems = items.flatMap((item) => {
+    const product = catalog.get(item.id);
+
+    if (!product?.available) {
+      return [];
+    }
+
+    return [
+      {
+        id: product.id,
+        name: product.name,
+        price: Number(product.price),
+        image_url: product.image_url,
+        quantity: item.quantity,
+      },
+    ];
+  });
+
+  const unchanged =
+    synchronizedItems.length === items.length &&
+    synchronizedItems.every((item, index) => {
+      const current = items[index];
+
+      return (
+        current?.id === item.id &&
+        current.name === item.name &&
+        Number(current.price) === item.price &&
+        current.image_url === item.image_url &&
+        current.quantity === item.quantity
+      );
+    });
+
+  return unchanged ? items : synchronizedItems;
+}
+
 export default function CartProvider({
   children,
+  catalogProducts,
 }: {
   children: React.ReactNode;
+  catalogProducts?: CatalogProduct[];
 }) {
   const [items, setItems] = useState<CartItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    try {
-      const savedCart =
-        window.localStorage.getItem(STORAGE_KEY);
+    const loadTimer = window.setTimeout(() => {
+      try {
+        const savedCart =
+          window.localStorage.getItem(STORAGE_KEY);
 
-      if (savedCart) {
-        const parsed = JSON.parse(savedCart);
+        if (savedCart) {
+          const parsed = JSON.parse(savedCart);
 
-        if (Array.isArray(parsed)) {
-          setItems(parsed);
+          if (Array.isArray(parsed)) {
+            setItems(parsed);
+          }
         }
+      } catch {
+        window.localStorage.removeItem(STORAGE_KEY);
       }
-    } catch {
-      window.localStorage.removeItem(STORAGE_KEY);
+
+      setLoaded(true);
+    }, 0);
+
+    return () => window.clearTimeout(loadTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!loaded || !catalogProducts) {
+      return;
     }
 
-    setLoaded(true);
-  }, []);
+    const syncTimer = window.setTimeout(() => {
+      setItems((current) =>
+        synchronizeCart(current, catalogProducts)
+      );
+    }, 0);
+
+    return () => window.clearTimeout(syncTimer);
+  }, [catalogProducts, loaded]);
 
   useEffect(() => {
     if (!loaded) return;
