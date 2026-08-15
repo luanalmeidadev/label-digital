@@ -10,6 +10,16 @@ import {
 } from "@/lib/preorder-request";
 import { savePreorderRequest } from "@/lib/preorder-request-store";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
+import {
+  beginIdempotentRequest,
+  completeIdempotentRequest,
+  createActionFingerprint,
+  enforcePublicOrderRateLimit,
+  inspectIdempotentRequest,
+  releaseIdempotentRequest,
+  validateIdempotencyKey,
+  verifyTurnstileToken,
+} from "@/lib/public-action-security";
 import { reserveNextPreorderNumber } from "@/lib/sales-number-store";
 
 export type CreatePreorderRequestResult = {
@@ -69,6 +79,12 @@ function parseFlavors(value: FormDataEntryValue | null) {
 export async function createPreorderRequest(
   formData: FormData
 ): Promise<CreatePreorderRequestResult> {
+  const idempotencyKey = String(
+    formData.get("idempotency_key") ?? ""
+  );
+  const turnstileToken = String(
+    formData.get("turnstile_token") ?? ""
+  );
   const customerName = String(
     formData.get("customer_name") ?? ""
   ).trim();
@@ -114,6 +130,18 @@ export async function createPreorderRequest(
   }
 
   if (
+    !validateIdempotencyKey(
+      idempotencyKey
+    )
+  ) {
+    return {
+      success: false,
+      error:
+        "Não foi possível identificar esta solicitação. Atualize a página e tente novamente.",
+    };
+  }
+
+  if (
     customerPhone.length < 12 ||
     customerPhone.length > 13
   ) {
@@ -150,6 +178,83 @@ export async function createPreorderRequest(
       success: false,
       error: "Revise os detalhes da encomenda.",
     };
+  }
+
+  if (
+    productName.length < 2 ||
+    productName.length > 150 ||
+    optionLabel.length > 150 ||
+    desiredDate.length > 10 ||
+    flavors.length > 20 ||
+    flavors.some(
+      (flavor) => flavor.length > 100
+    )
+  ) {
+    return {
+      success: false,
+      error:
+        "Revise os detalhes da encomenda.",
+    };
+  }
+
+  const requestFingerprint =
+    createActionFingerprint({
+      customerName,
+      customerPhone,
+      productName,
+      optionLabel,
+      quantity,
+      desiredDate,
+      fulfillmentType,
+      deliveryAddress,
+      notes,
+      flavors: [...flavors].sort(),
+    });
+  const previousRequest =
+    await inspectIdempotentRequest<CreatePreorderRequestResult>(
+      "preorder",
+      idempotencyKey,
+      requestFingerprint
+    );
+
+  if (previousRequest.state === "completed") {
+    return previousRequest.result;
+  }
+
+  if (previousRequest.state === "pending") {
+    return {
+      success: false,
+      error:
+        "Esta encomenda já está sendo processada. Aguarde alguns segundos.",
+    };
+  }
+
+  if (previousRequest.state === "conflict") {
+    return {
+      success: false,
+      error:
+        "Esta solicitação não corresponde à encomenda atual. Atualize a página e tente novamente.",
+    };
+  }
+
+  const rateLimit =
+    await enforcePublicOrderRateLimit(
+      customerPhone
+    );
+
+  if (!rateLimit.success) {
+    return rateLimit;
+  }
+
+  const turnstile =
+    await verifyTurnstileToken(
+      turnstileToken,
+      "preorder",
+      rateLimit.ip
+    );
+
+  if (!turnstile.success) {
+    return turnstile;
   }
 
   const catalog = await getPreorderCatalog();
@@ -246,51 +351,99 @@ export async function createPreorderRequest(
     };
   }
 
-  const id = crypto.randomUUID();
-  const now = new Date().toISOString();
-  const requestNumber =
-    await reserveNextPreorderNumber();
-  const request: PreorderRequest = {
-    id,
-    requestNumber,
-    status: "new",
-    createdAt: now,
-    updatedAt: now,
-    desiredDate,
-    customerName,
-    customerPhone,
-    productName,
-    optionLabel:
-      option?.label ?? "Personalizada",
-    optionPrice:
-      option?.value ?? "A confirmar",
-    total: product
-      ? calculatePreorderTotal(
-          product,
-          option?.value ?? "",
-          quantity
-        )
-      : parsePreorderPrice(
-          option?.value ?? ""
-        ) * quantity,
-    amountPaid: 0,
-    quantity,
-    quantityUnit,
-    flavors,
-    fulfillmentType:
-      fulfillmentType as "pickup" | "delivery",
-    deliveryAddress:
-      fulfillmentType === "delivery"
-        ? deliveryAddress
-        : "",
-    notes,
-    completedAt: null,
-    source: "online",
-  };
+  const idempotency =
+    await beginIdempotentRequest<CreatePreorderRequestResult>(
+      "preorder",
+      idempotencyKey,
+      requestFingerprint
+    );
+
+  if (idempotency.state === "completed") {
+    return idempotency.result;
+  }
+
+  if (idempotency.state === "pending") {
+    return {
+      success: false,
+      error:
+        "Esta encomenda já está sendo processada. Aguarde alguns segundos.",
+    };
+  }
+
+  if (idempotency.state === "conflict") {
+    return {
+      success: false,
+      error:
+        "Esta solicitação não corresponde à encomenda atual. Atualize a página e tente novamente.",
+    };
+  }
 
   try {
+    const id = crypto.randomUUID();
+    const now = new Date().toISOString();
+    const requestNumber =
+      await reserveNextPreorderNumber();
+    const request: PreorderRequest = {
+      id,
+      requestNumber,
+      status: "new",
+      createdAt: now,
+      updatedAt: now,
+      desiredDate,
+      customerName,
+      customerPhone,
+      productName,
+      optionLabel:
+        option?.label ?? "Personalizada",
+      optionPrice:
+        option?.value ?? "A confirmar",
+      total: product
+        ? calculatePreorderTotal(
+            product,
+            option?.value ?? "",
+            quantity
+          )
+        : parsePreorderPrice(
+            option?.value ?? ""
+          ) * quantity,
+      amountPaid: 0,
+      quantity,
+      quantityUnit,
+      flavors,
+      fulfillmentType:
+        fulfillmentType as
+          | "pickup"
+          | "delivery",
+      deliveryAddress:
+        fulfillmentType === "delivery"
+          ? deliveryAddress
+          : "",
+      notes,
+      completedAt: null,
+      source: "online",
+    };
+
     await savePreorderRequest(request);
+    const result: CreatePreorderRequestResult = {
+      success: true,
+      requestId: id,
+      requestNumber,
+    };
+
+    await completeIdempotentRequest(
+      "preorder",
+      idempotencyKey,
+      requestFingerprint,
+      result
+    );
+
+    return result;
   } catch (error) {
+    await releaseIdempotentRequest(
+      "preorder",
+      idempotencyKey
+    );
+
     return {
       success: false,
       error:
@@ -299,10 +452,4 @@ export async function createPreorderRequest(
           : "Não foi possível registrar a encomenda.",
     };
   }
-
-  return {
-    success: true,
-    requestId: id,
-    requestNumber,
-  };
 }

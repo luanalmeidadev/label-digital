@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAnyAdminPermission } from "@/lib/admin-auth";
+import { hasAdminPermission } from "@/lib/admin-permissions";
 import {
   isNotifiableOrderStatus,
   type UpdateOrderStatusResult,
@@ -19,11 +20,40 @@ const allowedStatuses = [
 ];
 
 async function ensureAdmin() {
-  const access = await requireAnyAdminPermission([
+  return requireAnyAdminPermission([
     "orders",
     "deliveries",
   ]);
-  return access.supabase;
+}
+
+function isAllowedStatusTransition(
+  currentStatus: string,
+  nextStatus: string,
+  orderType: string
+) {
+  if (nextStatus === "cancelled") {
+    return true;
+  }
+
+  if (currentStatus === "created") {
+    return nextStatus === "sent_to_whatsapp";
+  }
+
+  if (currentStatus === "sent_to_whatsapp") {
+    return nextStatus === "confirmed";
+  }
+
+  if (currentStatus === "confirmed") {
+    return orderType === "delivery"
+      ? nextStatus === "out_for_delivery"
+      : nextStatus === "ready_for_pickup";
+  }
+
+  return (
+    (currentStatus === "out_for_delivery" ||
+      currentStatus === "ready_for_pickup") &&
+    nextStatus === "completed"
+  );
 }
 
 function revalidateOrders(orderId: string) {
@@ -36,8 +66,12 @@ function revalidateOrders(orderId: string) {
 export async function updateOrderStatus(
   formData: FormData
 ): Promise<UpdateOrderStatusResult> {
-  const supabase =
-    await ensureAdmin();
+  const access = await ensureAdmin();
+  const supabase = access.supabase;
+  const canManageOrders = hasAdminPermission(
+    access.permissions,
+    "orders"
+  );
 
   const id = String(
     formData.get("id") ?? ""
@@ -79,6 +113,19 @@ export async function updateOrderStatus(
     );
   }
 
+  if (
+    !canManageOrders &&
+    (order.order_type !== "delivery" ||
+      ![
+        "out_for_delivery",
+        "completed",
+      ].includes(status))
+  ) {
+    throw new Error(
+      "Você não tem permissão para realizar esta alteração."
+    );
+  }
+
   if (order.status === "completed") {
     throw new Error(
       "Pedidos finalizados não podem ter o status alterado."
@@ -88,6 +135,18 @@ export async function updateOrderStatus(
   if (order.status === "cancelled") {
     throw new Error(
       "Pedidos cancelados não podem ter o status alterado."
+    );
+  }
+
+  if (
+    !isAllowedStatusTransition(
+      order.status,
+      status,
+      order.order_type
+    )
+  ) {
+    throw new Error(
+      "Essa alteração não corresponde à próxima etapa do pedido."
     );
   }
 

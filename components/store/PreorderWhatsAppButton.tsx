@@ -3,6 +3,7 @@
 import {
   type FormEvent,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -24,6 +25,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import TurnstileWidget from "@/components/store/TurnstileWidget";
+import { createClientRequestId } from "@/lib/client-request-id";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
 import type { PreorderProduct } from "@/lib/preorder-menu";
 import {
@@ -214,6 +217,11 @@ export default function PreorderWhatsAppButton({
   const [notes, setNotes] = useState("");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [turnstileToken, setTurnstileToken] =
+    useState("");
+  const [turnstileResetKey, setTurnstileResetKey] =
+    useState(0);
+  const idempotencyKeyRef = useRef("");
 
   const minimumDate = useMemo(
     () => getMinimumDate(leadTimeDays),
@@ -395,6 +403,18 @@ export default function PreorderWhatsAppButton({
       return;
     }
 
+    if (!turnstileToken) {
+      setError(
+        "Confirme a verificação de segurança."
+      );
+      return;
+    }
+
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current =
+        createClientRequestId();
+    }
+
     const isMobile =
       /Android|iPhone|iPad|iPod/i.test(
         navigator.userAgent
@@ -410,6 +430,14 @@ export default function PreorderWhatsAppButton({
     setSaving(true);
 
     const formData = new FormData();
+    formData.set(
+      "idempotency_key",
+      idempotencyKeyRef.current
+    );
+    formData.set(
+      "turnstile_token",
+      turnstileToken
+    );
     formData.set(
       "customer_name",
       customerName.trim()
@@ -448,6 +476,10 @@ export default function PreorderWhatsAppButton({
     } catch (requestError) {
       whatsappWindow?.close();
       setSaving(false);
+      setTurnstileToken("");
+      setTurnstileResetKey(
+        (current) => current + 1
+      );
       setError(
         requestError instanceof Error
           ? requestError.message
@@ -460,14 +492,22 @@ export default function PreorderWhatsAppButton({
       !result.success ||
       !result.requestNumber
     ) {
+      idempotencyKeyRef.current = "";
       whatsappWindow?.close();
       setSaving(false);
+      setTurnstileToken("");
+      setTurnstileResetKey(
+        (current) => current + 1
+      );
       setError(
         result.error ??
           "Não foi possível registrar a encomenda."
       );
       return;
     }
+
+    idempotencyKeyRef.current = "";
+    setTurnstileToken("");
 
     const message = buildPreorderMessage({
       requestNumber: result.requestNumber,
@@ -528,6 +568,14 @@ export default function PreorderWhatsAppButton({
 
         setOpen(nextOpen);
         setError("");
+
+        if (!nextOpen) {
+          idempotencyKeyRef.current = "";
+          setTurnstileToken("");
+          setTurnstileResetKey(
+            (current) => current + 1
+          );
+        }
       }}
     >
       <button
@@ -912,6 +960,16 @@ export default function PreorderWhatsAppButton({
             />
           </label>
 
+          <TurnstileWidget
+            action="preorder"
+            onTokenChange={
+              setTurnstileToken
+            }
+            resetKey={
+              turnstileResetKey
+            }
+          />
+
           {error && (
             <div
               role="alert"
@@ -923,7 +981,9 @@ export default function PreorderWhatsAppButton({
 
           <button
             type="submit"
-            disabled={saving}
+            disabled={
+              saving || !turnstileToken
+            }
             className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 text-sm font-bold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             <MessageCircle size={18} />

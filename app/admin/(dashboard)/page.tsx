@@ -185,13 +185,15 @@ export default async function AdminPage() {
   const {
     count: activeProductsCount,
     error: productsError,
-  } = await supabase
-    .from("products")
-    .select("id", {
-      count: "exact",
-      head: true,
-    })
-    .eq("active", true);
+  } = canAccessCatalog
+    ? await supabase
+        .from("products")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .eq("active", true)
+    : { count: 0, error: null };
 
   if (productsError) {
     console.error(
@@ -209,12 +211,14 @@ export default async function AdminPage() {
   const {
     count: customersCount,
     error: customersError,
-  } = await supabase
-    .from("customers")
-    .select("id", {
-      count: "exact",
-      head: true,
-    });
+  } = canAccessCustomers
+    ? await supabase
+        .from("customers")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+    : { count: 0, error: null };
 
   if (customersError) {
     console.error(
@@ -232,20 +236,22 @@ export default async function AdminPage() {
   const {
     count: todayOrdersCount,
     error: todayOrdersError,
-  } = await supabase
-    .from("orders")
-    .select("id", {
-      count: "exact",
-      head: true,
-    })
-    .gte(
-      "created_at",
-      todayStart.toISOString()
-    )
-    .lt(
-      "created_at",
-      tomorrowStart.toISOString()
-    );
+  } = canAccessOrders
+    ? await supabase
+        .from("orders")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .gte(
+          "created_at",
+          todayStart.toISOString()
+        )
+        .lt(
+          "created_at",
+          tomorrowStart.toISOString()
+        )
+    : { count: 0, error: null };
 
   if (todayOrdersError) {
     console.error(
@@ -263,17 +269,19 @@ export default async function AdminPage() {
   const {
     count: openOrdersCount,
     error: openOrdersError,
-  } = await supabase
-    .from("orders")
-    .select("id", {
-      count: "exact",
-      head: true,
-    })
-    .not(
-      "status",
-      "in",
-      "(completed,cancelled)"
-    );
+  } = canAccessOrders
+    ? await supabase
+        .from("orders")
+        .select("id", {
+          count: "exact",
+          head: true,
+        })
+        .not(
+          "status",
+          "in",
+          "(completed,cancelled)"
+        )
+    : { count: 0, error: null };
 
   if (openOrdersError) {
     console.error(
@@ -294,17 +302,19 @@ export default async function AdminPage() {
   const {
     data: completedOrders,
     error: revenueError,
-  } = await supabase
-    .from("orders")
-    .select(
-      "id, total, completed_at"
-    )
-    .eq("status", "completed")
-    .not(
-      "completed_at",
-      "is",
-      null
-    );
+  } = canAccessBilling
+    ? await supabase
+        .from("orders")
+        .select(
+          "id, total, completed_at"
+        )
+        .eq("status", "completed")
+        .not(
+          "completed_at",
+          "is",
+          null
+        )
+    : { data: [], error: null };
 
   if (revenueError) {
     console.error(
@@ -354,7 +364,9 @@ export default async function AdminPage() {
    */
 
   const preorderRequests =
-    await listPreorderRequests();
+    canAccessOrders || canAccessBilling
+      ? await listPreorderRequests()
+      : [];
   const openPreorders = preorderRequests.filter(
     (request) =>
       request.status !== "completed" &&
@@ -438,26 +450,28 @@ export default async function AdminPage() {
   const {
     data: recentOrders,
     error: recentOrdersError,
-  } = await supabase
-    .from("orders")
-    .select(`
-      id,
-      order_number,
-      order_type,
-      status,
-      total,
-      created_at,
+  } = canAccessOrders
+    ? await supabase
+        .from("orders")
+        .select(`
+          id,
+          order_number,
+          order_type,
+          status,
+          total,
+          created_at,
 
-      customers (
-        id,
-        first_name,
-        last_name
-      )
-    `)
-    .order("created_at", {
-      ascending: false,
-    })
-    .limit(5);
+          customers (
+            id,
+            first_name,
+            last_name
+          )
+        `)
+        .order("created_at", {
+          ascending: false,
+        })
+        .limit(5)
+    : { data: [], error: null };
 
   if (recentOrdersError) {
     console.error(

@@ -6,8 +6,7 @@ import {
 } from "@/lib/preorder-catalog-store";
 
 type SalesNumberSequence =
-  | "daily-orders"
-  | "preorders";
+  "preorders";
 
 const sequenceFolder = "sequences";
 const sequenceFileDigits = 12;
@@ -104,10 +103,6 @@ async function reserveNextNumber(
   throw new Error(
     "Não foi possível reservar a numeração após várias tentativas."
   );
-}
-
-export function reserveNextDailyOrderNumber() {
-  return reserveNextNumber("daily-orders");
 }
 
 export async function reserveNextPreorderNumber() {

@@ -1,7 +1,16 @@
 "use server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
-import { reserveNextDailyOrderNumber } from "@/lib/sales-number-store";
+import {
+  beginIdempotentRequest,
+  completeIdempotentRequest,
+  createActionFingerprint,
+  enforcePublicOrderRateLimit,
+  inspectIdempotentRequest,
+  releaseIdempotentRequest,
+  validateIdempotencyKey,
+  verifyTurnstileToken,
+} from "@/lib/public-action-security";
 
 type CheckoutItem = {
   productId: string;
@@ -22,6 +31,8 @@ type CheckoutAddress = {
 };
 
 type CreateOrderInput = {
+  idempotencyKey: string;
+  turnstileToken: string;
   firstName: string;
   lastName: string;
   phone: string;
@@ -29,33 +40,15 @@ type CreateOrderInput = {
   orderType: "pickup" | "delivery";
 
   /*
-   * Se o cliente escolheu um endereço
-   * já cadastrado, enviamos somente o id.
-   */
-  selectedAddressId?: string;
-
-  /*
-   * Usado quando o cliente está
-   * cadastrando um endereço novo.
+   * O endereço é sempre informado pelo cliente.
+   * O servidor pode reutilizar internamente um
+   * cadastro idêntico, sem expor dados salvos.
    */
   address?: CheckoutAddress;
 
   items: CheckoutItem[];
 
   notes?: string;
-};
-
-type SavedAddress = {
-  id: string;
-  label: string | null;
-  zipCode: string;
-  street: string;
-  number: string;
-  complement: string | null;
-  neighborhood: string;
-  city: string;
-  reference: string | null;
-  isDefault: boolean;
 };
 
 type CreateOrderResult =
@@ -69,27 +62,6 @@ type CreateOrderResult =
         | "fixed"
         | "consult"
         | null;
-      addressId: string | null;
-    }
-  | {
-      success: false;
-      error: string;
-    };
-
-type FindCustomerResult =
-  | {
-      success: true;
-      found: false;
-    }
-  | {
-      success: true;
-      found: true;
-      customer: {
-        id: string;
-        firstName: string;
-        lastName: string;
-        addresses: SavedAddress[];
-      };
     }
   | {
       success: false;
@@ -103,156 +75,12 @@ function normalizeText(value: string) {
     .trim()
     .toLowerCase();
 }
-
 function normalizePhone(value: string) {
   return value.replace(/\D/g, "");
 }
 
 function normalizeCep(value: string) {
   return value.replace(/\D/g, "");
-}
-
-/*
- * =========================================
- * BUSCAR CLIENTE + ENDEREÇOS
- * =========================================
- */
-
-export async function findCustomerByPhone(
-  phoneInput: string
-): Promise<FindCustomerResult> {
-  try {
-    const phone =
-      normalizePhone(phoneInput);
-
-    if (phone.length < 10) {
-      return {
-        success: true,
-        found: false,
-      };
-    }
-
-    const supabase =
-      createSupabaseAdminClient();
-
-    const {
-      data: customer,
-      error: customerError,
-    } = await supabase
-      .from("customers")
-      .select(
-        "id, first_name, last_name"
-      )
-      .eq("phone", phone)
-      .maybeSingle();
-
-    if (customerError) {
-      console.error(
-        "Erro ao buscar cliente:",
-        customerError
-      );
-
-      return {
-        success: false,
-        error:
-          "Não foi possível consultar seus dados.",
-      };
-    }
-
-    if (!customer) {
-      return {
-        success: true,
-        found: false,
-      };
-    }
-
-    const {
-      data: addresses,
-      error: addressesError,
-    } = await supabase
-      .from("addresses")
-      .select(`
-        id,
-        label,
-        zip_code,
-        street,
-        number,
-        complement,
-        neighborhood,
-        city,
-        reference,
-        is_default
-      `)
-      .eq(
-        "customer_id",
-        customer.id
-      )
-      .order("is_default", {
-        ascending: false,
-      })
-      .order("created_at", {
-        ascending: false,
-      });
-
-    if (addressesError) {
-      console.error(
-        "Erro ao buscar endereços:",
-        addressesError
-      );
-
-      return {
-        success: false,
-        error:
-          "Não foi possível consultar seus endereços.",
-      };
-    }
-
-    const savedAddresses: SavedAddress[] =
-      (addresses ?? []).map(
-        (address) => ({
-          id: address.id,
-          label: address.label,
-          zipCode:
-            address.zip_code,
-          street: address.street,
-          number: address.number,
-          complement:
-            address.complement,
-          neighborhood:
-            address.neighborhood,
-          city: address.city,
-          reference:
-            address.reference,
-          isDefault:
-            address.is_default,
-        })
-      );
-
-    return {
-      success: true,
-      found: true,
-      customer: {
-        id: customer.id,
-        firstName:
-          customer.first_name,
-        lastName:
-          customer.last_name,
-        addresses:
-          savedAddresses,
-      },
-    };
-  } catch (error) {
-    console.error(
-      "Erro inesperado ao buscar cliente:",
-      error
-    );
-
-    return {
-      success: false,
-      error:
-        "Não foi possível consultar seus dados.",
-    };
-  }
 }
 
 /*
@@ -264,6 +92,12 @@ export async function findCustomerByPhone(
 export async function createOrder(
   input: CreateOrderInput
 ): Promise<CreateOrderResult> {
+  const idempotencyKey = String(
+    input?.idempotencyKey ?? ""
+  );
+  let idempotencyStarted = false;
+  let requestFingerprint = "";
+
   try {
     const supabase =
       createSupabaseAdminClient();
@@ -282,10 +116,15 @@ export async function createOrder(
 
     const phone =
       normalizePhone(input.phone);
+    const notes = String(
+      input.notes ?? ""
+    ).trim();
 
     if (
       firstName.length < 2 ||
-      lastName.length < 2
+      firstName.length > 100 ||
+      lastName.length < 2 ||
+      lastName.length > 100
     ) {
       return {
         success: false,
@@ -294,7 +133,10 @@ export async function createOrder(
       };
     }
 
-    if (phone.length < 10) {
+    if (
+      phone.length < 10 ||
+      phone.length > 13
+    ) {
       return {
         success: false,
         error:
@@ -313,7 +155,11 @@ export async function createOrder(
       };
     }
 
-    if (!input.items.length) {
+    if (
+      !Array.isArray(input.items) ||
+      !input.items.length ||
+      input.items.length > 50
+    ) {
       return {
         success: false,
         error:
@@ -338,8 +184,11 @@ export async function createOrder(
         }))
         .filter(
           (item) =>
-            item.productId &&
-            item.quantity > 0
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+              item.productId
+            ) &&
+            item.quantity > 0 &&
+            item.quantity <= 1000
         );
 
     if (
@@ -368,6 +217,18 @@ export async function createOrder(
           item.productId
         ) ?? 0) + item.quantity
       );
+    }
+
+    if (
+      [...quantities.values()].some(
+        (quantity) => quantity > 1000
+      )
+    ) {
+      return {
+        success: false,
+        error:
+          "A quantidade informada é muito alta. Revise sua sacola.",
+      };
     }
 
     const productIds = [
@@ -480,6 +341,114 @@ export async function createOrder(
       };
     }
 
+    if (notes.length > 1000) {
+      return {
+        success: false,
+        error:
+          "As observações podem ter no máximo 1.000 caracteres.",
+      };
+    }
+
+    if (
+      !validateIdempotencyKey(
+        idempotencyKey
+      )
+    ) {
+      return {
+        success: false,
+        error:
+          "Não foi possível identificar esta solicitação. Atualize a página e tente novamente.",
+      };
+    }
+
+    if (
+      existingCustomer &&
+      (normalizeText(
+        existingCustomer.first_name
+      ) !== normalizeText(firstName) ||
+        normalizeText(
+          existingCustomer.last_name
+        ) !== normalizeText(lastName))
+    ) {
+      return {
+        success: false,
+        error:
+          "Não foi possível confirmar os dados informados. Confira o nome, o sobrenome e o WhatsApp.",
+      };
+    }
+
+    requestFingerprint =
+      createActionFingerprint({
+        firstName:
+          normalizeText(firstName),
+        lastName:
+          normalizeText(lastName),
+        phone,
+        orderType: input.orderType,
+        address: input.address ?? null,
+        items: [...normalizedItems].sort(
+          (first, second) =>
+            first.productId.localeCompare(
+              second.productId
+            )
+        ),
+        notes,
+      });
+
+    const previousRequest =
+      await inspectIdempotentRequest<CreateOrderResult>(
+        "daily-order",
+        idempotencyKey,
+        requestFingerprint
+      );
+
+    if (
+      previousRequest.state ===
+      "completed"
+    ) {
+      return previousRequest.result;
+    }
+
+    if (
+      previousRequest.state === "pending"
+    ) {
+      return {
+        success: false,
+        error:
+          "Este pedido já está sendo processado. Aguarde alguns segundos.",
+      };
+    }
+
+    if (
+      previousRequest.state === "conflict"
+    ) {
+      return {
+        success: false,
+        error:
+          "Esta solicitação não corresponde ao pedido atual. Atualize a página e tente novamente.",
+      };
+    }
+
+    const rateLimit =
+      await enforcePublicOrderRateLimit(phone);
+
+    if (!rateLimit.success) {
+      return rateLimit;
+    }
+
+    const turnstile =
+      await verifyTurnstileToken(
+        String(
+          input.turnstileToken ?? ""
+        ),
+        "daily_order",
+        rateLimit.ip
+      );
+
+    if (!turnstile.success) {
+      return turnstile;
+    }
+
     /*
      * =========================================
      * 5. RESOLVER ENDEREÇO PARA VALIDAÇÃO
@@ -490,129 +459,53 @@ export async function createOrder(
       | CheckoutAddress
       | null = null;
 
-    let selectedAddressId:
-      | string
-      | null = null;
-
     if (
       input.orderType ===
       "delivery"
     ) {
-      /*
-       * -----------------------------------------
-       * ENDEREÇO JÁ SALVO
-       * -----------------------------------------
-       */
+      if (!input.address) {
+        return {
+          success: false,
+          error:
+            "Informe o endereço de entrega.",
+        };
+      }
 
       if (
-        input.selectedAddressId
+        typeof input.address.zipCode !==
+          "string" ||
+        typeof input.address.street !==
+          "string" ||
+        typeof input.address.number !==
+          "string" ||
+        typeof input.address.neighborhood !==
+          "string" ||
+        typeof input.address.city !== "string" ||
+        typeof (
+          input.address.complement ?? ""
+        ) !== "string" ||
+        typeof (
+          input.address.reference ?? ""
+        ) !== "string" ||
+        input.address.street.length > 200 ||
+        input.address.number.length > 30 ||
+        input.address.neighborhood.length >
+          100 ||
+        input.address.city.length > 100 ||
+        (input.address.complement?.length ??
+          0) > 100 ||
+        (input.address.reference?.length ?? 0) >
+          300
       ) {
-        if (
-          !existingCustomer
-        ) {
-          return {
-            success: false,
-            error:
-              "Não foi possível localizar o endereço selecionado.",
-          };
-        }
-
-        const {
-          data: savedAddress,
+        return {
+          success: false,
           error:
-            savedAddressError,
-        } = await supabase
-          .from("addresses")
-          .select(`
-            id,
-            customer_id,
-            label,
-            zip_code,
-            street,
-            number,
-            complement,
-            neighborhood,
-            city,
-            reference,
-            is_default
-          `)
-          .eq(
-            "id",
-            input.selectedAddressId
-          )
-          .eq(
-            "customer_id",
-            existingCustomer.id
-          )
-          .maybeSingle();
-
-        if (
-          savedAddressError
-        ) {
-          console.error(
-            "Erro ao consultar endereço salvo:",
-            savedAddressError
-          );
-
-          return {
-            success: false,
-            error:
-              "Não foi possível consultar o endereço selecionado.",
-          };
-        }
-
-        if (!savedAddress) {
-          return {
-            success: false,
-            error:
-              "Endereço selecionado não encontrado.",
-          };
-        }
-
-        selectedAddressId =
-          savedAddress.id;
-
-        resolvedAddress = {
-          zipCode:
-            savedAddress.zip_code,
-          street:
-            savedAddress.street,
-          number:
-            savedAddress.number,
-          complement:
-            savedAddress.complement ??
-            undefined,
-          neighborhood:
-            savedAddress.neighborhood,
-          city:
-            savedAddress.city,
-          reference:
-            savedAddress.reference ??
-            undefined,
-          label:
-            savedAddress.label ??
-            undefined,
-          isDefault:
-            savedAddress.is_default,
+            "Revise os dados do endereço de entrega.",
         };
-      } else {
-        /*
-         * -----------------------------------------
-         * ENDEREÇO NOVO
-         * -----------------------------------------
-         */
-
-        if (!input.address) {
-          return {
-            success: false,
-            error:
-              "Informe o endereço de entrega.",
-          };
-        }
-
-        resolvedAddress =
-          input.address;
       }
+
+      resolvedAddress =
+        input.address;
 
       /*
        * -----------------------------------------
@@ -729,6 +622,49 @@ export async function createOrder(
       }
     }
 
+    const idempotency =
+      await beginIdempotentRequest<CreateOrderResult>(
+        "daily-order",
+        idempotencyKey,
+        requestFingerprint
+      );
+
+    if (idempotency.state === "completed") {
+      return idempotency.result;
+    }
+
+    if (idempotency.state === "pending") {
+      return {
+        success: false,
+        error:
+          "Este pedido já está sendo processado. Aguarde alguns segundos.",
+      };
+    }
+
+    if (idempotency.state === "conflict") {
+      return {
+        success: false,
+        error:
+          "Esta solicitação não corresponde ao pedido atual. Atualize a página e tente novamente.",
+      };
+    }
+
+    idempotencyStarted = true;
+    const failProtectedRequest = async (
+      error: string
+    ): Promise<CreateOrderResult> => {
+      await releaseIdempotentRequest(
+        "daily-order",
+        idempotencyKey
+      );
+      idempotencyStarted = false;
+
+      return {
+        success: false,
+        error,
+      };
+    };
+
     /*
      * =========================================
      * 7. CRIAR CLIENTE SE NECESSÁRIO
@@ -766,11 +702,9 @@ export async function createOrder(
           customerError
         );
 
-        return {
-          success: false,
-          error:
-            "Não foi possível cadastrar o cliente.",
-        };
+        return failProtectedRequest(
+          "Não foi possível cadastrar o cliente."
+        );
       }
 
       customerId =
@@ -785,8 +719,7 @@ export async function createOrder(
 
     let addressId:
       | string
-      | null =
-      selectedAddressId;
+      | null = null;
 
     if (
       input.orderType ===
@@ -839,11 +772,9 @@ export async function createOrder(
           matchingAddressesError
         );
 
-        return {
-          success: false,
-          error:
-            "Não foi possível verificar seu endereço.",
-        };
+        return failProtectedRequest(
+          "Não foi possível verificar seu endereço."
+        );
       }
 
       const matchingAddress =
@@ -889,11 +820,9 @@ export async function createOrder(
               clearDefaultError
             );
 
-            return {
-              success: false,
-              error:
-                "Não foi possível atualizar o endereço principal.",
-            };
+            return failProtectedRequest(
+              "Não foi possível atualizar o endereço principal."
+            );
           }
         }
 
@@ -983,11 +912,9 @@ export async function createOrder(
             addressError
           );
 
-          return {
-            success: false,
-            error:
-              "Não foi possível salvar o endereço.",
-          };
+          return failProtectedRequest(
+            "Não foi possível salvar o endereço."
+          );
         }
 
         addressId =
@@ -1003,8 +930,6 @@ export async function createOrder(
 
     const total =
       subtotal + deliveryFee;
-    const orderNumber =
-      await reserveNextDailyOrderNumber();
 
     const {
       data: order,
@@ -1012,9 +937,6 @@ export async function createOrder(
     } = await supabase
       .from("orders")
       .insert({
-        order_number:
-          orderNumber,
-
         customer_id:
           customerId,
 
@@ -1024,7 +946,7 @@ export async function createOrder(
         order_type:
           input.orderType,
 
-        status: "created",
+        status: "sent_to_whatsapp",
 
         subtotal,
 
@@ -1034,8 +956,7 @@ export async function createOrder(
         total,
 
         notes:
-          input.notes?.trim() ||
-          null,
+          notes || null,
       })
       .select(
         "id, order_number"
@@ -1051,11 +972,9 @@ export async function createOrder(
         orderError
       );
 
-      return {
-        success: false,
-        error:
-          "Não foi possível criar o pedido.",
-      };
+      return failProtectedRequest(
+        "Não foi possível criar o pedido."
+      );
     }
 
     /*
@@ -1093,14 +1012,12 @@ export async function createOrder(
         .delete()
         .eq("id", order.id);
 
-      return {
-        success: false,
-        error:
-          "Não foi possível salvar os itens do pedido.",
-      };
+      return failProtectedRequest(
+        "Não foi possível salvar os itens do pedido."
+      );
     }
 
-    return {
+    const result: CreateOrderResult = {
       success: true,
       orderId: order.id,
 
@@ -1114,10 +1031,25 @@ export async function createOrder(
       deliveryFee,
 
       deliveryFeeType,
-
-      addressId,
     };
+
+    await completeIdempotentRequest(
+      "daily-order",
+      idempotencyKey,
+      requestFingerprint,
+      result
+    );
+    idempotencyStarted = false;
+
+    return result;
   } catch (error) {
+    if (idempotencyStarted) {
+      await releaseIdempotentRequest(
+        "daily-order",
+        idempotencyKey
+      );
+    }
+
     if (
       error instanceof Error &&
       error.message.startsWith(
@@ -1145,193 +1077,6 @@ export async function createOrder(
       success: false,
       error:
         "Ocorreu um erro ao criar o pedido.",
-    };
-  }
-}
-
-/*
- * =========================================
- * MARCAR COMO ENVIADO AO WHATSAPP
- * =========================================
- */
-
-export async function markOrderAsSentToWhatsapp(
-  orderId: string
-) {
-  const supabase =
-    createSupabaseAdminClient();
-
-  const { error } =
-    await supabase
-      .from("orders")
-      .update({
-        status:
-          "sent_to_whatsapp",
-      })
-      .eq("id", orderId)
-      .eq(
-        "status",
-        "created"
-      );
-
-  if (error) {
-    console.error(
-      "Erro ao atualizar pedido para WhatsApp:",
-      error
-    );
-
-    return {
-      success: false,
-      error:
-        "Não foi possível atualizar o status do pedido.",
-    };
-  }
-
-  return {
-    success: true,
-  };
-}
-
-export async function deleteCustomerAddress(
-  addressId: string,
-  phoneInput: string
-) {
-  try {
-    const phone =
-      phoneInput.replace(/\D/g, "");
-
-    if (
-      !addressId ||
-      phone.length < 10
-    ) {
-      return {
-        success: false,
-        error:
-          "Não foi possível identificar o endereço.",
-      };
-    }
-
-    const supabase =
-      createSupabaseAdminClient();
-
-    const {
-      data: customer,
-      error: customerError,
-    } = await supabase
-      .from("customers")
-      .select("id")
-      .eq("phone", phone)
-      .maybeSingle();
-
-    if (
-      customerError ||
-      !customer
-    ) {
-      return {
-        success: false,
-        error:
-          "Cliente não encontrado.",
-      };
-    }
-
-    const {
-      data: address,
-      error: addressError,
-    } = await supabase
-      .from("addresses")
-      .select(
-        "id, customer_id, is_default"
-      )
-      .eq("id", addressId)
-      .eq(
-        "customer_id",
-        customer.id
-      )
-      .maybeSingle();
-
-    if (
-      addressError ||
-      !address
-    ) {
-      return {
-        success: false,
-        error:
-          "Endereço não encontrado.",
-      };
-    }
-
-    const {
-      error: deleteError,
-    } = await supabase
-      .from("addresses")
-      .delete()
-      .eq("id", address.id)
-      .eq(
-        "customer_id",
-        customer.id
-      );
-
-    if (deleteError) {
-      console.error(
-        "Erro ao excluir endereço:",
-        deleteError
-      );
-
-      return {
-        success: false,
-        error:
-          "Não foi possível excluir o endereço.",
-      };
-    }
-
-    /*
-     * Se o endereço excluído era o principal,
-     * escolhemos outro endereço como principal.
-     */
-    if (address.is_default) {
-      const {
-        data: remainingAddresses,
-      } = await supabase
-        .from("addresses")
-        .select("id")
-        .eq(
-          "customer_id",
-          customer.id
-        )
-        .order("created_at", {
-          ascending: false,
-        })
-        .limit(1);
-
-      const nextAddress =
-        remainingAddresses?.[0];
-
-      if (nextAddress) {
-        await supabase
-          .from("addresses")
-          .update({
-            is_default: true,
-          })
-          .eq(
-            "id",
-            nextAddress.id
-          );
-      }
-    }
-
-    return {
-      success: true,
-    };
-  } catch (error) {
-    console.error(
-      "Erro inesperado ao excluir endereço:",
-      error
-    );
-
-    return {
-      success: false,
-      error:
-        "Não foi possível excluir o endereço.",
     };
   }
 }

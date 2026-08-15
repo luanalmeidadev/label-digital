@@ -34,3 +34,26 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Operação da La'bel Digital
+
+Antes de publicar alterações:
+
+```bash
+npm run lint
+npm run build
+```
+
+Para gerar o snapshot local dos dados e arquivos:
+
+```bash
+npm run backup:check
+npm run backup
+```
+
+A pasta gerada contém dados pessoais e não deve ser enviada ao Git. Consulte
+o procedimento completo em
+[`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md).
+
+O endpoint `/api/health` verifica banco e Storage. Ele retorna `200` quando o
+sistema está saudável e `503` quando alguma dependência está indisponível.

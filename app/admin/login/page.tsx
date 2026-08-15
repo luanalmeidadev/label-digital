@@ -1,7 +1,26 @@
 import Image from "next/image";
 import { loginAdmin } from "./actions";
 
-export default function AdminLoginPage() {
+const loginErrorMessages: Record<string, string> = {
+  missing: "Preencha o e-mail e a senha.",
+  invalid: "E-mail ou senha incorretos.",
+};
+
+export default async function AdminLoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    error?: string | string[];
+  }>;
+}) {
+  const errorValue = (await searchParams).error;
+  const errorKey = Array.isArray(errorValue)
+    ? errorValue[0]
+    : errorValue;
+  const errorMessage = errorKey
+    ? loginErrorMessages[errorKey]
+    : null;
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#FFFDF9] px-5">
       <div className="w-full max-w-md">
@@ -28,6 +47,15 @@ export default function AdminLoginPage() {
           action={loginAdmin}
           className="rounded-3xl border border-[#EEE6DF] bg-white p-7 shadow-sm"
         >
+          {errorMessage && (
+            <div
+              role="alert"
+              className="mb-5 rounded-xl border border-red-100 bg-red-50 p-3 text-sm font-semibold text-red-700"
+            >
+              {errorMessage}
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="email"

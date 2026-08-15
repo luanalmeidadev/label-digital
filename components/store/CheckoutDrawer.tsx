@@ -1,8 +1,7 @@
 "use client";
 
 import {
-  useEffect,
-  useMemo,
+  useRef,
   useState,
   useTransition,
 } from "react";
@@ -10,26 +9,19 @@ import {
 import {
   ArrowLeft,
   CheckCircle2,
-  Home,
   Loader2,
   MapPin,
-  Plus,
   ShoppingBag,
   Store,
   Truck,
-  UserCheck,
   X,
-  Trash2,
 } from "lucide-react";
 
-import {
-  createOrder,
-  deleteCustomerAddress,
-  findCustomerByPhone,
-  markOrderAsSentToWhatsapp,
-} from "@/app/store/checkout/actions";
+import { createOrder } from "@/app/store/checkout/actions";
+import { createClientRequestId } from "@/lib/client-request-id";
 
 import { useCart } from "./CartProvider";
+import TurnstileWidget from "./TurnstileWidget";
 
 export type FulfillmentType =
   | "pickup"
@@ -45,23 +37,6 @@ type CheckoutStep =
   | "customer"
   | "address"
   | "review";
-
-type AddressMode =
-  | "saved"
-  | "new";
-
-type SavedAddress = {
-  id: string;
-  label: string | null;
-  zipCode: string;
-  street: string;
-  number: string;
-  complement: string | null;
-  neighborhood: string;
-  city: string;
-  reference: string | null;
-  isDefault: boolean;
-};
 
 type ViaCepResponse = {
   cep?: string;
@@ -163,21 +138,6 @@ export default function CheckoutDrawer({
   const [phone, setPhone] =
     useState("");
 
-  const [
-    existingCustomer,
-    setExistingCustomer,
-  ] = useState(false);
-
-  const [
-    customerLoading,
-    setCustomerLoading,
-  ] = useState(false);
-
-  const [
-    customerLookupMessage,
-    setCustomerLookupMessage,
-  ] = useState("");
-
   /*
    * =========================================
    * RECEBIMENTO
@@ -194,48 +154,9 @@ export default function CheckoutDrawer({
 
   /*
    * =========================================
-   * ENDEREÇOS SALVOS
+   * ENDEREÇO
    * =========================================
    */
-
-  const [
-    savedAddresses,
-    setSavedAddresses,
-  ] =
-    useState<SavedAddress[]>(
-      []
-    );
-
-  const [
-    selectedAddressId,
-    setSelectedAddressId,
-  ] = useState<
-    string | null
-  >(null);
-
-  const [
-    addressMode,
-    setAddressMode,
-  ] =
-    useState<AddressMode>(
-      "new"
-    );
-
-  /*
-   * =========================================
-   * NOVO ENDEREÇO
-   * =========================================
-   */
-
-  const [
-    addressLabel,
-    setAddressLabel,
-  ] = useState("Casa");
-
-  const [
-    makeDefault,
-    setMakeDefault,
-  ] = useState(false);
 
   const [cep, setCep] =
     useState("");
@@ -299,229 +220,17 @@ export default function CheckoutDrawer({
     orderError,
     setOrderError,
   ] = useState("");
-
   const [
-  deletingAddressId,
-  setDeletingAddressId,
-] = useState<string | null>(
-  null
-);
+    turnstileToken,
+    setTurnstileToken,
+  ] = useState("");
+  const [
+    turnstileResetKey,
+    setTurnstileResetKey,
+  ] = useState(0);
+  const idempotencyKeyRef =
+    useRef("");
 
-  /*
-   * =========================================
-   * ENDEREÇO SELECIONADO
-   * =========================================
-   */
-
-  const selectedSavedAddress =
-    useMemo(() => {
-      if (!selectedAddressId) {
-        return null;
-      }
-
-      return (
-        savedAddresses.find(
-          (address) =>
-            address.id ===
-            selectedAddressId
-        ) ?? null
-      );
-    }, [
-      savedAddresses,
-      selectedAddressId,
-    ]);
-
-  /*
-   * =========================================
-   * LIMPAR NOVO ENDEREÇO
-   * =========================================
-   */
-
-  function clearNewAddress() {
-    setAddressLabel("Casa");
-    setMakeDefault(false);
-
-    setCep("");
-    setStreet("");
-    setNumber("");
-    setComplement("");
-    setNeighborhood("");
-    setCity("");
-    setUf("");
-    setReference("");
-
-    setCepError("");
-    setCitySupported(null);
-  }
-
-  /*
-   * =========================================
-   * BUSCAR CLIENTE AUTOMATICAMENTE
-   * =========================================
-   */
-
-  useEffect(() => {
-    const digits =
-      phone.replace(/\D/g, "");
-
-    setCustomerLookupMessage(
-      ""
-    );
-
-    if (digits.length < 10) {
-      setExistingCustomer(false);
-      setSavedAddresses([]);
-      setSelectedAddressId(
-        null
-      );
-      setAddressMode("new");
-
-      return;
-    }
-
-    const timer =
-      window.setTimeout(
-        async () => {
-          setCustomerLoading(
-            true
-          );
-
-          const result =
-            await findCustomerByPhone(
-              digits
-            );
-
-          setCustomerLoading(
-            false
-          );
-
-          if (!result.success) {
-            setCustomerLookupMessage(
-              result.error
-            );
-
-            setExistingCustomer(
-              false
-            );
-
-            setSavedAddresses(
-              []
-            );
-
-            setSelectedAddressId(
-              null
-            );
-
-            setAddressMode(
-              "new"
-            );
-
-            return;
-          }
-
-          if (!result.found) {
-            setExistingCustomer(
-              false
-            );
-
-            setSavedAddresses(
-              []
-            );
-
-            setSelectedAddressId(
-              null
-            );
-
-            setAddressMode(
-              "new"
-            );
-
-            setCustomerLookupMessage(
-              "Novo cliente. Informe seu nome e sobrenome."
-            );
-
-            return;
-          }
-
-          /*
-           * Cliente encontrado.
-           */
-          setFirstName(
-            result.customer
-              .firstName
-          );
-
-          setLastName(
-            result.customer
-              .lastName
-          );
-
-          setExistingCustomer(
-            true
-          );
-
-          const addresses =
-            result.customer
-              .addresses ?? [];
-
-          setSavedAddresses(
-            addresses
-          );
-
-          /*
-           * Se houver endereço principal,
-           * selecionamos automaticamente.
-           *
-           * Caso contrário, usamos o
-           * primeiro da lista.
-           */
-          const defaultAddress =
-            addresses.find(
-              (address) =>
-                address.isDefault
-            ) ??
-            addresses[0] ??
-            null;
-
-          if (defaultAddress) {
-            setSelectedAddressId(
-              defaultAddress.id
-            );
-
-            setAddressMode(
-              "saved"
-            );
-          } else {
-            setSelectedAddressId(
-              null
-            );
-
-            setAddressMode(
-              "new"
-            );
-          }
-
-          if (
-            addresses.length > 0
-          ) {
-            setCustomerLookupMessage(
-              `Cadastro encontrado. ${addresses.length} endereço(s) salvo(s).`
-            );
-          } else {
-            setCustomerLookupMessage(
-              "Cadastro encontrado."
-            );
-          }
-        },
-        500
-      );
-
-    return () => {
-      window.clearTimeout(
-        timer
-      );
-    };
-  }, [phone]);
 
   /*
    * =========================================
@@ -552,11 +261,7 @@ export default function CheckoutDrawer({
     citySupported === true;
 
   const deliveryAddressValid =
-    addressMode === "saved"
-      ? Boolean(
-          selectedAddressId
-        )
-      : newAddressValid;
+    newAddressValid;
 
   /*
    * =========================================
@@ -672,45 +377,6 @@ export default function CheckoutDrawer({
       fulfillmentType ===
       "delivery"
     ) {
-      /*
-       * Cliente com endereço salvo:
-       * mostramos a tela de seleção.
-       *
-       * Cliente sem endereço:
-       * mostramos o formulário novo.
-       */
-      if (
-        savedAddresses.length >
-        0
-      ) {
-        setAddressMode(
-          "saved"
-        );
-
-        if (
-          !selectedAddressId
-        ) {
-          const defaultAddress =
-            savedAddresses.find(
-              (address) =>
-                address.isDefault
-            ) ??
-            savedAddresses[0];
-
-          setSelectedAddressId(
-            defaultAddress.id
-          );
-        }
-      } else {
-        setAddressMode(
-          "new"
-        );
-
-        setSelectedAddressId(
-          null
-        );
-      }
-
       setStep("address");
 
       return;
@@ -758,118 +424,6 @@ export default function CheckoutDrawer({
 
   /*
    * =========================================
-   * ESCOLHER ENDEREÇO SALVO
-   * =========================================
-   */
-
-  function selectSavedAddress(
-    addressId: string
-  ) {
-    setSelectedAddressId(
-      addressId
-    );
-
-    setAddressMode(
-      "saved"
-    );
-
-    setOrderError("");
-  }
-
-  /*
-   * =========================================
-   * DELETAR ENDEREÇO SALVO
-   * =========================================
-   */
-
-  async function handleDeleteAddress(
-  addressId: string
-) {
-  const confirmed =
-    window.confirm(
-      "Deseja excluir este endereço?"
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  setDeletingAddressId(
-    addressId
-  );
-
-  const result =
-    await deleteCustomerAddress(
-      addressId,
-      phone
-    );
-
-  setDeletingAddressId(null);
-
-  if (!result.success) {
-    setOrderError(
-      result.error ??
-        "Não foi possível excluir o endereço."
-    );
-
-    return;
-  }
-
-  const updatedAddresses =
-    savedAddresses.filter(
-      (address) =>
-        address.id !== addressId
-    );
-
-  setSavedAddresses(
-    updatedAddresses
-  );
-
-  if (
-    selectedAddressId ===
-    addressId
-  ) {
-    const nextAddress =
-      updatedAddresses[0];
-
-    if (nextAddress) {
-      setSelectedAddressId(
-        nextAddress.id
-      );
-
-      setAddressMode(
-        "saved"
-      );
-    } else {
-      setSelectedAddressId(
-        null
-      );
-
-      setAddressMode(
-        "new"
-      );
-    }
-  }
-}
-
-  /*
-   * =========================================
-   * ADICIONAR NOVO
-   * =========================================
-   */
-
-  function startNewAddress() {
-    setSelectedAddressId(
-      null
-    );
-
-    setAddressMode("new");
-
-    clearNewAddress();
-  }
-
-  /*
-   * =========================================
    * CRIAR PEDIDO
    * =========================================
    */
@@ -887,12 +441,32 @@ export default function CheckoutDrawer({
       return;
     }
 
+    if (!turnstileToken) {
+      setOrderError(
+        "Confirme a verificação de segurança."
+      );
+
+      return;
+    }
+
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current =
+        createClientRequestId();
+    }
+
     setOrderError("");
 
     startTransition(
       async () => {
-        const result =
-          await createOrder({
+        let result: Awaited<
+          ReturnType<typeof createOrder>
+        >;
+
+        try {
+          result = await createOrder({
+            idempotencyKey:
+              idempotencyKeyRef.current,
+            turnstileToken,
             firstName,
             lastName,
             phone,
@@ -903,20 +477,9 @@ export default function CheckoutDrawer({
                 ? "delivery"
                 : "pickup",
 
-            selectedAddressId:
-              fulfillmentType ===
-                "delivery" &&
-              addressMode ===
-                "saved"
-                ? selectedAddressId ??
-                  undefined
-                : undefined,
-
             address:
               fulfillmentType ===
-                "delivery" &&
-              addressMode ===
-                "new"
+                "delivery"
                 ? {
                     zipCode:
                       cep,
@@ -927,11 +490,8 @@ export default function CheckoutDrawer({
                     city,
                     reference,
 
-                    label:
-                      addressLabel,
-
-                    isDefault:
-                      makeDefault,
+                    label: "Casa",
+                    isDefault: false,
                   }
                 : undefined,
 
@@ -945,10 +505,25 @@ export default function CheckoutDrawer({
               })
             ),
           });
+        } catch {
+          setOrderError(
+            "Não foi possível conectar ao servidor. Confira sua internet e tente novamente."
+          );
+          setTurnstileToken("");
+          setTurnstileResetKey(
+            (current) => current + 1
+          );
+          return;
+        }
 
         if (!result.success) {
+          idempotencyKeyRef.current = "";
           setOrderError(
             result.error
+          );
+          setTurnstileToken("");
+          setTurnstileResetKey(
+            (current) => current + 1
           );
 
           return;
@@ -984,57 +559,25 @@ export default function CheckoutDrawer({
          */
 
         const deliveryStreet =
-          addressMode ===
-            "saved" &&
-          selectedSavedAddress
-            ? selectedSavedAddress.street
-            : street;
+          street;
 
         const deliveryNumber =
-          addressMode ===
-            "saved" &&
-          selectedSavedAddress
-            ? selectedSavedAddress.number
-            : number;
+          number;
 
         const deliveryComplement =
-          addressMode ===
-            "saved" &&
-          selectedSavedAddress
-            ? selectedSavedAddress.complement ??
-              ""
-            : complement;
+          complement;
 
         const deliveryNeighborhood =
-          addressMode ===
-            "saved" &&
-          selectedSavedAddress
-            ? selectedSavedAddress.neighborhood
-            : neighborhood;
+          neighborhood;
 
         const deliveryCity =
-          addressMode ===
-            "saved" &&
-          selectedSavedAddress
-            ? selectedSavedAddress.city
-            : city;
+          city;
 
         const deliveryReference =
-          addressMode ===
-            "saved" &&
-          selectedSavedAddress
-            ? selectedSavedAddress.reference ??
-              ""
-            : reference;
+          reference;
 
         const deliveryCep =
-          addressMode ===
-            "saved" &&
-          selectedSavedAddress
-            ? formatCep(
-                selectedSavedAddress.zipCode
-              )
-            : cep;
+          cep;
 
         /*
          * =====================================
@@ -1165,31 +708,11 @@ export default function CheckoutDrawer({
           `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
 
         /*
-         * =====================================
-         * STATUS
-         * =====================================
-         */
-
-        const statusResult =
-          await markOrderAsSentToWhatsapp(
-            result.orderId
-          );
-
-        if (
-          !statusResult.success
-        ) {
-          setOrderError(
-            statusResult.error ??
-              "Não foi possível atualizar o status do pedido."
-          );
-
-          return;
-        }
-
-        /*
          * Pedido criado.
          */
         clearCart();
+        idempotencyKeyRef.current = "";
+        setTurnstileToken("");
 
         const isMobile =
           /Android|iPhone|iPad|iPod/i.test(
@@ -1332,12 +855,9 @@ export default function CheckoutDrawer({
                 </h3>
 
                 <p className="mt-1 text-sm leading-6 text-[#756A66]">
-                  Informe primeiro seu
-                  WhatsApp. Se você já
-                  comprou com a
-                  La&apos;bel,
-                  buscamos seu cadastro
-                  automaticamente.
+                  Informe seu nome e o
+                  WhatsApp que será usado
+                  no atendimento do pedido.
                 </p>
 
                 {/* TELEFONE */}
@@ -1354,81 +874,18 @@ export default function CheckoutDrawer({
                       }
                       onChange={(
                         event
-                      ) => {
+                      ) =>
                         setPhone(
-                          event
-                            .target
-                            .value
-                        );
-
-                        if (
-                          existingCustomer
-                        ) {
-                          setExistingCustomer(
-                            false
-                          );
-
-                          setFirstName(
-                            ""
-                          );
-
-                          setLastName(
-                            ""
-                          );
-
-                          setSavedAddresses(
-                            []
-                          );
-
-                          setSelectedAddressId(
-                            null
-                          );
-
-                          setAddressMode(
-                            "new"
-                          );
-                        }
-                      }}
+                          event.target.value
+                        )
+                      }
                       placeholder="(48) 99999-9999"
                       autoComplete="tel"
                       inputMode="tel"
-                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 pr-12 text-sm text-[#241B19] outline-none transition focus:border-[#8B0000]"
+                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none transition focus:border-[#8B0000]"
                     />
-
-                    {customerLoading && (
-                      <Loader2
-                        size={
-                          17
-                        }
-                        className="absolute right-4 top-1/2 -translate-y-1/2 animate-spin text-[#8B0000]"
-                      />
-                    )}
-
-                    {!customerLoading &&
-                      existingCustomer && (
-                        <UserCheck
-                          size={
-                            18
-                          }
-                          className="absolute right-4 top-1/2 -translate-y-1/2 text-green-600"
-                        />
-                      )}
                   </div>
                 </label>
-
-                {customerLookupMessage && (
-                  <div
-                    className={`mt-3 rounded-xl p-3 text-xs font-semibold ${
-                      existingCustomer
-                        ? "bg-green-50 text-green-700"
-                        : "bg-[#F7F0EA] text-[#756A66]"
-                    }`}
-                  >
-                    {
-                      customerLookupMessage
-                    }
-                  </div>
-                )}
 
                 {/* NOME */}
                 <div className="mt-5 grid gap-4 sm:grid-cols-2">
@@ -1451,16 +908,9 @@ export default function CheckoutDrawer({
                             .value
                         )
                       }
-                      readOnly={
-                        existingCustomer
-                      }
                       placeholder="Seu nome"
                       autoComplete="given-name"
-                      className={`h-12 w-full rounded-xl border border-[#E6DDD6] px-4 text-sm outline-none ${
-                        existingCustomer
-                          ? "cursor-not-allowed bg-[#F7F0EA] text-[#756A66]"
-                          : "bg-white text-[#241B19] focus:border-[#8B0000]"
-                      }`}
+                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none focus:border-[#8B0000]"
                     />
                   </label>
 
@@ -1483,16 +933,9 @@ export default function CheckoutDrawer({
                             .value
                         )
                       }
-                      readOnly={
-                        existingCustomer
-                      }
                       placeholder="Seu sobrenome"
                       autoComplete="family-name"
-                      className={`h-12 w-full rounded-xl border border-[#E6DDD6] px-4 text-sm outline-none ${
-                        existingCustomer
-                          ? "cursor-not-allowed bg-[#F7F0EA] text-[#756A66]"
-                          : "bg-white text-[#241B19] focus:border-[#8B0000]"
-                      }`}
+                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none focus:border-[#8B0000]"
                     />
                   </label>
                 </div>
@@ -1635,256 +1078,16 @@ export default function CheckoutDrawer({
                 Onde devemos entregar?
               </h3>
 
-              {/* ENDEREÇOS SALVOS */}
-              {savedAddresses.length >
-                0 && (
-                <div className="mt-5">
-                  <div className="flex items-center justify-between gap-4">
-                    <p className="text-sm font-bold text-[#241B19]">
-                      Endereços
-                      salvos
-                    </p>
-
-                    {addressMode ===
-                      "new" && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setAddressMode(
-                            "saved"
-                          );
-
-                          const defaultAddress =
-                            savedAddresses.find(
-                              (
-                                address
-                              ) =>
-                                address.isDefault
-                            ) ??
-                            savedAddresses[0];
-
-                          setSelectedAddressId(
-                            defaultAddress.id
-                          );
-                        }}
-                        className="text-xs font-bold text-[#8B0000]"
-                      >
-                        Usar salvo
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="mt-3 space-y-3">
-                    {savedAddresses.map(
-                      (
-                        address
-                      ) => {
-                        const active =
-                          addressMode ===
-                            "saved" &&
-                          selectedAddressId ===
-                            address.id;
-
-                        return (
-                          <button
-                            key={
-                              address.id
-                            }
-                            type="button"
-                            onClick={() =>
-                              selectSavedAddress(
-                                address.id
-                              )
-                            }
-                            className={`w-full rounded-2xl border p-4 text-left transition ${
-                              active
-                                ? "border-[#8B0000] bg-[#8B0000]/5"
-                                : "border-[#EEE6DF] bg-white"
-                            }`}
-                          >
-                            <div className="flex items-start gap-3">
-                              <div
-                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                                  active
-                                    ? "bg-[#8B0000] text-white"
-                                    : "bg-[#F7F0EA] text-[#8B0000]"
-                                }`}
-                              >
-                                <Home
-                                  size={
-                                    18
-                                  }
-                                />
-                              </div>
-
-                              <div className="min-w-0 flex-1">
-                                <div className="flex items-start justify-between gap-3">
-                                  <div className="flex flex-wrap items-center gap-2">
-                                    <p className="font-bold text-[#241B19]">
-                                      {address.label ||
-                                        "Endereço"}
-                                    </p>
-
-                                    {address.isDefault && (
-                                      <span className="rounded-full bg-green-100 px-2 py-1 text-[10px] font-bold text-green-700">
-                                        Principal
-                                      </span>
-                                    )}
-                                  </div>
-
-                                  <button
-                                    type="button"
-                                    onClick={(event) => {
-                                      event.stopPropagation();
-
-                                      void handleDeleteAddress(
-                                        address.id
-                                      );
-                                    }}
-                                    disabled={
-                                      deletingAddressId ===
-                                      address.id
-                                    }
-                                    aria-label={`Excluir ${address.label ?? "endereço"}`}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-100 text-red-600 transition hover:bg-red-50 disabled:opacity-50"
-                                  >
-                                    {deletingAddressId ===
-                                    address.id ? (
-                                      <Loader2
-                                        size={15}
-                                        className="animate-spin"
-                                      />
-                                    ) : (
-                                      <Trash2 size={15} />
-                                    )}
-                                  </button>
-                                </div>
-
-                                <p className="mt-2 text-sm leading-5 text-[#756A66]">
-                                  {
-                                    address.street
-                                  }
-                                  ,{" "}
-                                  {
-                                    address.number
-                                  }
-                                </p>
-
-                                {address.complement && (
-                                  <p className="text-xs text-[#756A66]">
-                                    {
-                                      address.complement
-                                    }
-                                  </p>
-                                )}
-
-                                <p className="mt-1 text-xs text-[#756A66]">
-                                  {
-                                    address.neighborhood
-                                  }{" "}
-                                  —{" "}
-                                  {
-                                    address.city
-                                  }
-                                </p>
-                              </div>
-
-                              <div
-                                className={`mt-1 h-5 w-5 shrink-0 rounded-full border-2 ${
-                                  active
-                                    ? "border-[#8B0000] bg-[#8B0000] shadow-[inset_0_0_0_4px_white]"
-                                    : "border-[#D8CDC5]"
-                                }`}
-                              />
-                            </div>
-                          </button>
-                        );
-                      }
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={
-                      startNewAddress
-                    }
-                    className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-[#D2B48C] bg-white text-sm font-bold text-[#8B0000]"
-                  >
-                    <Plus
-                      size={17}
-                    />
-                    Adicionar novo
-                    endereço
-                  </button>
-                </div>
-              )}
-
-              {/* NOVO ENDEREÇO */}
-              {(savedAddresses.length ===
-                0 ||
-                addressMode ===
-                  "new") && (
-                <div
-                  className={
-                    savedAddresses.length >
-                    0
-                      ? "mt-7 border-t border-[#EEE6DF] pt-7"
-                      : "mt-5"
-                  }
-                >
-                  <p className="font-bold text-[#241B19]">
-                    {savedAddresses.length >
-                    0
-                      ? "Novo endereço"
-                      : "Informe seu endereço"}
-                  </p>
+              <div className="mt-5">
+                <p className="font-bold text-[#241B19]">
+                  Informe seu endereço
+                </p>
 
                   <p className="mt-1 text-sm leading-6 text-[#756A66]">
                     Informe seu CEP e
                     preencheremos os
                     dados automaticamente.
                   </p>
-
-                  {/* NOME DO ENDEREÇO */}
-                  <div className="mt-5">
-                    <p className="mb-2 text-xs font-bold text-[#49352C]">
-                      Salvar como
-                    </p>
-
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        "Casa",
-                        "Trabalho",
-                        "Outro",
-                      ].map(
-                        (
-                          label
-                        ) => (
-                          <button
-                            key={
-                              label
-                            }
-                            type="button"
-                            onClick={() =>
-                              setAddressLabel(
-                                label
-                              )
-                            }
-                            className={`h-10 rounded-xl border text-xs font-bold transition ${
-                              addressLabel ===
-                              label
-                                ? "border-[#8B0000] bg-[#8B0000]/5 text-[#8B0000]"
-                                : "border-[#EEE6DF] bg-white text-[#756A66]"
-                            }`}
-                          >
-                            {
-                              label
-                            }
-                          </button>
-                        )
-                      )}
-                    </div>
-                  </div>
 
                   {/* CEP */}
                   <label className="mt-5 block">
@@ -2147,46 +1350,9 @@ export default function CheckoutDrawer({
                         />
                       </label>
 
-                      {/* PADRÃO */}
-                      <label className="flex cursor-pointer items-start gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4">
-                        <input
-                          type="checkbox"
-                          checked={
-                            makeDefault
-                          }
-                          onChange={(
-                            event
-                          ) =>
-                            setMakeDefault(
-                              event
-                                .target
-                                .checked
-                            )
-                          }
-                          className="mt-0.5 h-4 w-4 accent-[#8B0000]"
-                        />
-
-                        <div>
-                          <p className="text-sm font-bold text-[#241B19]">
-                            Usar como
-                            endereço
-                            principal
-                          </p>
-
-                          <p className="mt-1 text-xs leading-5 text-[#756A66]">
-                            Nas próximas
-                            compras este
-                            endereço
-                            ficará
-                            selecionado
-                            automaticamente.
-                          </p>
-                        </div>
-                      </label>
                     </div>
                   )}
                 </div>
-              )}
             </section>
           )}
 
@@ -2234,66 +1400,6 @@ export default function CheckoutDrawer({
                       Palhoça/SC
                     </p>
                   </>
-                ) : selectedSavedAddress &&
-                  addressMode ===
-                    "saved" ? (
-                  <>
-                    <div className="mt-2 flex items-center gap-2">
-                      <p className="font-bold text-[#241B19]">
-                        Entrega
-                      </p>
-
-                      <span className="rounded-full bg-[#F7F0EA] px-2 py-1 text-[10px] font-bold text-[#8B0000]">
-                        {selectedSavedAddress.label ||
-                          "Endereço"}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-sm leading-6 text-[#756A66]">
-                      {
-                        selectedSavedAddress.street
-                      }
-                      ,{" "}
-                      {
-                        selectedSavedAddress.number
-                      }
-
-                      {selectedSavedAddress.complement
-                        ? ` - ${selectedSavedAddress.complement}`
-                        : ""}
-
-                      <br />
-
-                      {
-                        selectedSavedAddress.neighborhood
-                      }{" "}
-                      —{" "}
-                      {
-                        selectedSavedAddress.city
-                      }
-                      /SC
-                    </p>
-
-                    {selectedSavedAddress.reference && (
-                      <p className="mt-2 text-xs text-[#756A66]">
-                        Referência:{" "}
-                        {
-                          selectedSavedAddress.reference
-                        }
-                      </p>
-                    )}
-
-                    <div className="mt-3 rounded-xl bg-[#F7F0EA] p-3">
-                      <p className="text-xs text-[#756A66]">
-                        Taxa de
-                        entrega
-                      </p>
-
-                      <p className="mt-1 text-sm font-bold text-[#8B0000]">
-                        A consultar
-                      </p>
-                    </div>
-                  </>
                 ) : (
                   <>
                     <div className="mt-2 flex items-center gap-2">
@@ -2302,9 +1408,7 @@ export default function CheckoutDrawer({
                       </p>
 
                       <span className="rounded-full bg-[#F7F0EA] px-2 py-1 text-[10px] font-bold text-[#8B0000]">
-                        {
-                          addressLabel
-                        }
+                        Endereço informado
                       </span>
                     </div>
 
@@ -2398,18 +1502,13 @@ export default function CheckoutDrawer({
             "customer" && (
             <button
               type="button"
-              disabled={
-                !customerValid ||
-                customerLoading
-              }
+              disabled={!customerValid}
               onClick={
                 handleCustomerContinue
               }
               className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              {customerLoading
-                ? "Consultando cadastro..."
-                : "Continuar"}
+              Continuar
             </button>
           )}
 
@@ -2435,9 +1534,19 @@ export default function CheckoutDrawer({
           {/* REVISÃO */}
           {step ===
             "review" && (
-            <div>
+            <div className="space-y-3">
+              <TurnstileWidget
+                action="daily_order"
+                onTokenChange={
+                  setTurnstileToken
+                }
+                resetKey={
+                  turnstileResetKey
+                }
+              />
+
               {orderError && (
-                <div className="mb-3 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-600">
+                <div className="rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-600">
                   {
                     orderError
                   }
@@ -2450,7 +1559,8 @@ export default function CheckoutDrawer({
                   handleCreateOrder
                 }
                 disabled={
-                  isPending
+                  isPending ||
+                  !turnstileToken
                 }
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
               >
