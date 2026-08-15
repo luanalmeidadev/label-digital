@@ -1,7 +1,18 @@
 export const storeConfig = {
+  name: "La'Bel Confeitaria",
+
   whatsapp: "5548988681096",
 
   instagram: "@label_confeitaria",
+
+  address: {
+    street: "Rua Capitão Augusto Vidal",
+    number: "3600",
+    city: "Palhoça",
+    state: "SC",
+  },
+
+  deliveryCities: ["Palhoça", "São José"],
 
   orderTypes: {
     pickup: true,

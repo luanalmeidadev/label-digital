@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useRef,
   useState,
@@ -19,6 +20,7 @@ import {
 
 import { createOrder } from "@/app/store/checkout/actions";
 import { createClientRequestId } from "@/lib/client-request-id";
+import type { StoreCheckoutSettings } from "./CartUI";
 
 import { useCart } from "./CartProvider";
 import TurnstileWidget from "./TurnstileWidget";
@@ -28,6 +30,7 @@ export type FulfillmentType =
   | "delivery";
 
 type CheckoutDrawerProps = {
+  storeSettings: StoreCheckoutSettings;
   open: boolean;
   onClose: () => void;
   onBack: () => void;
@@ -85,18 +88,19 @@ function normalizeCity(value: string) {
 }
 
 function isSupportedCity(
-  city: string
+  city: string,
+  deliveryCities: string[]
 ) {
   const normalized =
     normalizeCity(city);
 
-  return (
-    normalized === "palhoca" ||
-    normalized === "sao jose"
+  return deliveryCities.some(
+    (deliveryCity) => normalizeCity(deliveryCity) === normalized
   );
 }
 
 export default function CheckoutDrawer({
+  storeSettings,
   open,
   onClose,
   onBack,
@@ -339,7 +343,8 @@ export default function CheckoutDrawer({
 
       const supported =
         isSupportedCity(
-          resolvedCity
+          resolvedCity,
+          storeSettings.deliveryCities
         );
 
       setCitySupported(
@@ -348,7 +353,12 @@ export default function CheckoutDrawer({
 
       if (!supported) {
         setCepError(
-          "No momento realizamos entregas somente em Palhoça e São José."
+          storeSettings.deliveryCities.length > 0
+            ? `No momento realizamos entregas somente em ${new Intl.ListFormat(
+                "pt-BR",
+                { style: "long", type: "conjunction" }
+              ).format(storeSettings.deliveryCities)}.`
+            : "No momento não há regiões de entrega disponíveis."
         );
       }
     } catch {
@@ -609,8 +619,7 @@ export default function CheckoutDrawer({
                 .join("\n")
             : [
                 "📍 *RETIRADA NA LOJA*",
-                "Rua Capitão Augusto Vidal, 3600",
-                "Palhoça/SC",
+                storeSettings.pickupAddress,
               ].join("\n");
 
         /*
@@ -693,8 +702,11 @@ export default function CheckoutDrawer({
          * =====================================
          */
 
+        const storeWhatsAppDigits = storeSettings.whatsapp.replace(/\D/g, "");
         const whatsappNumber =
-          "5548988681096";
+          storeWhatsAppDigits.length === 10 || storeWhatsAppDigits.length === 11
+            ? `55${storeWhatsAppDigits}`
+            : storeWhatsAppDigits;
 
         const encodedMessage =
           encodeURIComponent(
@@ -951,8 +963,15 @@ export default function CheckoutDrawer({
                   Como deseja receber?
                 </h3>
 
-                <div className="mt-5 grid grid-cols-2 gap-3">
+                <div
+                  className={`mt-5 grid gap-3 ${
+                    storeSettings.pickupEnabled && storeSettings.deliveryEnabled
+                      ? "grid-cols-2"
+                      : "grid-cols-1"
+                  }`}
+                >
                   {/* RETIRADA */}
+                  {storeSettings.pickupEnabled && (
                   <button
                     type="button"
                     onClick={() =>
@@ -991,8 +1010,10 @@ export default function CheckoutDrawer({
                       La&apos;bel.
                     </p>
                   </button>
+                  )}
 
                   {/* ENTREGA */}
+                  {storeSettings.deliveryEnabled && (
                   <button
                     type="button"
                     onClick={() =>
@@ -1031,7 +1052,16 @@ export default function CheckoutDrawer({
                       endereço.
                     </p>
                   </button>
+                  )}
                 </div>
+
+                {!storeSettings.pickupEnabled &&
+                  !storeSettings.deliveryEnabled && (
+                    <p className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-semibold text-amber-800">
+                      Os pedidos estão temporariamente indisponíveis. Entre em
+                      contato com a confeitaria para mais informações.
+                    </p>
+                  )}
 
                 {fulfillmentType ===
                   "pickup" && (
@@ -1050,11 +1080,7 @@ export default function CheckoutDrawer({
                       </p>
 
                       <p className="mt-1 text-xs leading-5 text-[#756A66]">
-                        Rua Capitão
-                        Augusto Vidal,
-                        3600 —
-                        Palhoça, Santa
-                        Catarina
+                        {storeSettings.pickupAddress}
                       </p>
                     </div>
                   </div>
@@ -1394,10 +1420,7 @@ export default function CheckoutDrawer({
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-[#756A66]">
-                      Rua Capitão
-                      Augusto Vidal,
-                      3600 —
-                      Palhoça/SC
+                      {storeSettings.pickupAddress}
                     </p>
                   </>
                 ) : (
@@ -1552,6 +1575,19 @@ export default function CheckoutDrawer({
                   }
                 </div>
               )}
+
+              <p className="text-center text-[11px] leading-4 text-[#756A66]">
+                Ao enviar, seus dados serão usados para atender e acompanhar
+                o pedido, conforme o{" "}
+                <Link
+                  href="/privacidade"
+                  target="_blank"
+                  className="font-bold text-[#8B0000] underline underline-offset-2"
+                >
+                  Aviso de Privacidade
+                </Link>
+                .
+              </p>
 
               <button
                 type="button"

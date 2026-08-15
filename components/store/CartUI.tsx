@@ -11,7 +11,19 @@ type View =
   | "cart"
   | "checkout";
 
-export default function CartUI() {
+export type StoreCheckoutSettings = {
+  whatsapp: string;
+  pickupEnabled: boolean;
+  deliveryEnabled: boolean;
+  pickupAddress: string;
+  deliveryCities: string[];
+};
+
+export default function CartUI({
+  storeSettings,
+}: {
+  storeSettings: StoreCheckoutSettings;
+}) {
   const [view, setView] =
     useState<View>("closed");
 
@@ -34,6 +46,7 @@ export default function CartUI() {
       />
 
       <CheckoutDrawer
+        storeSettings={storeSettings}
         open={view === "checkout"}
         onClose={() =>
           setView("closed")

@@ -349,6 +349,41 @@ export async function createOrder(
       };
     }
 
+    const {
+      data: fulfillmentSettings,
+      error: fulfillmentSettingsError,
+    } = await supabase
+      .from("store_settings")
+      .select("pickup_enabled, delivery_enabled")
+      .limit(1)
+      .maybeSingle();
+
+    if (fulfillmentSettingsError || !fulfillmentSettings) {
+      console.error(
+        "Erro ao verificar formas de recebimento:",
+        fulfillmentSettingsError
+      );
+
+      return {
+        success: false,
+        error:
+          "Não foi possível verificar as formas de recebimento. Tente novamente.",
+      };
+    }
+
+    if (
+      (input.orderType === "pickup" &&
+        !fulfillmentSettings.pickup_enabled) ||
+      (input.orderType === "delivery" &&
+        !fulfillmentSettings.delivery_enabled)
+    ) {
+      return {
+        success: false,
+        error:
+          "A forma de recebimento escolhida não está disponível no momento.",
+      };
+    }
+
     if (
       !validateIdempotencyKey(
         idempotencyKey

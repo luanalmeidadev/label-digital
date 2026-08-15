@@ -1,3 +1,5 @@
+import { storeConfig } from "@/config/store";
+
 export type NotifiableOrderStatus =
   | "confirmed"
   | "out_for_delivery"
@@ -8,6 +10,7 @@ export type OrderStatusNotification = {
   orderNumber: number;
   phone: string;
   status: NotifiableOrderStatus;
+  pickupAddress?: string;
 };
 
 export type UpdateOrderStatusResult = {
@@ -43,10 +46,12 @@ export function buildOrderStatusWhatsAppMessage({
   orderNumber,
   status,
   trackingUrl,
+  pickupAddress = `${storeConfig.address.street}, ${storeConfig.address.number} — ${storeConfig.address.city}/${storeConfig.address.state}`,
 }: {
   orderNumber: number;
   status: NotifiableOrderStatus;
   trackingUrl: string;
+  pickupAddress?: string;
 }) {
   const statusMessage =
     status === "confirmed"
@@ -69,7 +74,7 @@ export function buildOrderStatusWhatsAppMessage({
             `Pedido #${orderNumber}`,
             "",
             "Você já pode vir buscar seu pedido na loja.",
-            "Rua Capitão Augusto Vidal, 3600 — Palhoça/SC",
+            pickupAddress,
           ];
 
   return [

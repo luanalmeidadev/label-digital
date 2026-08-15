@@ -59,6 +59,33 @@ export default function StoreRealtimeRefresh() {
         },
         scheduleRefresh
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "store_settings",
+        },
+        scheduleRefresh
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "business_hours",
+        },
+        scheduleRefresh
+      )
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "delivery_zones",
+        },
+        scheduleRefresh
+      )
       .subscribe();
 
     document.addEventListener(

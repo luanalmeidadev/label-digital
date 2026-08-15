@@ -15,10 +15,15 @@ import {
 
 import BrandLogo from "@/components/brand/BrandLogo";
 import PreorderWhatsAppButton from "@/components/store/PreorderWhatsAppButton";
+import StoreRealtimeRefresh from "@/components/store/StoreRealtimeRefresh";
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
+import {
+  buildInstagramUrl,
+  normalizeInstagramHandle,
+} from "@/lib/instagram";
 import type { PreorderProduct } from "@/lib/preorder-menu";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPublicStoreSettings } from "@/lib/public-store-settings";
 
 export const metadata: Metadata = {
   title: "Encomendas | La'Bel Confeitaria",
@@ -27,28 +32,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-const fallbackWhatsApp = "48988681096";
-
-async function getStoreWhatsApp() {
-  try {
-    const supabase =
-      await createSupabaseServerClient();
-    const { data } = await supabase
-      .from("store_settings")
-      .select("whatsapp")
-      .limit(1)
-      .maybeSingle();
-
-    return data?.whatsapp || fallbackWhatsApp;
-  } catch (error) {
-    console.error(
-      "Erro ao carregar WhatsApp da loja:",
-      error
-    );
-    return fallbackWhatsApp;
-  }
-}
 
 function ProductCard({
   product,
@@ -144,18 +127,24 @@ function ProductCard({
 
 export default async function EncomendasPage() {
   const [
-    whatsapp,
+    storeSettings,
     preorderCategories,
     imageSettings,
   ] =
     await Promise.all([
-      getStoreWhatsApp(),
+      getPublicStoreSettings(),
       getPreorderCatalog(),
       getImageDisplaySettings(),
     ]);
+  const whatsapp = storeSettings.whatsapp;
+  const instagramHandle = normalizeInstagramHandle(
+    storeSettings.instagram
+  );
+  const instagramUrl = buildInstagramUrl(storeSettings.instagram);
 
   return (
     <main className="min-h-screen bg-[#FFFDF9]">
+      <StoreRealtimeRefresh />
       <header className="bg-[#8B0000]">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <Link
@@ -393,15 +382,17 @@ export default async function EncomendasPage() {
           <BrandLogo variant="footer" />
 
           <div className="flex flex-col gap-3 text-sm text-white/75 sm:flex-row sm:items-center sm:gap-6">
-            <a
-              href="https://www.instagram.com/label_confeitariagourmet/"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-2 transition hover:text-[#D2B48C]"
-            >
-              <AtSign size={17} />
-              @label_confeitariagourmet
-            </a>
+            {instagramHandle && instagramUrl && (
+              <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-2 transition hover:text-[#D2B48C]"
+              >
+                <AtSign size={17} />
+                {instagramHandle}
+              </a>
+            )}
 
             <Link
               href="/"
@@ -409,6 +400,13 @@ export default async function EncomendasPage() {
             >
               <ArrowLeft size={17} />
               Voltar ao cardápio do dia
+            </Link>
+
+            <Link
+              href="/privacidade"
+              className="transition hover:text-[#D2B48C]"
+            >
+              Privacidade
             </Link>
           </div>
         </div>

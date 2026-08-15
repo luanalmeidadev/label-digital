@@ -38,6 +38,7 @@ type OrderItem = {
 };
 
 type OrderDetailsDialogProps = {
+  pickupAddress: string;
   order: {
     id: string;
     order_number: number;
@@ -161,6 +162,7 @@ function getNextStatus(
 }
 
 export default function OrderDetailsDialog({
+  pickupAddress,
   order,
   updateStatusAction,
 }: OrderDetailsDialogProps) {
@@ -190,6 +192,7 @@ export default function OrderDetailsDialog({
           orderNumber: order.order_number,
           phone: order.customer.phone,
           status: order.status,
+          pickupAddress,
         }
       : null;
 
@@ -218,9 +221,10 @@ export default function OrderDetailsDialog({
         await updateStatusAction(formData);
 
       if (result.notification) {
-        setNotification(
-          result.notification
-        );
+        setNotification({
+          ...result.notification,
+          pickupAddress,
+        });
       } else {
         setOpen(false);
       }

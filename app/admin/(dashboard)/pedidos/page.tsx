@@ -12,6 +12,7 @@ import {
 import OrderDetailsDialog from "@/components/admin/OrderDetailsDialog";
 import OrdersPanelTabs from "@/components/admin/OrdersPanelTabs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getPublicStoreSettings } from "@/lib/public-store-settings";
 
 import { updateOrderStatus } from "./actions";
 
@@ -68,8 +69,8 @@ export default async function PedidosPage() {
   const supabase =
     await createSupabaseServerClient();
 
-  const { data: orders, error } =
-    await supabase
+  const [ordersResult, storeSettings] = await Promise.all([
+    supabase
       .from("orders")
       .select(`
         id,
@@ -108,7 +109,10 @@ export default async function PedidosPage() {
       `)
       .order("created_at", {
         ascending: false,
-      });
+      }),
+    getPublicStoreSettings(),
+  ]);
+  const { data: orders, error } = ordersResult;
 
   if (error) {
     console.error(
@@ -349,6 +353,7 @@ export default async function PedidosPage() {
 
                       <div className="flex flex-wrap items-center gap-2">
                         <OrderDetailsDialog
+                          pickupAddress={storeSettings.pickupAddress}
                           order={{
                             id: order.id,
 

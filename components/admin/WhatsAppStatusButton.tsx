@@ -36,6 +36,8 @@ export default function WhatsAppStatusButton({
           notification.orderNumber,
         status: notification.status,
         trackingUrl,
+        pickupAddress:
+          notification.pickupAddress,
       });
 
     const whatsappParams =

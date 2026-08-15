@@ -12,6 +12,7 @@ async function ensureAdmin() {
 
 function revalidateSettings() {
   revalidatePath("/");
+  revalidatePath("/encomendas");
   revalidatePath("/admin");
   revalidatePath("/admin/configuracoes");
 }

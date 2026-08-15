@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   type FormEvent,
   useMemo,
@@ -978,6 +979,19 @@ export default function PreorderWhatsAppButton({
               {error}
             </div>
           )}
+
+          <p className="text-center text-[11px] leading-4 text-[#756A66]">
+            Ao enviar, seus dados serão usados para atender e acompanhar a
+            encomenda, conforme o{" "}
+            <Link
+              href="/privacidade"
+              target="_blank"
+              className="font-bold text-[#8B0000] underline underline-offset-2"
+            >
+              Aviso de Privacidade
+            </Link>
+            .
+          </p>
 
           <button
             type="submit"
