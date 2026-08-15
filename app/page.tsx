@@ -17,6 +17,17 @@ import {
   normalizeInstagramHandle,
 } from "@/lib/instagram";
 import { getPublicStoreSettings } from "@/lib/public-store-settings";
+import { getSiteUrl } from "@/lib/site-url";
+
+const schemaWeekdays = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
 
 export default async function Home() {
   const supabase =
@@ -89,6 +100,34 @@ export default async function Home() {
     storeSettings.instagram
   );
   const instagramUrl = buildInstagramUrl(storeSettings.instagram);
+  const siteUrl = getSiteUrl();
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Bakery",
+    name: storeSettings.storeName,
+    url: siteUrl.toString(),
+    telephone: storeSettings.whatsapp,
+    image: new URL("/opengraph-image", siteUrl).toString(),
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: `${storeSettings.address.street}, ${storeSettings.address.number}`,
+      addressLocality: storeSettings.address.city,
+      addressRegion: storeSettings.address.state,
+      addressCountry: "BR",
+    },
+    areaServed: storeSettings.deliveryCities,
+    sameAs: instagramUrl ? [instagramUrl] : undefined,
+    openingHoursSpecification: storeSettings.businessHours
+      .filter(
+        (hour) => hour.isOpen && hour.opensAt && hour.closesAt
+      )
+      .map((hour) => ({
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: schemaWeekdays[hour.weekday],
+        opens: hour.opensAt,
+        closes: hour.closesAt,
+      })),
+  };
 
   return (
     <CartProvider
@@ -104,6 +143,12 @@ export default async function Home() {
             }))
       }
     >
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
       <StoreRealtimeRefresh />
       <main className="min-h-screen bg-[#FFFDF9]">
         <Header />

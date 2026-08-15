@@ -26,7 +26,7 @@ import type { PreorderProduct } from "@/lib/preorder-menu";
 import { getPublicStoreSettings } from "@/lib/public-store-settings";
 
 export const metadata: Metadata = {
-  title: "Encomendas | La'Bel Confeitaria",
+  title: "Encomendas",
   description:
     "Bolos, doces, brownies e sobremesas sob encomenda para os seus momentos especiais.",
 };

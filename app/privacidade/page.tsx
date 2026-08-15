@@ -6,7 +6,7 @@ import BrandLogo from "@/components/brand/BrandLogo";
 import { storeConfig } from "@/config/store";
 
 export const metadata: Metadata = {
-  title: "Privacidade | La'Bel Confeitaria",
+  title: "Privacidade",
   description:
     "Saiba como a La'Bel Confeitaria utiliza e protege os dados informados nos pedidos.",
 };

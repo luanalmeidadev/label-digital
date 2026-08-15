@@ -18,7 +18,7 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Acompanhar pedido | La’Bel Confeitaria",
+  title: "Acompanhar pedido",
   description:
     "Acompanhe o andamento do seu pedido na La’Bel Confeitaria.",
   robots: {

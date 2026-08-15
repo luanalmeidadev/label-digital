@@ -79,8 +79,10 @@ Depois do deploy:
 
 1. abra a loja e o painel administrativo;
 2. confira `/api/health`;
-3. valide login, cardápio, pedido, encomenda e impressão;
-4. acompanhe os logs durante os primeiros pedidos reais.
+3. confirme que `SITE_URL` contém o domínio público final, sem barra no fim;
+4. confira `/robots.txt`, `/sitemap.xml` e `/opengraph-image`;
+5. valide login, cardápio, pedido, encomenda e impressão;
+6. acompanhe os logs durante os primeiros pedidos reais.
 
 ## Referências oficiais
 

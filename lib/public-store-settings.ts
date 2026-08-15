@@ -17,6 +17,12 @@ export type PublicStoreSettings = {
   pickupEnabled: boolean;
   deliveryEnabled: boolean;
   pickupAddress: string;
+  address: {
+    street: string;
+    number: string;
+    city: string;
+    state: string;
+  };
   deliveryCities: string[];
   businessHours: PublicBusinessHour[];
 };
@@ -31,7 +37,7 @@ const fallbackBusinessHours: PublicBusinessHour[] = [
   { weekday: 6, isOpen: true, opensAt: "09:00", closesAt: "17:00" },
 ];
 
-function formatPickupAddress(settings?: {
+function resolveAddress(settings?: {
   address_street: string | null;
   address_number: string | null;
   address_city: string | null;
@@ -46,7 +52,7 @@ function formatPickupAddress(settings?: {
   const state =
     settings?.address_state?.trim() || storeConfig.address.state;
 
-  return `${street}, ${number} — ${city}/${state}`;
+  return { street, number, city, state };
 }
 
 export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
@@ -101,6 +107,7 @@ export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
   }
 
   const settings = settingsResult.data;
+  const address = resolveAddress(settings ?? undefined);
   const businessHours =
     hoursResult.data && hoursResult.data.length > 0
       ? hoursResult.data.map((hour) => ({
@@ -122,7 +129,8 @@ export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
     pickupEnabled: settings?.pickup_enabled ?? storeConfig.orderTypes.pickup,
     deliveryEnabled:
       settings?.delivery_enabled ?? storeConfig.orderTypes.delivery,
-    pickupAddress: formatPickupAddress(settings ?? undefined),
+    pickupAddress: `${address.street}, ${address.number} — ${address.city}/${address.state}`,
+    address,
     deliveryCities,
     businessHours,
   };

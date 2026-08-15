@@ -7,10 +7,10 @@ import { RefreshCw } from "lucide-react";
 
 export default function ErrorPage({
   error,
-  reset,
+  retry,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
+  retry: () => void;
 }) {
   useEffect(() => {
     console.error("Erro de interface:", error);
@@ -48,7 +48,7 @@ export default function ErrorPage({
         <div className="mt-7 grid gap-3 sm:grid-cols-2">
           <button
             type="button"
-            onClick={reset}
+            onClick={retry}
             className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white transition hover:bg-[#700000]"
           >
             <RefreshCw size={17} />
