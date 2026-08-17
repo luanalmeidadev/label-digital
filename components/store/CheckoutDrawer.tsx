@@ -20,6 +20,7 @@ import {
 
 import { createOrder } from "@/app/store/checkout/actions";
 import { createClientRequestId } from "@/lib/client-request-id";
+import type { StoreOpenStatus } from "@/lib/store-open-status";
 import type { StoreCheckoutSettings } from "./CartUI";
 
 import { useCart } from "./CartProvider";
@@ -31,6 +32,7 @@ export type FulfillmentType =
 
 type CheckoutDrawerProps = {
   storeSettings: StoreCheckoutSettings;
+  storeStatus: StoreOpenStatus | null;
   open: boolean;
   onClose: () => void;
   onBack: () => void;
@@ -101,6 +103,7 @@ function isSupportedCity(
 
 export default function CheckoutDrawer({
   storeSettings,
+  storeStatus,
   open,
   onClose,
   onBack,
@@ -440,6 +443,16 @@ export default function CheckoutDrawer({
 
   function handleCreateOrder() {
     if (isPending) {
+      return;
+    }
+
+    if (!storeStatus?.isOpen) {
+      setOrderError(
+        storeStatus
+          ? `A loja está fechada agora. ${storeStatus.detail}. Seu carrinho continua salvo.`
+          : "Não foi possível confirmar o horário da loja. Seu carrinho continua salvo."
+      );
+
       return;
     }
 
@@ -1558,6 +1571,14 @@ export default function CheckoutDrawer({
           {step ===
             "review" && (
             <div className="space-y-3">
+              {!storeStatus?.isOpen && (
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-semibold leading-5 text-amber-800">
+                  {storeStatus
+                    ? `A loja está fechada agora. ${storeStatus.detail}. Seu carrinho está salvo e poderá ser finalizado quando abrirmos.`
+                    : "Estamos verificando o horário da loja. Seu carrinho continua salvo."}
+                </div>
+              )}
+
               <TurnstileWidget
                 action="daily_order"
                 onTokenChange={
@@ -1596,7 +1617,8 @@ export default function CheckoutDrawer({
                 }
                 disabled={
                   isPending ||
-                  !turnstileToken
+                  !turnstileToken ||
+                  !storeStatus?.isOpen
                 }
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
               >
@@ -1612,6 +1634,8 @@ export default function CheckoutDrawer({
                     Criando
                     pedido...
                   </>
+                ) : !storeStatus?.isOpen ? (
+                  "Carrinho salvo — loja fechada"
                 ) : (
                   "Enviar pedido pelo WhatsApp"
                 )}

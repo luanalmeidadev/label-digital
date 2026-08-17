@@ -56,7 +56,7 @@ export default function SetPasswordForm() {
         return;
       }
 
-      router.replace("/admin");
+      router.replace("/admin?session=started");
       router.refresh();
     });
   }

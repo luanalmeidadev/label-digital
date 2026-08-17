@@ -22,5 +22,5 @@ export async function loginAdmin(formData: FormData) {
     redirect("/admin/login?error=invalid");
   }
 
-  redirect("/admin");
+  redirect("/admin?session=started");
 }

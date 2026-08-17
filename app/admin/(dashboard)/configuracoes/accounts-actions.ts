@@ -243,3 +243,52 @@ export async function updateAdminAccount(
   revalidatePath("/admin");
   return { success: true };
 }
+
+export async function deleteAdminAccount(
+  formData: FormData
+): Promise<AccountActionResult> {
+  const access = await requireAdministrator();
+  const id = String(formData.get("id") ?? "");
+
+  if (!id) {
+    return {
+      success: false,
+      error: "Conta inválida.",
+    };
+  }
+
+  if (id === access.user.id) {
+    return {
+      success: false,
+      error: "Você não pode excluir sua própria conta.",
+    };
+  }
+
+  const adminClient = createSupabaseAdminClient();
+  const { data: profile, error: profileError } =
+    await adminClient
+      .from("admin_profiles")
+      .select("id")
+      .eq("id", id)
+      .maybeSingle();
+
+  if (profileError || !profile) {
+    return {
+      success: false,
+      error: "A conta administrativa não foi encontrada.",
+    };
+  }
+
+  const { error: deleteError } =
+    await adminClient.auth.admin.deleteUser(id);
+
+  if (deleteError) {
+    return {
+      success: false,
+      error: "Não foi possível excluir a conta.",
+    };
+  }
+
+  revalidatePath("/admin/configuracoes");
+  return { success: true };
+}

@@ -18,7 +18,6 @@ import { hasAdminPermission } from "@/lib/admin-permissions";
 import { listPreorderRequests } from "@/lib/preorder-request-store";
 import { getPreorderPaymentStatus } from "@/lib/preorder-request";
 import { cn } from "@/lib/utils";
-import { logoutAdmin } from "../logout/actions";
 
 const statusLabels: Record<string, string> = {
   created: "Criado",
@@ -605,14 +604,6 @@ export default async function AdminPage({
             </p>
           </div>
 
-          <form action={logoutAdmin}>
-            <button
-              type="submit"
-              className="rounded-xl border border-[#8B0000] px-5 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-[#8B0000] hover:text-white"
-            >
-              Sair
-            </button>
-          </form>
         </div>
 
         {accessForbidden && (

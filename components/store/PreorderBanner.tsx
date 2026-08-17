@@ -21,7 +21,7 @@ export default function PreorderBanner() {
           href="/encomendas"
           className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000]"
         >
-          Ver encomendas
+          Ver cardápio de encomendas
           <ChevronRight size={18} />
         </Link>
       </div>

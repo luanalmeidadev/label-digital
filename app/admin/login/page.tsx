@@ -12,6 +12,8 @@ const loginErrorMessages: Record<string, string> = {
 const loginStatusMessages: Record<string, string> = {
   "password-updated":
     "Senha atualizada. Entre usando a nova senha.",
+  "session-ended":
+    "Sua sessão foi encerrada ao fechar a aba. Entre novamente.",
 };
 
 export default async function AdminLoginPage({

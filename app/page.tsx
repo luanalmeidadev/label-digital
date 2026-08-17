@@ -216,6 +216,7 @@ export default async function Home() {
             deliveryEnabled: storeSettings.deliveryEnabled,
             pickupAddress: storeSettings.pickupAddress,
             deliveryCities: storeSettings.deliveryCities,
+            businessHours: storeSettings.businessHours,
           }}
         />
       </main>

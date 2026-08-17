@@ -1,3 +1,6 @@
+import { CakeSlice, ChevronRight } from "lucide-react";
+import Link from "next/link";
+
 type Category = {
   id: string;
   name: string;
@@ -17,10 +20,6 @@ const emojiBySlug: Record<string, string> = {
 export default function CategoryGrid({
   categories,
 }: CategoryGridProps) {
-  if (categories.length === 0) {
-    return null;
-  }
-
   return (
     <section className="py-8">
       <div className="mb-5">
@@ -36,6 +35,31 @@ export default function CategoryGrid({
           Escolha uma categoria ou veja o cardápio completo abaixo.
         </p>
       </div>
+
+      <Link
+        href="/encomendas"
+        className="group mb-4 flex items-center justify-between gap-4 rounded-2xl border border-[#8B0000] bg-[#8B0000] p-4 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#700000] sm:p-5"
+      >
+        <span className="flex min-w-0 items-center gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-[#F3D9B6] transition group-hover:scale-105">
+            <CakeSlice size={26} />
+          </span>
+
+          <span className="min-w-0">
+            <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#F3D9B6]">
+              Cardápio de encomendas
+            </span>
+            <span className="mt-1 block text-base font-extrabold sm:text-lg">
+              Quero encomendar
+            </span>
+            <span className="mt-0.5 block text-xs text-white/75">
+              Bolos, doces e sobremesas para momentos especiais
+            </span>
+          </span>
+        </span>
+
+        <ChevronRight size={22} className="shrink-0" />
+      </Link>
 
       <div className="grid grid-cols-3 gap-3">
         {categories.map((category) => (

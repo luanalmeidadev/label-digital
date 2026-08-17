@@ -8,12 +8,14 @@ import {
 import { useRouter } from "next/navigation";
 import {
   ShieldCheck,
+  Trash2,
   UserCog,
   UserPlus,
 } from "lucide-react";
 
 import {
   createAdminAccount,
+  deleteAdminAccount,
   updateAdminAccount,
 } from "@/app/admin/(dashboard)/configuracoes/accounts-actions";
 import type { AdminAccount } from "@/lib/admin-accounts";
@@ -243,6 +245,8 @@ function ExistingAccountForm({
     type: "success" | "error";
     text: string;
   } | null>(null);
+  const [confirmDelete, setConfirmDelete] =
+    useState(false);
   const isCurrentUser = account.id === currentUserId;
 
   function handleSubmit(
@@ -272,6 +276,31 @@ function ExistingAccountForm({
         type: "success",
         text: "Conta atualizada.",
       });
+      router.refresh();
+    });
+  }
+
+  function handleDelete() {
+    const formData = new FormData();
+    formData.set("id", account.id);
+    setMessage(null);
+
+    startTransition(async () => {
+      const result = await deleteAdminAccount(
+        formData
+      );
+
+      if (!result.success) {
+        setMessage({
+          type: "error",
+          text:
+            result.error ??
+            "Não foi possível excluir a conta.",
+        });
+        setConfirmDelete(false);
+        return;
+      }
+
       router.refresh();
     });
   }
@@ -368,14 +397,64 @@ function ExistingAccountForm({
 
       <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <ResultMessage message={message} />
-        <button
-          type="submit"
-          disabled={pending}
-          className="ml-auto rounded-xl border border-[#8B0000] px-4 py-2.5 text-sm font-bold text-[#8B0000] transition hover:bg-[#8B0000] hover:text-white disabled:opacity-60"
-        >
-          {pending ? "Salvando..." : "Salvar acesso"}
-        </button>
+        <div className="ml-auto flex flex-col-reverse gap-2 sm:flex-row">
+          {!isCurrentUser && (
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(true)}
+              disabled={pending}
+              className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-200 px-4 py-2.5 text-sm font-bold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+            >
+              <Trash2 size={16} />
+              Excluir usuário
+            </button>
+          )}
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-xl border border-[#8B0000] px-4 py-2.5 text-sm font-bold text-[#8B0000] transition hover:bg-[#8B0000] hover:text-white disabled:opacity-60"
+          >
+            {pending ? "Salvando..." : "Salvar acesso"}
+          </button>
+        </div>
       </div>
+
+      {confirmDelete && !isCurrentUser && (
+        <div
+          role="alertdialog"
+          aria-labelledby={`delete-account-${account.id}`}
+          className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4"
+        >
+          <p
+            id={`delete-account-${account.id}`}
+            className="font-bold text-red-800"
+          >
+            Excluir o acesso de {account.name}?
+          </p>
+          <p className="mt-1 text-xs leading-5 text-red-700">
+            Essa pessoa perderá imediatamente o acesso ao
+            administrativo. A exclusão não pode ser desfeita.
+          </p>
+          <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <button
+              type="button"
+              onClick={() => setConfirmDelete(false)}
+              disabled={pending}
+              className="rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-bold text-red-700 disabled:opacity-60"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={pending}
+              className="rounded-xl bg-red-700 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-800 disabled:opacity-60"
+            >
+              {pending ? "Excluindo..." : "Confirmar exclusão"}
+            </button>
+          </div>
+        </div>
+      )}
     </form>
   );
 }

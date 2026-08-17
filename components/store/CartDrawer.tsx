@@ -3,6 +3,7 @@
 import Image from "next/image";
 
 import {
+  Clock3,
   Minus,
   Plus,
   ShoppingBag,
@@ -10,12 +11,14 @@ import {
   X,
 } from "lucide-react";
 
+import type { StoreOpenStatus } from "@/lib/store-open-status";
 import { useCart } from "./CartProvider";
 
 type CartDrawerProps = {
   open: boolean;
   onClose: () => void;
   onContinue: () => void;
+  storeStatus: StoreOpenStatus | null;
 };
 
 function formatCurrency(value: number) {
@@ -29,6 +32,7 @@ export default function CartDrawer({
   open,
   onClose,
   onContinue,
+  storeStatus,
 }: CartDrawerProps) {
   const {
     items,
@@ -198,6 +202,25 @@ export default function CartDrawer({
         {/* RODAPÉ */}
         {items.length > 0 && (
           <div className="border-t border-[#EEE6DF] bg-white p-5">
+            {!storeStatus?.isOpen && (
+              <div
+                role="status"
+                className="mb-4 flex gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-900"
+              >
+                <Clock3 size={19} className="mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-bold">
+                    {storeStatus ? "Loja fechada" : "Verificando horário"}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-amber-800">
+                    {storeStatus
+                      ? `${storeStatus.detail}. Seu carrinho está salvo e poderá ser finalizado quando abrirmos.`
+                      : "Aguarde um instante. Seu carrinho continua salvo."}
+                  </p>
+                </div>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <span className="text-sm text-[#756A66]">
                 Subtotal
@@ -211,9 +234,14 @@ export default function CartDrawer({
             <button
               type="button"
               onClick={onContinue}
-              className="mt-4 h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000]"
+              disabled={!storeStatus?.isOpen}
+              className="mt-4 h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:bg-[#B9ACA8]"
             >
-              Continuar pedido
+              {storeStatus?.isOpen
+                ? "Continuar pedido"
+                : storeStatus
+                  ? "Carrinho salvo — loja fechada"
+                  : "Verificando horário..."}
             </button>
           </div>
         )}

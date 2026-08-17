@@ -8,6 +8,7 @@ import {
   BadgeDollarSign,
   CakeSlice,
   LayoutDashboard,
+  LogOut,
   Menu,
   Package,
   Settings,
@@ -23,6 +24,7 @@ import type {
   AdminRole,
 } from "@/lib/admin-permissions";
 import BrandLogo from "@/components/brand/BrandLogo";
+import { logoutAdmin } from "@/app/admin/logout/actions";
 
 const menuItems: Array<{
   label: string;
@@ -148,13 +150,25 @@ export default function AdminSidebar({
     </nav>
   );
 
+  const logoutButton = (
+    <form action={logoutAdmin}>
+      <button
+        type="submit"
+        className="flex w-full items-center gap-3 rounded-xl border border-white/20 px-3 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-[#8B0000]"
+      >
+        <LogOut size={19} />
+        Sair
+      </button>
+    </form>
+  );
+
   return (
     <>
       {/* =====================================
           DESKTOP
       ===================================== */}
 
-      <aside className="hidden min-h-screen w-64 shrink-0 border-r border-white/10 bg-[#8B0000] lg:block">
+      <aside className="hidden h-screen w-64 shrink-0 border-r border-white/10 bg-[#8B0000] lg:sticky lg:top-0 lg:block">
         <div className="flex h-full flex-col px-4 py-6">
           <div className="mb-8 px-3">
             <BrandLogo variant="sidebar" eager />
@@ -170,6 +184,10 @@ export default function AdminSidebar({
           </div>
 
           {navigation}
+
+          <div className="mt-auto pt-6">
+            {logoutButton}
+          </div>
         </div>
       </aside>
 
@@ -234,6 +252,10 @@ export default function AdminSidebar({
 
             <div className="min-h-0 flex-1 overflow-y-auto">
               {navigation}
+            </div>
+
+            <div className="border-t border-white/10 pt-4">
+              {logoutButton}
             </div>
           </aside>
         </div>

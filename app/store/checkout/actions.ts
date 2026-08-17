@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getStoreOpenStatus } from "@/lib/store-open-status";
 import {
   beginIdempotentRequest,
   completeIdempotentRequest,
@@ -101,6 +102,44 @@ export async function createOrder(
   try {
     const supabase =
       createSupabaseAdminClient();
+
+    const {
+      data: businessHours,
+      error: businessHoursError,
+    } = await supabase
+      .from("business_hours")
+      .select("weekday, is_open, opens_at, closes_at")
+      .order("weekday");
+
+    if (businessHoursError || !businessHours?.length) {
+      console.error(
+        "Erro ao verificar horário da loja:",
+        businessHoursError
+      );
+
+      return {
+        success: false,
+        error:
+          "Não foi possível confirmar o horário da loja. Seu carrinho continua salvo. Tente novamente.",
+      };
+    }
+
+    const storeStatus = getStoreOpenStatus(
+      businessHours.map((hour) => ({
+        weekday: hour.weekday,
+        isOpen: hour.is_open,
+        opensAt: hour.opens_at,
+        closesAt: hour.closes_at,
+      })),
+      new Date()
+    );
+
+    if (!storeStatus.isOpen) {
+      return {
+        success: false,
+        error: `A loja está fechada agora. ${storeStatus.detail}. Seu carrinho continua salvo.`,
+      };
+    }
 
     /*
      * =========================================
