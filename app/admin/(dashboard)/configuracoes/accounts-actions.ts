@@ -89,7 +89,7 @@ export async function createAdminAccount(
 
   const adminClient = createSupabaseAdminClient();
   const redirectTo = new URL(
-    "/admin/definir-senha",
+    "/admin/auth/confirm",
     getSiteUrl()
   ).toString();
   const { data, error } =
