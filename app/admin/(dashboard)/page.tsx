@@ -6,6 +6,7 @@ import {
   CalendarRange,
   CircleDollarSign,
   Package,
+  ShieldAlert,
   ShoppingBag,
   Users,
   WalletCards,
@@ -122,7 +123,16 @@ function OverviewMetricCard({ metric }: { metric: OverviewMetric }) {
   return <article className={cardClassName}>{content}</article>;
 }
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    error?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const accessForbidden =
+    params.error === "forbidden";
   const access = await getAdminAccess();
   const supabase = access.supabase;
   const admin = access.profile;
@@ -604,6 +614,28 @@ export default async function AdminPage() {
             </button>
           </form>
         </div>
+
+        {accessForbidden && (
+          <div
+            role="alert"
+            className="mt-6 flex gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-900"
+          >
+            <ShieldAlert
+              size={22}
+              className="mt-0.5 shrink-0"
+              aria-hidden="true"
+            />
+            <div>
+              <p className="font-bold">
+                Acesso não autorizado
+              </p>
+              <p className="mt-1 text-sm leading-5 text-amber-800">
+                Sua conta não possui permissão para
+                acessar essa área.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* CARDS PRINCIPAIS */}
         <section className="mt-8">
