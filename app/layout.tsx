@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Archivo, Geist } from "next/font/google";
 import "./globals.css";
+import { isHomologation } from "@/lib/app-environment";
 import { cn } from "@/lib/utils";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -47,8 +48,9 @@ export const metadata: Metadata = {
       "Cardápio do dia, doces, bolos e encomendas artesanais em Palhoça.",
   },
   robots: {
-    index: true,
-    follow: true,
+    index: !isHomologation,
+    follow: !isHomologation,
+    noarchive: isHomologation,
   },
 };
 
@@ -64,7 +66,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className={cn("font-sans", geist.variable)}>
-      <body className={archivo.variable}>{children}</body>
+      <body className={archivo.variable}>
+        {isHomologation && (
+          <div
+            role="status"
+            className="relative z-[100] flex min-h-9 items-center justify-center bg-amber-300 px-4 py-2 text-center text-xs font-extrabold tracking-wide text-amber-950 sm:text-sm"
+          >
+            AMBIENTE DE HOMOLOGAÇÃO • DADOS DE TESTE
+          </div>
+        )}
+        {children}
+      </body>
     </html>
   );
 }

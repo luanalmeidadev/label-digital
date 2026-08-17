@@ -130,7 +130,7 @@ function NewAccountForm() {
       setRole("attendant");
       setMessage({
         type: "success",
-        text: "Conta criada com sucesso.",
+        text: "Convite enviado para o e-mail informado.",
       });
       router.refresh();
     });
@@ -177,20 +177,6 @@ function NewAccountForm() {
         </label>
         <label className="block">
           <span className="text-xs font-bold text-[#49352C]">
-            Senha inicial
-          </span>
-          <input
-            name="password"
-            type="password"
-            required
-            minLength={8}
-            disabled={pending}
-            placeholder="Mínimo de 8 caracteres"
-            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
-          />
-        </label>
-        <label className="block">
-          <span className="text-xs font-bold text-[#49352C]">
             Perfil
           </span>
           <select
@@ -207,6 +193,10 @@ function NewAccountForm() {
           </select>
         </label>
       </div>
+
+      <p className="mt-4 rounded-xl bg-blue-50 px-3 py-2 text-xs leading-5 text-blue-700">
+        A pessoa receberá um convite por e-mail e definirá a própria senha no primeiro acesso.
+      </p>
 
       <div className="mt-5">
         <p className="mb-3 text-xs font-bold text-[#49352C]">
@@ -231,7 +221,7 @@ function NewAccountForm() {
           disabled={pending}
           className="ml-auto rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
         >
-          {pending ? "Criando..." : "Criar conta"}
+          {pending ? "Enviando..." : "Enviar convite"}
         </button>
       </div>
     </form>
@@ -318,6 +308,11 @@ function ExistingAccountForm({
                 Sua conta
               </span>
             )}
+            {!account.emailConfirmed && (
+              <span className="rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-700">
+                Convite pendente
+              </span>
+            )}
           </div>
           <p className="mt-1 text-xs text-[#756A66]">
             {account.email}
@@ -330,8 +325,8 @@ function ExistingAccountForm({
         )}
       </div>
 
-      <div className="mt-5 grid gap-4 sm:grid-cols-3">
-        <label className="block sm:col-span-1">
+      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+        <label className="block">
           <span className="text-xs font-bold text-[#49352C]">
             Nome
           </span>
@@ -360,19 +355,6 @@ function ExistingAccountForm({
             <option value="attendant">Atendente</option>
             <option value="admin">Administrador</option>
           </select>
-        </label>
-        <label className="block">
-          <span className="text-xs font-bold text-[#49352C]">
-            Nova senha
-          </span>
-          <input
-            name="new_password"
-            type="password"
-            minLength={8}
-            disabled={pending}
-            placeholder="Deixe vazio para manter"
-            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
-          />
         </label>
       </div>
 
@@ -417,7 +399,7 @@ export default function AdminAccountsManager({
               Contas e permissões
             </h2>
             <p className="text-xs text-[#756A66]">
-              Crie acessos administrativos ou limitados para atendentes.
+              Envie convites e defina acessos administrativos ou limitados para atendentes.
             </p>
           </div>
         </div>

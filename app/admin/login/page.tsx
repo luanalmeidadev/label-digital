@@ -1,9 +1,17 @@
 import Image from "next/image";
+import Link from "next/link";
 import { loginAdmin } from "./actions";
 
 const loginErrorMessages: Record<string, string> = {
   missing: "Preencha o e-mail e a senha.",
   invalid: "E-mail ou senha incorretos.",
+  "invalid-link":
+    "Este convite é inválido ou expirou. Solicite um novo convite ao administrador.",
+};
+
+const loginStatusMessages: Record<string, string> = {
+  "password-updated":
+    "Senha atualizada. Entre usando a nova senha.",
 };
 
 export default async function AdminLoginPage({
@@ -11,14 +19,23 @@ export default async function AdminLoginPage({
 }: {
   searchParams: Promise<{
     error?: string | string[];
+    status?: string | string[];
   }>;
 }) {
-  const errorValue = (await searchParams).error;
+  const params = await searchParams;
+  const errorValue = params.error;
+  const statusValue = params.status;
   const errorKey = Array.isArray(errorValue)
     ? errorValue[0]
     : errorValue;
   const errorMessage = errorKey
     ? loginErrorMessages[errorKey]
+    : null;
+  const statusKey = Array.isArray(statusValue)
+    ? statusValue[0]
+    : statusValue;
+  const statusMessage = statusKey
+    ? loginStatusMessages[statusKey]
     : null;
 
   return (
@@ -56,6 +73,15 @@ export default async function AdminLoginPage({
             </div>
           )}
 
+          {statusMessage && (
+            <div
+              role="status"
+              className="mb-5 rounded-xl border border-green-100 bg-green-50 p-3 text-sm font-semibold text-green-700"
+            >
+              {statusMessage}
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="email"
@@ -76,12 +102,20 @@ export default async function AdminLoginPage({
           </div>
 
           <div className="mt-5">
-            <label
-              htmlFor="password"
-              className="text-sm font-bold text-[#241B19]"
-            >
-              Senha
-            </label>
+            <div className="flex items-center justify-between gap-3">
+              <label
+                htmlFor="password"
+                className="text-sm font-bold text-[#241B19]"
+              >
+                Senha
+              </label>
+              <Link
+                href="/admin/recuperar-senha"
+                className="text-xs font-bold text-[#8B0000] hover:underline"
+              >
+                Esqueci minha senha
+              </Link>
+            </div>
 
             <input
               id="password"

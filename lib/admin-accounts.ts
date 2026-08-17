@@ -16,6 +16,7 @@ export type AdminAccount = {
   email: string;
   role: AdminRole;
   permissions: AdminPermission[];
+  emailConfirmed: boolean;
   createdAt: string;
 };
 
@@ -64,6 +65,9 @@ export async function listAdminAccounts() {
           permissions: getAdminPermissions(
             role,
             user.app_metadata
+          ),
+          emailConfirmed: Boolean(
+            user.email_confirmed_at
           ),
           createdAt: user.created_at,
         },

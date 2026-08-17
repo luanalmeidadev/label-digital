@@ -9,6 +9,7 @@ import {
   allAdminPermissions,
   normalizeAdminPermissions,
 } from "@/lib/admin-permissions";
+import { getSiteUrl } from "@/lib/site-url";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export type AccountActionResult = {
@@ -56,9 +57,6 @@ export async function createAdminAccount(
   )
     .trim()
     .toLowerCase();
-  const password = String(
-    formData.get("password") ?? ""
-  );
   const role = parseRole(formData.get("role"));
   const permissions = parsePermissions(
     formData,
@@ -79,13 +77,6 @@ export async function createAdminAccount(
     };
   }
 
-  if (password.length < 8) {
-    return {
-      success: false,
-      error: "A senha deve ter pelo menos 8 caracteres.",
-    };
-  }
-
   if (
     role === "attendant" &&
     permissions.length === 0
@@ -97,17 +88,18 @@ export async function createAdminAccount(
   }
 
   const adminClient = createSupabaseAdminClient();
+  const redirectTo = new URL(
+    "/admin/definir-senha",
+    getSiteUrl()
+  ).toString();
   const { data, error } =
-    await adminClient.auth.admin.createUser({
+    await adminClient.auth.admin.inviteUserByEmail(
       email,
-      password,
-      email_confirm: true,
-      user_metadata: { name },
-      app_metadata: createAppMetadata(
-        role,
-        permissions
-      ),
-    });
+      {
+        data: { name },
+        redirectTo,
+      }
+    );
 
   if (error || !data.user) {
     return {
@@ -115,7 +107,30 @@ export async function createAdminAccount(
       error:
         error?.message.includes("already")
           ? "Já existe uma conta com este e-mail."
-          : "Não foi possível criar a conta.",
+          : "Não foi possível enviar o convite por e-mail.",
+    };
+  }
+
+  const { error: metadataError } =
+    await adminClient.auth.admin.updateUserById(
+      data.user.id,
+      {
+        app_metadata: createAppMetadata(
+          role,
+          permissions
+        ),
+      }
+    );
+
+  if (metadataError) {
+    await adminClient.auth.admin.deleteUser(
+      data.user.id
+    );
+
+    return {
+      success: false,
+      error:
+        "Não foi possível configurar as permissões da conta.",
     };
   }
 
@@ -150,9 +165,6 @@ export async function updateAdminAccount(
   const name = String(
     formData.get("name") ?? ""
   ).trim();
-  const newPassword = String(
-    formData.get("new_password") ?? ""
-  );
   const role = parseRole(formData.get("role"));
   const permissions = parsePermissions(
     formData,
@@ -170,14 +182,6 @@ export async function updateAdminAccount(
     return {
       success: false,
       error: "Informe um nome válido.",
-    };
-  }
-
-  if (newPassword && newPassword.length < 8) {
-    return {
-      success: false,
-      error:
-        "A nova senha deve ter pelo menos 8 caracteres.",
     };
   }
 
@@ -209,9 +213,6 @@ export async function updateAdminAccount(
       permissions
     ),
     user_metadata: { name },
-    ...(newPassword
-      ? { password: newPassword }
-      : {}),
   };
   const { error: authError } =
     await adminClient.auth.admin.updateUserById(
