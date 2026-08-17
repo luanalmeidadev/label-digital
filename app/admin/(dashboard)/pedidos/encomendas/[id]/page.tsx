@@ -136,7 +136,7 @@ export default async function EncomendaDetalhesPage({
               </a>
             )}
             <Link
-              href={`/admin/pedidos/encomendas/${request.id}/imprimir`}
+              href={`/admin/pedidos/encomendas/${request.id}/imprimir?session=started`}
               target="_blank"
               className="inline-flex h-11 items-center gap-2 rounded-xl bg-[#8B0000] px-4 text-sm font-bold text-white transition hover:bg-[#700000]"
             >

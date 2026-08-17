@@ -449,7 +449,7 @@ export default async function PedidosPage() {
 
                         {canPrint && (
                           <Link
-                            href={`/admin/pedidos/${order.id}/imprimir`}
+                            href={`/admin/pedidos/${order.id}/imprimir?session=started`}
                             target="_blank"
                             className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000] transition hover:bg-[#8B0000] hover:text-white"
                           >
