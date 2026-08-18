@@ -1,4 +1,4 @@
-import { Package } from "lucide-react";
+import { ChevronDown, Package } from "lucide-react";
 
 import DeleteProductDialog from "@/components/admin/DeleteProductDialog";
 import EditProductDialog from "@/components/admin/EditProductDialog";
@@ -46,8 +46,7 @@ export default async function ProdutosPage() {
   const { data: categories, error: categoriesError } =
     await supabase
       .from("categories")
-      .select("id, name")
-      .eq("active", true)
+      .select("id, name, active, sort_order")
       .order("sort_order");
 
   if (categoriesError) {
@@ -56,6 +55,37 @@ export default async function ProdutosPage() {
 
   const imageSettings =
     await getImageDisplaySettings();
+
+  const activeCategories = (categories ?? [])
+    .filter((category) => category.active)
+    .map(({ id, name }) => ({ id, name }));
+
+  const productGroups = (categories ?? [])
+    .map((category) => ({
+      id: category.id,
+      name: category.name,
+      active: category.active,
+      products: (products ?? []).filter(
+        (product) => product.category_id === category.id
+      ),
+    }))
+    .filter((group) => group.products.length > 0);
+
+  const uncategorizedProducts = (products ?? []).filter(
+    (product) =>
+      !categories?.some(
+        (category) => category.id === product.category_id
+      )
+  );
+
+  if (uncategorizedProducts.length > 0) {
+    productGroups.push({
+      id: "uncategorized",
+      name: "Sem categoria",
+      active: false,
+      products: uncategorizedProducts,
+    });
+  }
 
   return (
     <main className="p-5 sm:p-8">
@@ -77,7 +107,7 @@ export default async function ProdutosPage() {
           </div>
 
           <NewProductDialog
-            categories={categories ?? []}
+            categories={activeCategories}
             createAction={createProduct}
           />
         </div>
@@ -103,12 +133,55 @@ export default async function ProdutosPage() {
 
           {products && products.length > 0 ? (
             <div className="divide-y divide-[#EEE6DF]">
-              {products.map((product) => {
-                const productCategory = Array.isArray(product.categories)
-                  ? product.categories[0]
-                  : product.categories;
+              {productGroups.map((group, groupIndex) => (
+                <details
+                  key={group.id}
+                  open={groupIndex === 0}
+                  className="group"
+                >
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 bg-[#FFFDF9] px-5 py-4 transition hover:bg-[#FFF8F4] [&::-webkit-details-marker]:hidden">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+                        <Package size={18} />
+                      </div>
 
-                return (
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <h3 className="truncate font-bold text-[#241B19]">
+                            {group.name}
+                          </h3>
+
+                          {!group.active && (
+                            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                              Categoria inativa
+                            </span>
+                          )}
+                        </div>
+
+                        <p className="mt-1 text-xs text-[#756A66]">
+                          {group.products.length}{" "}
+                          {group.products.length === 1
+                            ? "produto"
+                            : "produtos"}
+                        </p>
+                      </div>
+                    </div>
+
+                    <ChevronDown
+                      size={20}
+                      className="shrink-0 text-[#8B0000] transition-transform duration-200 group-open:rotate-180"
+                    />
+                  </summary>
+
+                  <div className="divide-y divide-[#EEE6DF] border-t border-[#EEE6DF]">
+                    {group.products.map((product) => {
+                      const productCategory = Array.isArray(
+                        product.categories
+                      )
+                        ? product.categories[0]
+                        : product.categories;
+
+                      return (
                   <article
                     key={product.id}
                     className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between"
@@ -123,7 +196,7 @@ export default async function ProdutosPage() {
                         available={product.available}
                         featured={product.featured}
                         active={product.active}
-                        categories={categories ?? []}
+                        categories={activeCategories}
                         updateAction={updateProduct}
                         imageUrl={product.image_url}
                         imagePositionX={
@@ -231,8 +304,11 @@ export default async function ProdutosPage() {
                       />
                     </div>
                   </article>
-                );
-              })}
+                      );
+                    })}
+                  </div>
+                </details>
+              ))}
             </div>
           ) : (
             <div className="px-6 py-16 text-center">
@@ -251,7 +327,7 @@ export default async function ProdutosPage() {
 
               <div className="mt-6 flex justify-center">
                 <NewProductDialog
-                  categories={categories ?? []}
+                  categories={activeCategories}
                   createAction={createProduct}
                 />
               </div>
