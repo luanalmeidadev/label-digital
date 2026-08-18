@@ -557,6 +557,131 @@ export async function updateProduct(
 }
 
 /* ------------------------------------------------ */
+/* REORDENAR DENTRO DA CATEGORIA */
+/* ------------------------------------------------ */
+
+export async function moveProduct(
+  formData: FormData
+) {
+  const supabase = await ensureAdmin();
+
+  const id = String(
+    formData.get("id") ?? ""
+  );
+
+  const direction = String(
+    formData.get("direction") ?? ""
+  );
+
+  if (
+    !id ||
+    !["up", "down"].includes(direction)
+  ) {
+    throw new Error(
+      "Movimentação inválida."
+    );
+  }
+
+  const { data: products, error } =
+    await supabase
+      .from("products")
+      .select(
+        "id, category_id, sort_order"
+      )
+      .order("sort_order")
+      .order("id");
+
+  if (error || !products) {
+    throw new Error(
+      "Não foi possível carregar os produtos."
+    );
+  }
+
+  const current = products.find(
+    (product) => product.id === id
+  );
+
+  if (!current) {
+    throw new Error(
+      "Produto não encontrado."
+    );
+  }
+
+  const categoryProducts = products.filter(
+    (product) =>
+      product.category_id ===
+      current.category_id
+  );
+
+  const currentIndex =
+    categoryProducts.findIndex(
+      (product) => product.id === id
+    );
+
+  const targetIndex =
+    direction === "up"
+      ? currentIndex - 1
+      : currentIndex + 1;
+
+  if (
+    currentIndex === -1 ||
+    targetIndex < 0 ||
+    targetIndex >=
+      categoryProducts.length
+  ) {
+    return;
+  }
+
+  const target =
+    categoryProducts[targetIndex];
+
+  const { error: currentError } =
+    await supabase
+      .from("products")
+      .update({
+        sort_order: target.sort_order,
+      })
+      .eq("id", current.id);
+
+  if (currentError) {
+    throw new Error(
+      "Não foi possível reordenar os produtos."
+    );
+  }
+
+  const { error: targetError } =
+    await supabase
+      .from("products")
+      .update({
+        sort_order: current.sort_order,
+      })
+      .eq("id", target.id);
+
+  if (targetError) {
+    const { error: rollbackError } =
+      await supabase
+        .from("products")
+        .update({
+          sort_order: current.sort_order,
+        })
+        .eq("id", current.id);
+
+    if (rollbackError) {
+      console.error(
+        "Erro ao restaurar a ordem do produto:",
+        rollbackError.message
+      );
+    }
+
+    throw new Error(
+      "Não foi possível reordenar os produtos."
+    );
+  }
+
+  revalidateProducts();
+}
+
+/* ------------------------------------------------ */
 /* DISPONÍVEL / ESGOTADO */
 /* ------------------------------------------------ */
 

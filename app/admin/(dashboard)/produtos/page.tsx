@@ -1,14 +1,16 @@
-import { ChevronDown, Package } from "lucide-react";
+import { ArrowDown, ArrowUp, Package } from "lucide-react";
 
 import DeleteProductDialog from "@/components/admin/DeleteProductDialog";
 import EditProductDialog from "@/components/admin/EditProductDialog";
 import NewProductDialog from "@/components/admin/NewProductDialog";
+import ProductCategorySection from "@/components/admin/ProductCategorySection";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 
 import {
   createProduct,
   deleteProduct,
+  moveProduct,
   toggleProductAvailability,
   toggleProductStatus,
   updateProduct,
@@ -112,69 +114,56 @@ export default async function ProdutosPage() {
           />
         </div>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
-                <Package size={20} />
+        <section className="mt-8 rounded-3xl border border-[#E7D8CC] bg-gradient-to-r from-white via-white to-[#FFF1EA] p-5 shadow-sm sm:p-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#8B0000] text-white shadow-sm">
+                <Package size={22} />
               </div>
 
               <div>
-                <h2 className="font-bold text-[#241B19]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#8B0000]">
+                  Visão do catálogo
+                </p>
+
+                <h2 className="mt-1 text-lg font-bold text-[#241B19]">
                   Produtos cadastrados
                 </h2>
 
-                <p className="text-xs text-[#756A66]">
-                  {products?.length ?? 0} produto(s)
+                <p className="mt-1 text-xs text-[#756A66]">
+                  Organize a exibição dos itens no administrativo e no cardápio.
                 </p>
               </div>
             </div>
+
+            <div className="flex gap-2 sm:justify-end">
+              <span className="rounded-full border border-[#E7D8CC] bg-white px-4 py-2 text-xs font-bold text-[#8B0000] shadow-sm">
+                {products?.length ?? 0} produto(s)
+              </span>
+
+              <span className="rounded-full border border-[#E7D8CC] bg-white px-4 py-2 text-xs font-bold text-[#756A66] shadow-sm">
+                {productGroups.length} categoria(s)
+              </span>
+            </div>
           </div>
+        </section>
+
+        <section className="mt-4 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
 
           {products && products.length > 0 ? (
             <div className="divide-y divide-[#EEE6DF]">
               {productGroups.map((group, groupIndex) => (
-                <details
+                <ProductCategorySection
                   key={group.id}
-                  open={groupIndex === 0}
-                  className="group"
+                  name={group.name}
+                  productCount={group.products.length}
+                  active={group.active}
+                  defaultOpen={groupIndex === 0}
                 >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 bg-[#FFFDF9] px-5 py-4 transition hover:bg-[#FFF8F4] [&::-webkit-details-marker]:hidden">
-                    <div className="flex min-w-0 items-center gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
-                        <Package size={18} />
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="truncate font-bold text-[#241B19]">
-                            {group.name}
-                          </h3>
-
-                          {!group.active && (
-                            <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-gray-500">
-                              Categoria inativa
-                            </span>
-                          )}
-                        </div>
-
-                        <p className="mt-1 text-xs text-[#756A66]">
-                          {group.products.length}{" "}
-                          {group.products.length === 1
-                            ? "produto"
-                            : "produtos"}
-                        </p>
-                      </div>
-                    </div>
-
-                    <ChevronDown
-                      size={20}
-                      className="shrink-0 text-[#8B0000] transition-transform duration-200 group-open:rotate-180"
-                    />
-                  </summary>
-
-                  <div className="divide-y divide-[#EEE6DF] border-t border-[#EEE6DF]">
-                    {group.products.map((product) => {
+                    {group.products.map((product, productIndex) => {
+                      const firstProduct = productIndex === 0;
+                      const lastProduct =
+                        productIndex === group.products.length - 1;
                       const productCategory = Array.isArray(
                         product.categories
                       )
@@ -297,6 +286,54 @@ export default async function ProdutosPage() {
                         </button>
                       </form>
 
+                      <div className="mx-1 hidden h-6 w-px bg-[#EEE6DF] sm:block" />
+
+                      <form action={moveProduct}>
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={product.id}
+                        />
+                        <input
+                          type="hidden"
+                          name="direction"
+                          value="up"
+                        />
+
+                        <button
+                          type="submit"
+                          title="Mover produto para cima"
+                          aria-label={`Mover ${product.name} para cima`}
+                          disabled={firstProduct}
+                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#EEE6DF] text-[#8B0000] transition hover:border-[#D2B48C] disabled:cursor-not-allowed disabled:opacity-30"
+                        >
+                          <ArrowUp size={15} />
+                        </button>
+                      </form>
+
+                      <form action={moveProduct}>
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={product.id}
+                        />
+                        <input
+                          type="hidden"
+                          name="direction"
+                          value="down"
+                        />
+
+                        <button
+                          type="submit"
+                          title="Mover produto para baixo"
+                          aria-label={`Mover ${product.name} para baixo`}
+                          disabled={lastProduct}
+                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#EEE6DF] text-[#8B0000] transition hover:border-[#D2B48C] disabled:cursor-not-allowed disabled:opacity-30"
+                        >
+                          <ArrowDown size={15} />
+                        </button>
+                      </form>
+
                       <DeleteProductDialog
                         id={product.id}
                         name={product.name}
@@ -306,8 +343,7 @@ export default async function ProdutosPage() {
                   </article>
                       );
                     })}
-                  </div>
-                </details>
+                </ProductCategorySection>
               ))}
             </div>
           ) : (
