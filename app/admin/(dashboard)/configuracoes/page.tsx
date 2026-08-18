@@ -168,13 +168,10 @@ export default async function ConfiguracoesPage() {
         </div>
 
         {access.role === "admin" && (
-          <>
-            <AdminAccountsManager
-              accounts={accounts}
-              currentUserId={access.user.id}
-            />
-            <MonitoringTestCard />
-          </>
+          <AdminAccountsManager
+            accounts={accounts}
+            currentUserId={access.user.id}
+          />
         )}
 
         {/* ======================================
@@ -760,6 +757,10 @@ export default async function ConfiguracoesPage() {
             </div>
           )}
         </section>
+
+        {access.role === "admin" && (
+          <MonitoringTestCard />
+        )}
       </div>
     </main>
   );
