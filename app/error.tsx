@@ -23,8 +23,9 @@ export default function ErrorPage({
           src="/brand/monograma-vinho.svg"
           alt="La'Bel Confeitaria"
           width={100}
-          height={100}
-          className="mx-auto"
+          height={107}
+          className="mx-auto h-auto"
+          style={{ height: "auto" }}
           priority
         />
 

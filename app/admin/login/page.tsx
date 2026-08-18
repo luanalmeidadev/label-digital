@@ -48,8 +48,9 @@ export default async function AdminLoginPage({
             src="/brand/monograma-vinho.svg"
             alt="La'bel"
             width={90}
-            height={90}
-            className="mx-auto"
+            height={96}
+            className="mx-auto h-auto"
+            style={{ height: "auto" }}
             priority
           />
 

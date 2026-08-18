@@ -27,6 +27,36 @@ export function isNotifiableOrderStatus(
   );
 }
 
+export function isAllowedOrderStatusTransition(
+  currentStatus: string,
+  nextStatus: string,
+  orderType: string
+) {
+  if (nextStatus === "cancelled") {
+    return true;
+  }
+
+  if (currentStatus === "created") {
+    return nextStatus === "sent_to_whatsapp";
+  }
+
+  if (currentStatus === "sent_to_whatsapp") {
+    return nextStatus === "confirmed";
+  }
+
+  if (currentStatus === "confirmed") {
+    return orderType === "delivery"
+      ? nextStatus === "out_for_delivery"
+      : nextStatus === "ready_for_pickup";
+  }
+
+  return (
+    (currentStatus === "out_for_delivery" ||
+      currentStatus === "ready_for_pickup") &&
+    nextStatus === "completed"
+  );
+}
+
 export function normalizeWhatsAppPhone(
   phone: string
 ) {

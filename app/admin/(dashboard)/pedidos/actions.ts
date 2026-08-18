@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { requireAnyAdminPermission } from "@/lib/admin-auth";
 import { hasAdminPermission } from "@/lib/admin-permissions";
 import {
+  isAllowedOrderStatusTransition,
   isNotifiableOrderStatus,
   type UpdateOrderStatusResult,
 } from "@/lib/order-status";
@@ -24,36 +25,6 @@ async function ensureAdmin() {
     "orders",
     "deliveries",
   ]);
-}
-
-function isAllowedStatusTransition(
-  currentStatus: string,
-  nextStatus: string,
-  orderType: string
-) {
-  if (nextStatus === "cancelled") {
-    return true;
-  }
-
-  if (currentStatus === "created") {
-    return nextStatus === "sent_to_whatsapp";
-  }
-
-  if (currentStatus === "sent_to_whatsapp") {
-    return nextStatus === "confirmed";
-  }
-
-  if (currentStatus === "confirmed") {
-    return orderType === "delivery"
-      ? nextStatus === "out_for_delivery"
-      : nextStatus === "ready_for_pickup";
-  }
-
-  return (
-    (currentStatus === "out_for_delivery" ||
-      currentStatus === "ready_for_pickup") &&
-    nextStatus === "completed"
-  );
 }
 
 function revalidateOrders(orderId: string) {
@@ -139,7 +110,7 @@ export async function updateOrderStatus(
   }
 
   if (
-    !isAllowedStatusTransition(
+    !isAllowedOrderStatusTransition(
       order.status,
       status,
       order.order_type

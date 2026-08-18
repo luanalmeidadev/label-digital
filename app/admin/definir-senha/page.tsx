@@ -23,8 +23,9 @@ export default async function SetPasswordPage() {
             src="/brand/monograma-vinho.svg"
             alt="La'bel"
             width={90}
-            height={90}
-            className="mx-auto"
+            height={96}
+            className="mx-auto h-auto"
+            style={{ height: "auto" }}
             priority
           />
           <h1 className="mt-5 text-2xl font-bold text-[#241B19]">

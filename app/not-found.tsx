@@ -9,8 +9,9 @@ export default function NotFound() {
           src="/brand/monograma-vinho.svg"
           alt="La'Bel Confeitaria"
           width={100}
-          height={100}
-          className="mx-auto"
+          height={107}
+          className="mx-auto h-auto"
+          style={{ height: "auto" }}
           priority
         />
         <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
