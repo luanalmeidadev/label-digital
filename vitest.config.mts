@@ -18,6 +18,7 @@ export default defineConfig({
         "lib/order-status.ts",
         "lib/preorder-request.ts",
         "lib/store-open-status.ts",
+        "lib/whatsapp-link.ts",
       ],
       thresholds: {
         branches: 80,

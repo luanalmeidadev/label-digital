@@ -21,6 +21,10 @@ import {
 import { createOrder } from "@/app/store/checkout/actions";
 import { createClientRequestId } from "@/lib/client-request-id";
 import type { StoreOpenStatus } from "@/lib/store-open-status";
+import {
+  buildWhatsAppAppUrl,
+  buildWhatsAppShortUrl,
+} from "@/lib/whatsapp-link";
 import type { StoreCheckoutSettings } from "./CartUI";
 
 import { useCart } from "./CartProvider";
@@ -612,7 +616,7 @@ export default function CheckoutDrawer({
           fulfillmentType ===
           "delivery"
             ? [
-                "📍 *ENTREGA*",
+                "\u{1F4CD} *ENTREGA*",
 
                 `${deliveryStreet}, ${deliveryNumber}${
                   deliveryComplement
@@ -631,7 +635,7 @@ export default function CheckoutDrawer({
                 .filter(Boolean)
                 .join("\n")
             : [
-                "📍 *RETIRADA NA LOJA*",
+                "\u{1F4CD} *RETIRADA NA LOJA*",
                 storeSettings.pickupAddress,
               ].join("\n");
 
@@ -642,21 +646,21 @@ export default function CheckoutDrawer({
          */
 
         const message = [
-          "🍰 *LA'BEL CONFEITARIA*",
+          "\u{1F370} *LA'BEL CONFEITARIA*",
 
           `*Pedido #${result.orderNumber}*`,
 
           "",
 
-          "👤 *CLIENTE*",
+          "\u{1F464} *CLIENTE*",
 
           `${firstName} ${lastName}`,
 
-          `📱 ${customerPhone}`,
+          `\u{1F4F1} ${customerPhone}`,
 
           "",
 
-          "🛍️ *ITENS*",
+          "\u{1F6CD}\uFE0F *ITENS*",
 
           itemLines,
 
@@ -666,13 +670,13 @@ export default function CheckoutDrawer({
 
           "",
 
-          "🔎 *ACOMPANHE SEU PEDIDO*",
+          "\u{1F50E} *ACOMPANHE SEU PEDIDO*",
 
           `${window.location.origin}/pedido/${result.orderId}`,
 
           "",
 
-          "💰 *RESUMO*",
+          "\u{1F4B0} *RESUMO*",
 
           `Produtos: ${formatCurrency(
             subtotal
@@ -701,7 +705,7 @@ export default function CheckoutDrawer({
 
           "",
 
-          "Podemos confirmar o pedido? 😊",
+          "Podemos confirmar o pedido? \u{1F60A}",
         ]
           .filter(
             (line) =>
@@ -721,16 +725,17 @@ export default function CheckoutDrawer({
             ? `55${storeWhatsAppDigits}`
             : storeWhatsAppDigits;
 
-        const encodedMessage =
-          encodeURIComponent(
+        const whatsappAppUrl =
+          buildWhatsAppAppUrl(
+            whatsappNumber,
             message
           );
 
-        const whatsappAppUrl =
-          `whatsapp://send?phone=${whatsappNumber}&text=${encodedMessage}`;
-
         const whatsappWebUrl =
-          `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+          buildWhatsAppShortUrl(
+            whatsappNumber,
+            message
+          );
 
         /*
          * Pedido criado.

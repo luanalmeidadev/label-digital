@@ -7,6 +7,10 @@ import {
   normalizeWhatsAppPhone,
   type OrderStatusNotification,
 } from "@/lib/order-status";
+import {
+  buildWhatsAppAppUrl,
+  buildWhatsAppWebUrl,
+} from "@/lib/whatsapp-link";
 
 type WhatsAppStatusButtonProps = {
   notification: OrderStatusNotification;
@@ -40,22 +44,19 @@ export default function WhatsAppStatusButton({
           notification.pickupAddress,
       });
 
-    const whatsappParams =
-      new URLSearchParams({
-        phone,
-        text: message,
-      }).toString();
-
     const isMobile =
       /Android|iPhone|iPad|iPod/i.test(
         navigator.userAgent
       );
 
     if (isMobile) {
-      window.location.href = `whatsapp://send?${whatsappParams}`;
+      window.location.href = buildWhatsAppAppUrl(
+        phone,
+        message
+      );
     } else {
       window.open(
-        `https://web.whatsapp.com/send?${whatsappParams}`,
+        buildWhatsAppWebUrl(phone, message),
         "_blank",
         "noopener,noreferrer"
       );

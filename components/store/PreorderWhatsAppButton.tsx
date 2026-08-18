@@ -36,6 +36,11 @@ import {
   getPreorderMaxFlavors,
   isAllowedPreorderQuantity,
 } from "@/lib/preorder-request";
+import {
+  buildWhatsAppAppUrl,
+  buildWhatsAppShortUrl,
+  buildWhatsAppWebUrl,
+} from "@/lib/whatsapp-link";
 
 type RequestProduct = Pick<
   PreorderProduct,
@@ -536,23 +541,25 @@ export default function PreorderWhatsAppButton({
       notes,
     });
 
-    const params = new URLSearchParams({
-      phone: normalizedStorePhone,
-      text: message,
-    }).toString();
-
     if (isMobile) {
-      window.location.href = `whatsapp://send?${params}`;
+      window.location.href = buildWhatsAppAppUrl(
+        normalizedStorePhone,
+        message
+      );
       setSaving(false);
       return;
     }
 
     if (whatsappWindow) {
-      whatsappWindow.location.href = `https://web.whatsapp.com/send?${params}`;
+      whatsappWindow.location.href = buildWhatsAppWebUrl(
+        normalizedStorePhone,
+        message
+      );
     } else {
-      window.location.href = `https://wa.me/${normalizedStorePhone}?${new URLSearchParams(
-        { text: message }
-      ).toString()}`;
+      window.location.href = buildWhatsAppShortUrl(
+        normalizedStorePhone,
+        message
+      );
     }
 
     setSaving(false);

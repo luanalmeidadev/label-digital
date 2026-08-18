@@ -42,21 +42,21 @@ export function buildWhatsAppMessage(order: WhatsAppOrder) {
 
   const delivery =
     order.orderType === "delivery"
-      ? `🚚 Entrega\n${order.address ?? "Endereço não informado"}`
-      : "🏪 Retirada na loja";
+      ? `\u{1F69A} Entrega\n${order.address ?? "Endereço não informado"}`
+      : "\u{1F3EA} Retirada na loja";
 
-  return `🍰 NOVO PEDIDO - LA'BEL
+  return `\u{1F370} NOVO PEDIDO - LA'BEL
 
 Pedido: ${order.orderNumber}
 
-👤 Cliente
+\u{1F464} Cliente
 ${order.customerName}
 
-📱 ${order.phone}
+\u{1F4F1} ${order.phone}
 
 ${delivery}
 
-🛍️ PEDIDO
+\u{1F6CD}\uFE0F PEDIDO
 
 ${items}
 
@@ -65,9 +65,9 @@ ${items}
 Subtotal: ${currency(order.subtotal)}
 Taxa de entrega: ${currency(order.deliveryFee ?? 0)}
 
-💰 Total: ${currency(order.total)}
+\u{1F4B0} Total: ${currency(order.total)}
 
-📝 Observações
+\u{1F4DD} Observações
 ${order.notes || "Nenhuma"}
 
 Pedido gerado pelo Cardápio La'bel.`;
@@ -77,5 +77,6 @@ export function buildWhatsAppUrl(
   phone: string,
   message: string
 ) {
-  return `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  return buildWhatsAppShortUrl(phone, message);
 }
+import { buildWhatsAppShortUrl } from "@/lib/whatsapp-link";
