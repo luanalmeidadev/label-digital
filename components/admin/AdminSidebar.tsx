@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   BadgeDollarSign,
   CakeSlice,
+  History,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -31,6 +32,7 @@ const menuItems: Array<{
   href: string;
   icon: LucideIcon;
   permission?: AdminPermission;
+  adminOnly?: boolean;
 }> = [
   {
     label: "Visão geral",
@@ -85,6 +87,12 @@ const menuItems: Array<{
     icon: Settings,
     permission: "settings",
   },
+  {
+    label: "Atividades",
+    href: "/admin/atividades",
+    icon: History,
+    adminOnly: true,
+  },
 ];
 
 export default function AdminSidebar({
@@ -123,8 +131,9 @@ export default function AdminSidebar({
       {menuItems
         .filter(
           (item) =>
-            !item.permission ||
-            permissions.includes(item.permission)
+            (!item.adminOnly || role === "admin") &&
+            (!item.permission ||
+              permissions.includes(item.permission))
         )
         .map((item) => {
         const Icon = item.icon;

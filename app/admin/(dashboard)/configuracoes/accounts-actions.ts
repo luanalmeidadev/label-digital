@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdministrator } from "@/lib/admin-auth";
+import { recordAdminAudit } from "@/lib/admin-audit";
 import {
   type AdminPermission,
   type AdminRole,
@@ -47,7 +48,7 @@ function createAppMetadata(
 export async function createAdminAccount(
   formData: FormData
 ): Promise<AccountActionResult> {
-  await requireAdministrator();
+  const access = await requireAdministrator();
 
   const name = String(
     formData.get("name") ?? ""
@@ -153,6 +154,18 @@ export async function createAdminAccount(
     };
   }
 
+  await recordAdminAudit(access, {
+    action: "created",
+    entityType: "admin_account",
+    entityId: data.user.id,
+    summary: `Criou a conta administrativa de ${name}`,
+    metadata: {
+      email,
+      role,
+      permissions,
+    },
+  });
+
   revalidatePath("/admin/configuracoes");
   return { success: true };
 }
@@ -207,6 +220,22 @@ export async function updateAdminAccount(
   }
 
   const adminClient = createSupabaseAdminClient();
+  const { data: previousAuth } =
+    await adminClient.auth.admin.getUserById(id);
+  const previousRole = previousAuth.user
+    ? parseRole(
+        String(
+          previousAuth.user.app_metadata
+            ?.label_role ?? "attendant"
+        )
+      )
+    : null;
+  const previousPermissions = previousAuth.user
+    ? normalizeAdminPermissions(
+        previousAuth.user.app_metadata
+          ?.label_permissions
+      )
+    : [];
   const attributes = {
     app_metadata: createAppMetadata(
       role,
@@ -239,6 +268,24 @@ export async function updateAdminAccount(
     };
   }
 
+  await recordAdminAudit(access, {
+    action: "updated",
+    entityType: "admin_account",
+    entityId: id,
+    summary: `Atualizou a conta administrativa de ${name}`,
+    metadata: {
+      name,
+      role: {
+        before: previousRole,
+        after: role,
+      },
+      permissions: {
+        before: previousPermissions,
+        after: permissions,
+      },
+    },
+  });
+
   revalidatePath("/admin/configuracoes");
   revalidatePath("/admin");
   return { success: true };
@@ -268,7 +315,7 @@ export async function deleteAdminAccount(
   const { data: profile, error: profileError } =
     await adminClient
       .from("admin_profiles")
-      .select("id")
+      .select("id, name")
       .eq("id", id)
       .maybeSingle();
 
@@ -279,6 +326,9 @@ export async function deleteAdminAccount(
     };
   }
 
+  const { data: targetAuth } =
+    await adminClient.auth.admin.getUserById(id);
+
   const { error: deleteError } =
     await adminClient.auth.admin.deleteUser(id);
 
@@ -288,6 +338,20 @@ export async function deleteAdminAccount(
       error: "Não foi possível excluir a conta.",
     };
   }
+
+  await recordAdminAudit(access, {
+    action: "deleted",
+    entityType: "admin_account",
+    entityId: id,
+    summary: `Excluiu a conta administrativa de ${profile.name}`,
+    metadata: {
+      name: profile.name,
+      email: targetAuth.user?.email ?? null,
+      role:
+        targetAuth.user?.app_metadata
+          ?.label_role ?? "attendant",
+    },
+  });
 
   revalidatePath("/admin/configuracoes");
   return { success: true };

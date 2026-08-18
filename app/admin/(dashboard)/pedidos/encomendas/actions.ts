@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { requireAdminPermission } from "@/lib/admin-auth";
+import { recordAdminAudit } from "@/lib/admin-audit";
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
 import {
   formatPreorderCurrency,
@@ -30,7 +31,7 @@ export type EditPreorderFormState = {
 };
 
 async function requireAdmin() {
-  await requireAdminPermission("orders");
+  return requireAdminPermission("orders");
 }
 
 function revalidateRequest(id: string) {
@@ -49,7 +50,7 @@ function revalidateRequest(id: string) {
 export async function updatePreorderPayment(
   formData: FormData
 ) {
-  await requireAdmin();
+  const access = await requireAdmin();
 
   const id = String(formData.get("id") ?? "");
   const paymentAction = String(
@@ -97,10 +98,24 @@ export async function updatePreorderPayment(
     );
   }
 
+  const previousAmountPaid = request.amountPaid;
   request.amountPaid = amountPaid;
   request.updatedAt = new Date().toISOString();
 
   await savePreorderRequest(request);
+  await recordAdminAudit(access, {
+    action: "updated",
+    entityType: "preorder",
+    entityId: request.id,
+    summary: `Atualizou o pagamento da encomenda #${request.requestNumber}`,
+    metadata: {
+      amount_paid: {
+        before: previousAmountPaid,
+        after: amountPaid,
+      },
+      total: request.total,
+    },
+  });
   revalidateRequest(request.id);
 }
 
@@ -133,7 +148,7 @@ export async function createManualPreorderRequest(
   _previousState: ManualPreorderFormState,
   formData: FormData
 ): Promise<ManualPreorderFormState> {
-  await requireAdmin();
+  const access = await requireAdmin();
 
   const customerName = String(
     formData.get("customer_name") ?? ""
@@ -326,6 +341,24 @@ export async function createManualPreorderRequest(
     };
   }
 
+  await recordAdminAudit(access, {
+    action: "created",
+    entityType: "preorder",
+    entityId: request.id,
+    summary: `Criou manualmente a encomenda #${request.requestNumber}`,
+    metadata: {
+      request_number: request.requestNumber,
+      product_name: request.productName,
+      option_label: request.optionLabel,
+      quantity: request.quantity,
+      total: request.total,
+      amount_paid: request.amountPaid,
+      desired_date: request.desiredDate,
+      fulfillment_type: request.fulfillmentType,
+      status: request.status,
+    },
+  });
+
   revalidateRequest(id);
   redirect(`/admin/pedidos/encomendas/${id}`);
 }
@@ -334,7 +367,7 @@ export async function updatePreorderRequestDetails(
   _previousState: EditPreorderFormState,
   formData: FormData
 ): Promise<EditPreorderFormState> {
-  await requireAdmin();
+  const access = await requireAdmin();
 
   const id = String(formData.get("id") ?? "");
   const customerName = String(
@@ -483,6 +516,15 @@ export async function updatePreorderRequestDetails(
     ? customUnitPrice
     : parsePreorderPrice(option?.value ?? "");
 
+  const previousDetails = {
+    product_name: request.productName,
+    option_label: request.optionLabel,
+    quantity: request.quantity,
+    total: request.total,
+    desired_date: request.desiredDate,
+    fulfillment_type: request.fulfillmentType,
+  };
+
   request.customerName = customerName;
   request.customerPhone = customerPhone;
   request.productName = isCustom
@@ -522,6 +564,24 @@ export async function updatePreorderRequestDetails(
     };
   }
 
+  await recordAdminAudit(access, {
+    action: "updated",
+    entityType: "preorder",
+    entityId: request.id,
+    summary: `Atualizou os detalhes da encomenda #${request.requestNumber}`,
+    metadata: {
+      before: previousDetails,
+      after: {
+        product_name: request.productName,
+        option_label: request.optionLabel,
+        quantity: request.quantity,
+        total: request.total,
+        desired_date: request.desiredDate,
+        fulfillment_type: request.fulfillmentType,
+      },
+    },
+  });
+
   revalidateRequest(request.id);
   redirect(`/admin/pedidos/encomendas/${request.id}`);
 }
@@ -529,7 +589,7 @@ export async function updatePreorderRequestDetails(
 export async function updatePreorderRequestStatus(
   formData: FormData
 ) {
-  await requireAdmin();
+  const access = await requireAdmin();
 
   const id = String(formData.get("id") ?? "");
   const status = String(
@@ -570,6 +630,8 @@ export async function updatePreorderRequestStatus(
     );
   }
 
+  const previousStatus = request.status;
+  const previousTotal = request.total;
   request.status =
     status as PreorderRequestStatus;
   request.total = total;
@@ -580,5 +642,21 @@ export async function updatePreorderRequestStatus(
       : null;
 
   await savePreorderRequest(request);
+  await recordAdminAudit(access, {
+    action: "updated",
+    entityType: "preorder",
+    entityId: request.id,
+    summary: `Atualizou a situação da encomenda #${request.requestNumber}`,
+    metadata: {
+      status: {
+        before: previousStatus,
+        after: request.status,
+      },
+      total: {
+        before: previousTotal,
+        after: request.total,
+      },
+    },
+  });
   revalidateRequest(request.id);
 }

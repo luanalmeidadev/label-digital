@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdminPermission } from "@/lib/admin-auth";
+import { recordAdminAudit } from "@/lib/admin-audit";
 import {
   getPreorderCatalogForUpdate,
   savePreorderCatalog,
@@ -30,9 +31,7 @@ export type UpdatePreorderProductResult = {
 };
 
 async function requireAdmin() {
-  const access =
-    await requireAdminPermission("catalog");
-  return access.supabase;
+  return requireAdminPermission("catalog");
 }
 
 function parseAllowedQuantities(
@@ -212,7 +211,8 @@ function parseFlavors(
 export async function updatePreorderProduct(
   formData: FormData
 ): Promise<UpdatePreorderProductResult> {
-  const supabase = await requireAdmin();
+  const access = await requireAdmin();
+  const { supabase } = access;
 
   const categoryId = String(
     formData.get("category_id") ?? ""
@@ -429,6 +429,28 @@ export async function updatePreorderProduct(
     };
   }
 
+  const previousProduct = {
+    prices: product.prices,
+    flavors: product.flavors ?? [],
+    minimum_quantity: product.minimumQuantity,
+    allowed_quantities:
+      product.allowedQuantities ?? [],
+    quantity_increment:
+      product.quantityIncrement ?? null,
+    quantity_unit: product.quantityUnit,
+    price_base_quantity:
+      product.priceBaseQuantity,
+    lead_time_days: product.leadTimeDays,
+    max_flavors: product.maxFlavors ?? null,
+    flavor_quantity_step:
+      product.flavorQuantityStep ?? null,
+    image_position_x:
+      product.imagePositionX ?? 50,
+    image_position_y:
+      product.imagePositionY ?? 50,
+    image_zoom: product.imageZoom ?? 100,
+  };
+
   const oldImage = product.image;
   let nextImage = oldImage;
   let uploadedImagePath: string | null = null;
@@ -527,6 +549,38 @@ export async function updatePreorderProduct(
     }
   }
 
+  await recordAdminAudit(access, {
+    action: "updated",
+    entityType: "preorder_product",
+    entityId: `${categoryId}:${productName}`,
+    summary: `Atualizou o produto de encomenda “${productName}”`,
+    metadata: {
+      before: previousProduct,
+      after: {
+        prices: product.prices,
+        flavors: product.flavors ?? [],
+        minimum_quantity: product.minimumQuantity,
+        allowed_quantities:
+          product.allowedQuantities ?? [],
+        quantity_increment:
+          product.quantityIncrement ?? null,
+        quantity_unit: product.quantityUnit,
+        price_base_quantity:
+          product.priceBaseQuantity,
+        lead_time_days: product.leadTimeDays,
+        max_flavors: product.maxFlavors ?? null,
+        flavor_quantity_step:
+          product.flavorQuantityStep ?? null,
+        image_position_x:
+          product.imagePositionX ?? 50,
+        image_position_y:
+          product.imagePositionY ?? 50,
+        image_zoom: product.imageZoom ?? 100,
+      },
+      image_changed: nextImage !== oldImage,
+    },
+  });
+
   revalidatePath("/encomendas");
   revalidatePath("/admin/encomendas");
 
@@ -536,7 +590,8 @@ export async function updatePreorderProduct(
 export async function updatePreorderHero(
   formData: FormData
 ): Promise<UpdatePreorderProductResult> {
-  const supabase = await requireAdmin();
+  const access = await requireAdmin();
+  const { supabase } = access;
   const positionX = Number(
     formData.get("image_position_x") ?? 50
   );
@@ -566,6 +621,11 @@ export async function updatePreorderHero(
   }
 
   const settings = await getImageDisplaySettings();
+  const previousHero = {
+    position_x: settings.preorderHero.positionX,
+    position_y: settings.preorderHero.positionY,
+    zoom: settings.preorderHero.zoom,
+  };
   const oldImage = settings.preorderHero.image;
   let nextImage = oldImage;
   let uploadedImagePath: string | null = null;
@@ -653,6 +713,22 @@ export async function updatePreorderHero(
       }
     }
   }
+
+  await recordAdminAudit(access, {
+    action: "updated",
+    entityType: "preorder_hero",
+    entityId: "main",
+    summary: "Atualizou a imagem principal do cardápio de encomendas",
+    metadata: {
+      before: previousHero,
+      after: {
+        position_x: positionX,
+        position_y: positionY,
+        zoom,
+      },
+      image_changed: nextImage !== oldImage,
+    },
+  });
 
   revalidatePath("/encomendas");
   revalidatePath("/admin/encomendas");

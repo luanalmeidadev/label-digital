@@ -3,8 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { requireAdminPermission } from "@/lib/admin-auth";
+import { recordAdminAudit } from "@/lib/admin-audit";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import {
+  getImageDisplaySettings,
   removeDailyProductZoom,
   setDailyProductZoom,
 } from "@/lib/image-display-settings-store";
@@ -354,8 +356,9 @@ export async function createProduct(
 export async function updateProduct(
   formData: FormData
 ) {
-  const supabase =
-    await ensureAdmin();
+  const access =
+    await requireAdminPermission("catalog");
+  const { supabase } = access;
 
   const id = String(
     formData.get("id") ?? ""
@@ -467,6 +470,10 @@ export async function updateProduct(
 
   const oldImageUrl =
     product.image_url as string | null;
+  const imageSettings =
+    await getImageDisplaySettings();
+  const previousImageZoom =
+    imageSettings.dailyProductZoom[id] ?? 100;
 
   let nextImageUrl =
     oldImageUrl;
@@ -552,6 +559,25 @@ export async function updateProduct(
   }
 
   await setDailyProductZoom(id, imageZoom);
+
+  if (
+    imageChanged ||
+    previousImageZoom !== imageZoom
+  ) {
+    await recordAdminAudit(access, {
+      action: "updated",
+      entityType: "product",
+      entityId: id,
+      summary: `Atualizou a imagem do produto “${name}”`,
+      metadata: {
+        image_changed: imageChanged,
+        image_zoom: {
+          before: previousImageZoom,
+          after: imageZoom,
+        },
+      },
+    });
+  }
 
   revalidateProducts();
 }
