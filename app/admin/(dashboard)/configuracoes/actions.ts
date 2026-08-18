@@ -1,8 +1,55 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import * as Sentry from "@sentry/nextjs";
 
-import { requireAdminPermission } from "@/lib/admin-auth";
+import {
+  requireAdminPermission,
+  requireAdministrator,
+} from "@/lib/admin-auth";
+
+export type MonitoringTestResult = {
+  success: boolean;
+  message: string;
+  eventId?: string;
+};
+
+export async function sendMonitoringTestEvent(): Promise<MonitoringTestResult> {
+  await requireAdministrator();
+
+  if (!process.env.NEXT_PUBLIC_SENTRY_DSN?.trim()) {
+    return {
+      success: false,
+      message:
+        "O Sentry ainda não está conectado neste ambiente.",
+    };
+  }
+
+  const eventId = Sentry.captureException(
+    new Error("Teste manual do monitoramento La'Bel"),
+    {
+      tags: {
+        area: "admin-settings",
+        monitoringTest: "true",
+      },
+    }
+  );
+  const delivered = await Sentry.flush(3000);
+
+  return delivered
+    ? {
+        success: true,
+        message:
+          "Evento enviado. Confirme a chegada no painel do Sentry.",
+        eventId,
+      }
+    : {
+        success: false,
+        message:
+          "O evento foi criado, mas o envio não foi confirmado.",
+        eventId,
+      };
+}
 
 async function ensureAdmin() {
   const access =

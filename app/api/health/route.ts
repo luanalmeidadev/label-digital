@@ -1,3 +1,5 @@
+import * as Sentry from "@sentry/nextjs";
+
 import { preorderStorageBucket } from "@/lib/preorder-catalog-store";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -34,6 +36,31 @@ export async function GET() {
         failures
       );
 
+      Sentry.captureMessage(
+        "Verificação de saúde degradada",
+        {
+          level: "error",
+          tags: {
+            area: "health-check",
+          },
+          fingerprint: ["health-check-degraded"],
+          contexts: {
+            checks: {
+              database: database.error
+                ? "failed"
+                : "ok",
+              preorderStorage: preorderStorage.error
+                ? "failed"
+                : "ok",
+              productStorage: productStorage.error
+                ? "failed"
+                : "ok",
+            },
+          },
+        }
+      );
+      await Sentry.flush(1500);
+
       return Response.json(
         { status: "degraded" },
         {
@@ -52,6 +79,13 @@ export async function GET() {
       "Erro na verificação de saúde:",
       error
     );
+
+    Sentry.captureException(error, {
+      tags: {
+        area: "health-check",
+      },
+    });
+    await Sentry.flush(1500);
 
     return Response.json(
       { status: "degraded" },

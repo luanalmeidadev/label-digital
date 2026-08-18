@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
 import { RefreshCw } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 
 export default function ErrorPage({
   error,
@@ -13,6 +14,7 @@ export default function ErrorPage({
   retry: () => void;
 }) {
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("Erro de interface:", error);
   }, [error]);
 

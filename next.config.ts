@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const requiredDeploymentEnvironment = [
   "NEXT_PUBLIC_SUPABASE_URL",
@@ -74,4 +75,23 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+const canUploadSentrySourceMaps = Boolean(
+  process.env.SENTRY_AUTH_TOKEN?.trim() &&
+    process.env.SENTRY_ORG?.trim() &&
+    process.env.SENTRY_PROJECT?.trim()
+);
+
+export default withSentryConfig(nextConfig, {
+  telemetry: false,
+  silent: !process.env.CI,
+  tunnelRoute: "/monitoring",
+  sourcemaps: {
+    disable: !canUploadSentrySourceMaps,
+    deleteSourcemapsAfterUpload: true,
+  },
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+  },
+});

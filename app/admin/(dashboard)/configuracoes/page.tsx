@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import AdminAccountsManager from "@/components/admin/AdminAccountsManager";
+import MonitoringTestCard from "@/components/admin/MonitoringTestCard";
 import { listAdminAccounts } from "@/lib/admin-accounts";
 import { getAdminAccess } from "@/lib/admin-auth";
 
@@ -167,10 +168,13 @@ export default async function ConfiguracoesPage() {
         </div>
 
         {access.role === "admin" && (
-          <AdminAccountsManager
-            accounts={accounts}
-            currentUserId={access.user.id}
-          />
+          <>
+            <AdminAccountsManager
+              accounts={accounts}
+              currentUserId={access.user.id}
+            />
+            <MonitoringTestCard />
+          </>
         )}
 
         {/* ======================================
