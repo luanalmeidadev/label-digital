@@ -29,83 +29,113 @@ import type {
 import BrandLogo from "@/components/brand/BrandLogo";
 import { logoutAdmin } from "@/app/admin/logout/actions";
 
-const menuItems: Array<{
+type MenuItem = {
   label: string;
   href: string;
   icon: LucideIcon;
   permission?: AdminPermission;
   adminOnly?: boolean;
+};
+
+const menuSections: Array<{
+  label: string;
+  items: MenuItem[];
 }> = [
   {
-    label: "Visão geral",
-    href: "/admin",
-    icon: LayoutDashboard,
+    label: "Início",
+    items: [
+      {
+        label: "Visão geral",
+        href: "/admin",
+        icon: LayoutDashboard,
+      },
+    ],
   },
   {
-    label: "Produtos",
-    href: "/admin/produtos",
-    icon: Package,
-    permission: "catalog",
+    label: "Operação",
+    items: [
+      {
+        label: "Caixa",
+        href: "/admin/caixa",
+        icon: Calculator,
+        permission: "cashier",
+      },
+      {
+        label: "Pedidos",
+        href: "/admin/pedidos",
+        icon: ShoppingBag,
+        permission: "orders",
+      },
+      {
+        label: "Entregas",
+        href: "/admin/entregas",
+        icon: Truck,
+        permission: "deliveries",
+      },
+    ],
   },
   {
-    label: "Encomendas",
-    href: "/admin/encomendas",
-    icon: CakeSlice,
-    permission: "catalog",
+    label: "Cardápios",
+    items: [
+      {
+        label: "Produtos",
+        href: "/admin/produtos",
+        icon: Package,
+        permission: "catalog",
+      },
+      {
+        label: "Categorias",
+        href: "/admin/categorias",
+        icon: Tags,
+        permission: "catalog",
+      },
+      {
+        label: "Encomendas",
+        href: "/admin/encomendas",
+        icon: CakeSlice,
+        permission: "catalog",
+      },
+    ],
   },
   {
-    label: "Categorias",
-    href: "/admin/categorias",
-    icon: Tags,
-    permission: "catalog",
+    label: "Gestão",
+    items: [
+      {
+        label: "Clientes",
+        href: "/admin/clientes",
+        icon: Users,
+        permission: "customers",
+      },
+      {
+        label: "Faturamento",
+        href: "/admin/faturamento",
+        icon: BadgeDollarSign,
+        permission: "billing",
+      },
+      {
+        label: "Relatórios",
+        href: "/admin/relatorios",
+        icon: BarChart3,
+        permission: "billing",
+      },
+    ],
   },
   {
-    label: "Pedidos",
-    href: "/admin/pedidos",
-    icon: ShoppingBag,
-    permission: "orders",
-  },
-  {
-    label: "Caixa",
-    href: "/admin/caixa",
-    icon: Calculator,
-    permission: "cashier",
-  },
-  {
-    label: "Clientes",
-    href: "/admin/clientes",
-    icon: Users,
-    permission: "customers",
-  },
-  {
-    label: "Entregas",
-    href: "/admin/entregas",
-    icon: Truck,
-    permission: "deliveries",
-  },
-  {
-    label: "Faturamento",
-    href: "/admin/faturamento",
-    icon: BadgeDollarSign,
-    permission: "billing",
-  },
-  {
-    label: "Relatórios",
-    href: "/admin/relatorios",
-    icon: BarChart3,
-    permission: "billing",
-  },
-  {
-    label: "Configurações",
-    href: "/admin/configuracoes",
-    icon: Settings,
-    permission: "settings",
-  },
-  {
-    label: "Atividades",
-    href: "/admin/atividades",
-    icon: History,
-    adminOnly: true,
+    label: "Administração",
+    items: [
+      {
+        label: "Configurações",
+        href: "/admin/configuracoes",
+        icon: Settings,
+        permission: "settings",
+      },
+      {
+        label: "Atividades",
+        href: "/admin/atividades",
+        icon: History,
+        adminOnly: true,
+      },
+    ],
   },
 ];
 
@@ -141,35 +171,62 @@ export default function AdminSidebar({
   }
 
   const navigation = (
-    <nav className="space-y-1">
-      {menuItems
-        .filter(
+    <nav className="space-y-5" aria-label="Menu administrativo">
+      {menuSections.map((section) => {
+        const visibleItems = section.items.filter(
           (item) =>
             (!item.adminOnly || role === "admin") &&
-            (!item.permission ||
-              permissions.includes(item.permission))
-        )
-        .map((item) => {
-        const Icon = item.icon;
-        const active = isActive(item.href);
+            (!item.permission || permissions.includes(item.permission))
+        );
+
+        if (visibleItems.length === 0) {
+          return null;
+        }
 
         return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={() => setMobileOpen(false)}
-            className={`flex items-center gap-3 rounded-xl px-3 py-3 text-sm font-semibold transition ${
-              active
-                ? "bg-[#D2B48C] text-[#8B0000]"
-                : "text-white/80 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            <Icon size={19} />
+          <div key={section.label}>
+            <div className="mb-2 flex items-center gap-2 px-3">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D2B48C]">
+                {section.label}
+              </span>
+              <span className="h-px flex-1 bg-white/10" />
+            </div>
 
-            {item.label}
-          </Link>
+            <div className="space-y-1">
+              {visibleItems.map((item) => {
+                const Icon = item.icon;
+                const active = isActive(item.href);
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileOpen(false)}
+                    aria-current={active ? "page" : undefined}
+                    className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-semibold transition ${
+                      active
+                        ? "bg-[#F7E8D2] text-[#8B0000] shadow-sm"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                    }`}
+                  >
+                    <span
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${
+                        active
+                          ? "bg-[#8B0000] text-white"
+                          : "bg-white/10 text-[#E8C79C] group-hover:bg-white/15 group-hover:text-white"
+                      }`}
+                    >
+                      <Icon size={17} strokeWidth={2.2} />
+                    </span>
+
+                    <span className="truncate">{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
         );
-        })}
+      })}
     </nav>
   );
 
@@ -206,9 +263,11 @@ export default function AdminSidebar({
             </p>
           </div>
 
-          {navigation}
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+            {navigation}
+          </div>
 
-          <div className="mt-auto pt-6">
+          <div className="mt-4 border-t border-white/10 pt-4">
             {logoutButton}
           </div>
         </div>
