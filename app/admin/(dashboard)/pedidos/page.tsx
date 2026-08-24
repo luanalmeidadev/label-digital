@@ -326,6 +326,13 @@ export default async function PedidosPage() {
                             Caixa
                           </span>
                         )}
+
+                        {order.sales_channel ===
+                          "online" && (
+                          <span className="rounded-full bg-sky-100 px-3 py-1 text-xs font-bold text-sky-700">
+                            Site
+                          </span>
+                        )}
                       </div>
 
                       <p className="mt-2 text-sm text-[#756A66]">

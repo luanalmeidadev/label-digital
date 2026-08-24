@@ -183,6 +183,12 @@ export default async function ImprimirPedidoPage({
                 </p>
               )}
 
+              {order.sales_channel === "online" && (
+                <p className="mt-1 text-sm font-bold uppercase">
+                  Pedido do site
+                </p>
+              )}
+
               <p className="mt-1 text-sm font-bold uppercase">
                 {statusLabels[order.status] ??
                   order.status}
