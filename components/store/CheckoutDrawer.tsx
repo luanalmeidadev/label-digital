@@ -9,9 +9,12 @@ import {
 
 import {
   ArrowLeft,
+  Banknote,
   CheckCircle2,
+  CreditCard,
   Loader2,
   MapPin,
+  QrCode,
   ShoppingBag,
   Store,
   Truck,
@@ -20,6 +23,10 @@ import {
 
 import { createOrder } from "@/app/store/checkout/actions";
 import { createClientRequestId } from "@/lib/client-request-id";
+import {
+  paymentMethodLabels,
+  type PaymentMethod,
+} from "@/lib/payment-method";
 import type { StoreOpenStatus } from "@/lib/store-open-status";
 import {
   buildWhatsAppAppUrl,
@@ -149,6 +156,13 @@ export default function CheckoutDrawer({
   const [phone, setPhone] =
     useState("");
 
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod | null>(null);
+  const [needsChange, setNeedsChange] =
+    useState(false);
+  const [cashChangeFor, setCashChangeFor] =
+    useState("");
+
   /*
    * =========================================
    * RECEBIMENTO
@@ -273,6 +287,16 @@ export default function CheckoutDrawer({
 
   const deliveryAddressValid =
     newAddressValid;
+
+  const parsedCashChangeFor = Number(
+    cashChangeFor.replace(",", ".")
+  );
+  const paymentValid =
+    paymentMethod !== null &&
+    (paymentMethod !== "cash" ||
+      !needsChange ||
+      (Number.isFinite(parsedCashChangeFor) &&
+        parsedCashChangeFor >= subtotal));
 
   /*
    * =========================================
@@ -476,6 +500,16 @@ export default function CheckoutDrawer({
       return;
     }
 
+    if (!paymentMethod || !paymentValid) {
+      setOrderError(
+        paymentMethod === "cash" && needsChange
+          ? "Informe um valor para troco igual ou maior que o pedido."
+          : "Escolha a forma de pagamento."
+      );
+
+      return;
+    }
+
     if (!idempotencyKeyRef.current) {
       idempotencyKeyRef.current =
         createClientRequestId();
@@ -503,6 +537,13 @@ export default function CheckoutDrawer({
               "delivery"
                 ? "delivery"
                 : "pickup",
+
+            paymentMethod,
+            cashChangeFor:
+              paymentMethod === "cash" &&
+              needsChange
+                ? parsedCashChangeFor
+                : null,
 
             address:
               fulfillmentType ===
@@ -676,6 +717,18 @@ export default function CheckoutDrawer({
 
           "",
 
+          "\u{1F4B3} *PAGAMENTO*",
+
+          paymentMethodLabels[paymentMethod],
+
+          paymentMethod === "cash"
+            ? needsChange
+              ? `Troco para: ${formatCurrency(parsedCashChangeFor)}`
+              : "Não precisa de troco"
+            : null,
+
+          "",
+
           "\u{1F4B0} *RESUMO*",
 
           `Produtos: ${formatCurrency(
@@ -743,6 +796,9 @@ export default function CheckoutDrawer({
         clearCart();
         idempotencyKeyRef.current = "";
         setTurnstileToken("");
+        setPaymentMethod(null);
+        setNeedsChange(false);
+        setCashChangeFor("");
 
         const isMobile =
           /Android|iPhone|iPad|iPod/i.test(
@@ -1492,6 +1548,117 @@ export default function CheckoutDrawer({
 
               {/* VALORES */}
               <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+                  Forma de pagamento
+                </p>
+
+                <div className="mt-3 grid grid-cols-2 gap-2">
+                  {(
+                    [
+                      {
+                        id: "cash",
+                        label: "Dinheiro",
+                        icon: Banknote,
+                      },
+                      {
+                        id: "pix",
+                        label: "Pix",
+                        icon: QrCode,
+                      },
+                      {
+                        id: "debit_card",
+                        label: "Débito",
+                        icon: CreditCard,
+                      },
+                      {
+                        id: "credit_card",
+                        label: "Crédito",
+                        icon: CreditCard,
+                      },
+                    ] as const
+                  ).map((method) => {
+                    const Icon = method.icon;
+                    const selected =
+                      paymentMethod === method.id;
+
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => {
+                          setPaymentMethod(method.id);
+
+                          if (method.id !== "cash") {
+                            setNeedsChange(false);
+                            setCashChangeFor("");
+                          }
+                        }}
+                        className={`flex min-h-16 items-center gap-2 rounded-xl border p-3 text-left text-sm font-bold transition ${
+                          selected
+                            ? "border-[#8B0000] bg-[#8B0000] text-white"
+                            : "border-[#E6DDD6] text-[#49352C] hover:border-[#D2B48C]"
+                        }`}
+                      >
+                        <Icon size={18} />
+                        {method.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {paymentMethod === "cash" && (
+                  <div className="mt-4 rounded-xl bg-[#FFF7F5] p-3">
+                    <label className="flex cursor-pointer items-center gap-2 text-sm font-bold text-[#49352C]">
+                      <input
+                        type="checkbox"
+                        checked={needsChange}
+                        onChange={(event) => {
+                          setNeedsChange(event.target.checked);
+
+                          if (!event.target.checked) {
+                            setCashChangeFor("");
+                          }
+                        }}
+                        className="h-4 w-4 accent-[#8B0000]"
+                      />
+                      Preciso de troco
+                    </label>
+
+                    {needsChange && (
+                      <label className="mt-3 block">
+                        <span className="mb-2 block text-xs font-bold text-[#756A66]">
+                          Troco para quanto?
+                        </span>
+                        <div className="flex h-11 items-center rounded-xl border border-[#E6DDD6] bg-white px-3 focus-within:border-[#8B0000]">
+                          <span className="mr-2 text-sm font-bold text-[#756A66]">
+                            R$
+                          </span>
+                          <input
+                            type="number"
+                            min={subtotal}
+                            step="0.01"
+                            inputMode="decimal"
+                            value={cashChangeFor}
+                            onChange={(event) =>
+                              setCashChangeFor(event.target.value)
+                            }
+                            placeholder="0,00"
+                            className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                          />
+                        </div>
+                        {cashChangeFor && !paymentValid && (
+                          <p className="mt-2 text-xs font-semibold text-red-600">
+                            O valor deve ser igual ou maior que o pedido.
+                          </p>
+                        )}
+                      </label>
+                    )}
+                  </div>
+                )}
+              </section>
+
+              {/* VALORES */}
+              <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
                 <div className="flex justify-between gap-4">
                   <span className="text-sm text-[#756A66]">
                     Produtos
@@ -1623,7 +1790,8 @@ export default function CheckoutDrawer({
                 disabled={
                   isPending ||
                   !turnstileToken ||
-                  !storeStatus?.isOpen
+                  !storeStatus?.isOpen ||
+                  !paymentValid
                 }
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
               >

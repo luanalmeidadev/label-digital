@@ -50,6 +50,8 @@ const entityLabels: Record<string, string> = {
   business_hours: "Horários",
   delivery_zone: "Regiões de entrega",
   admin_account: "Contas administrativas",
+  cash_session: "Caixa",
+  cashier_sale: "Vendas de caixa",
 };
 
 const fieldLabels: Record<string, string> = {
@@ -58,6 +60,7 @@ const fieldLabels: Record<string, string> = {
   address_state: "Estado",
   allowed_quantities: "Quantidades permitidas",
   amount_paid: "Valor recebido",
+  change: "Troco",
   available: "Disponibilidade",
   before: "Antes",
   category_id: "Categoria",
@@ -86,6 +89,8 @@ const fieldLabels: Record<string, string> = {
   opens_at: "Abertura",
   option_label: "Opção",
   order_type: "Tipo do pedido",
+  opening_balance: "Saldo inicial",
+  payment_method: "Forma de pagamento",
   permissions: "Permissões",
   pickup_enabled: "Retirada habilitada",
   position_x: "Posição horizontal",
@@ -95,6 +100,7 @@ const fieldLabels: Record<string, string> = {
   prices: "Preços",
   product_name: "Produto",
   quantity: "Quantidade",
+  item_count: "Quantidade de itens",
   quantity_increment: "Incremento",
   quantity_unit: "Unidade",
   request_number: "Número da encomenda",

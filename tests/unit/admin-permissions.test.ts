@@ -22,6 +22,7 @@ describe("perfis administrativos", () => {
       "attendant"
     );
     expect(defaultAttendantPermissions).toEqual([
+      "cashier",
       "orders",
       "customers",
       "deliveries",

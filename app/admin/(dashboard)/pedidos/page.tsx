@@ -76,6 +76,10 @@ export default async function PedidosPage() {
         id,
         order_number,
         order_type,
+        sales_channel,
+        payment_method,
+        cash_change_for,
+        cashier_customer_name,
         status,
         subtotal,
         delivery_fee,
@@ -315,12 +319,20 @@ export default async function PedidosPage() {
                           ] ??
                             order.status}
                         </span>
+
+                        {order.sales_channel ===
+                          "cashier" && (
+                          <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700">
+                            Caixa
+                          </span>
+                        )}
                       </div>
 
                       <p className="mt-2 text-sm text-[#756A66]">
                         {customer
                           ? `${customer.first_name} ${customer.last_name}`
-                          : "Cliente não identificado"}
+                          : order.cashier_customer_name ||
+                            "Cliente não identificado"}
                       </p>
 
                       <p className="mt-1 text-xs text-[#756A66]">
@@ -365,6 +377,23 @@ export default async function PedidosPage() {
 
                             order_type:
                               order.order_type,
+
+                            sales_channel:
+                              order.sales_channel,
+
+                            payment_method:
+                              order.payment_method,
+
+                            cash_change_for:
+                              order.cash_change_for ===
+                              null
+                                ? null
+                                : Number(
+                                    order.cash_change_for
+                                  ),
+
+                            cashier_customer_name:
+                              order.cashier_customer_name,
 
                             subtotal:
                               Number(

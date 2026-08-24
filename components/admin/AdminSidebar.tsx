@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   BadgeDollarSign,
   CakeSlice,
+  Calculator,
   History,
   LayoutDashboard,
   LogOut,
@@ -62,6 +63,12 @@ const menuItems: Array<{
     href: "/admin/pedidos",
     icon: ShoppingBag,
     permission: "orders",
+  },
+  {
+    label: "Caixa",
+    href: "/admin/caixa",
+    icon: Calculator,
+    permission: "cashier",
   },
   {
     label: "Clientes",

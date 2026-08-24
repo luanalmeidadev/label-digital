@@ -3,6 +3,11 @@
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { getStoreOpenStatus } from "@/lib/store-open-status";
 import {
+  isPaymentMethod,
+  validateCashChange,
+  type PaymentMethod,
+} from "@/lib/payment-method";
+import {
   beginIdempotentRequest,
   completeIdempotentRequest,
   createActionFingerprint,
@@ -39,6 +44,8 @@ type CreateOrderInput = {
   phone: string;
 
   orderType: "pickup" | "delivery";
+  paymentMethod: PaymentMethod;
+  cashChangeFor?: number | null;
 
   /*
    * O endereço é sempre informado pelo cliente.
@@ -158,6 +165,12 @@ export async function createOrder(
     const notes = String(
       input.notes ?? ""
     ).trim();
+    const paymentMethod = input.paymentMethod;
+    const cashChangeFor =
+      input.cashChangeFor === null ||
+      input.cashChangeFor === undefined
+        ? null
+        : Number(input.cashChangeFor);
 
     if (
       firstName.length < 2 ||
@@ -191,6 +204,23 @@ export async function createOrder(
         success: false,
         error:
           "Tipo de recebimento inválido.",
+      };
+    }
+
+    if (!isPaymentMethod(paymentMethod)) {
+      return {
+        success: false,
+        error: "Escolha uma forma de pagamento válida.",
+      };
+    }
+
+    if (
+      paymentMethod !== "cash" &&
+      cashChangeFor !== null
+    ) {
+      return {
+        success: false,
+        error: "Troco só pode ser informado para pagamento em dinheiro.",
       };
     }
 
@@ -459,6 +489,8 @@ export async function createOrder(
           normalizeText(lastName),
         phone,
         orderType: input.orderType,
+        paymentMethod,
+        cashChangeFor,
         address: input.address ?? null,
         items: [...normalizedItems].sort(
           (first, second) =>
@@ -1005,6 +1037,18 @@ export async function createOrder(
     const total =
       subtotal + deliveryFee;
 
+    if (
+      !validateCashChange(
+        paymentMethod,
+        cashChangeFor,
+        total
+      )
+    ) {
+      return failProtectedRequest(
+        "O valor para troco deve ser igual ou maior que o total do pedido."
+      );
+    }
+
     const {
       data: order,
       error: orderError,
@@ -1019,6 +1063,14 @@ export async function createOrder(
 
         order_type:
           input.orderType,
+
+        sales_channel: "online",
+
+        payment_method:
+          paymentMethod,
+
+        cash_change_for:
+          cashChangeFor,
 
         status: "sent_to_whatsapp",
 

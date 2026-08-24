@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import PrintOrderButton from "@/components/admin/PrintOrderButton";
+import { paymentMethodLabels } from "@/lib/payment-method";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 function formatCurrency(value: number) {
@@ -43,6 +44,10 @@ export default async function ImprimirPedidoPage({
       id,
       order_number,
       order_type,
+      sales_channel,
+      payment_method,
+      cash_change_for,
+      cashier_customer_name,
       status,
       subtotal,
       delivery_fee,
@@ -172,6 +177,12 @@ export default async function ImprimirPedidoPage({
                 Pedido #{order.order_number}
               </p>
 
+              {order.sales_channel === "cashier" && (
+                <p className="mt-1 text-sm font-bold uppercase">
+                  Venda de caixa
+                </p>
+              )}
+
               <p className="mt-1 text-sm font-bold uppercase">
                 {statusLabels[order.status] ??
                   order.status}
@@ -222,7 +233,8 @@ export default async function ImprimirPedidoPage({
               <p className="mt-2">
                 {customer
                   ? `${customer.first_name} ${customer.last_name}`
-                  : "Cliente não identificado"}
+                  : order.cashier_customer_name ||
+                    "Cliente não identificado"}
               </p>
 
               {customer?.phone && (
@@ -261,7 +273,29 @@ export default async function ImprimirPedidoPage({
                     </p>
                   )}
                 </section>
-              )}
+            )}
+
+            {order.payment_method && (
+              <section className="border-b border-dashed border-black py-4">
+                <h2 className="font-bold uppercase">
+                  Pagamento
+                </h2>
+
+                <p className="mt-2">
+                  {paymentMethodLabels[
+                    order.payment_method as keyof typeof paymentMethodLabels
+                  ] ?? order.payment_method}
+                </p>
+
+                {order.payment_method === "cash" && (
+                  <p className="mt-1">
+                    {order.cash_change_for
+                      ? `Troco para ${formatCurrency(Number(order.cash_change_for))}`
+                      : "Sem troco"}
+                  </p>
+                )}
+              </section>
+            )}
 
             {/* ITENS */}
             <section className="border-b border-dashed border-black py-4">

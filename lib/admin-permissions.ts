@@ -12,6 +12,12 @@ export const adminPermissionOptions = [
       "Atendimento, pagamentos, comandas e encomendas manuais.",
   },
   {
+    key: "cashier",
+    label: "Caixa",
+    description:
+      "Abertura do caixa e registro de vendas presenciais.",
+  },
+  {
     key: "customers",
     label: "Clientes",
     description: "Consulta ao histórico de clientes.",
@@ -45,6 +51,7 @@ export const allAdminPermissions =
   );
 
 export const defaultAttendantPermissions: AdminPermission[] = [
+  "cashier",
   "orders",
   "customers",
   "deliveries",

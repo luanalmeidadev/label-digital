@@ -13,6 +13,7 @@ import {
 
 import BrandLogo from "@/components/brand/BrandLogo";
 import OrderTrackingRefresh from "@/components/store/OrderTrackingRefresh";
+import { paymentMethodLabels } from "@/lib/payment-method";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -126,7 +127,7 @@ export default async function OrderTrackingPage({
     await supabase
       .from("orders")
       .select(
-        "id, order_number, order_type, status, created_at, completed_at"
+        "id, order_number, order_type, status, payment_method, cash_change_for, created_at, completed_at"
       )
       .eq("id", id)
       .maybeSingle();
@@ -288,6 +289,29 @@ export default async function OrderTrackingPage({
                 })}
               </div>
             </>
+          )}
+
+          {order.payment_method && (
+            <div className="mt-6 rounded-2xl border border-[#EEE6DF] bg-[#FFFDF9] p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+                Pagamento
+              </p>
+              <p className="mt-1 font-bold text-[#241B19]">
+                {paymentMethodLabels[
+                  order.payment_method as keyof typeof paymentMethodLabels
+                ] ?? order.payment_method}
+              </p>
+              {order.payment_method === "cash" && (
+                <p className="mt-1 text-sm text-[#756A66]">
+                  {order.cash_change_for
+                    ? `Troco para ${new Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(Number(order.cash_change_for))}`
+                    : "Não precisa de troco"}
+                </p>
+              )}
+            </div>
           )}
 
           <div className="mt-8 border-t border-[#EEE6DF] pt-5">

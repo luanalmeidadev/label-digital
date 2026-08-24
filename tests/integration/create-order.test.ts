@@ -44,6 +44,7 @@ const baseInput = {
   lastName: "Almeida",
   phone: "(48) 99999-9999",
   orderType: "pickup" as const,
+  paymentMethod: "pix" as const,
   items: [{ productId: "produto-1", quantity: 1 }],
 };
 

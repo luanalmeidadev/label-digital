@@ -29,6 +29,7 @@ import {
   type OrderStatusNotification,
   type UpdateOrderStatusResult,
 } from "@/lib/order-status";
+import { paymentMethodLabels } from "@/lib/payment-method";
 
 type OrderItem = {
   id: string;
@@ -44,6 +45,10 @@ type OrderDetailsDialogProps = {
     order_number: number;
     status: string;
     order_type: string;
+    sales_channel: string;
+    payment_method: string | null;
+    cash_change_for: number | null;
+    cashier_customer_name: string | null;
 
     subtotal: number;
     delivery_fee: number;
@@ -271,6 +276,12 @@ export default function OrderDetailsDialog({
               {statusLabels[order.status] ??
                 order.status}
             </span>
+
+            {order.sales_channel === "cashier" && (
+              <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-bold text-violet-700">
+                Caixa
+              </span>
+            )}
           </div>
 
           <DialogDescription>
@@ -294,7 +305,8 @@ export default function OrderDetailsDialog({
               <p className="mt-3 font-bold text-[#241B19]">
                 {order.customer
                   ? `${order.customer.first_name} ${order.customer.last_name}`
-                  : "Cliente não identificado"}
+                  : order.cashier_customer_name ||
+                    "Cliente não identificado"}
               </p>
 
               {order.customer && (
@@ -347,6 +359,31 @@ export default function OrderDetailsDialog({
                 )}
             </div>
           </section>
+
+          {order.payment_method && (
+            <section className="rounded-2xl border border-[#EEE6DF] p-4">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm text-[#756A66]">
+                    Forma de pagamento
+                  </p>
+                  <p className="mt-1 font-bold text-[#241B19]">
+                    {paymentMethodLabels[
+                      order.payment_method as keyof typeof paymentMethodLabels
+                    ] ?? order.payment_method}
+                  </p>
+                </div>
+
+                {order.payment_method === "cash" && (
+                  <p className="text-right text-sm font-semibold text-[#756A66]">
+                    {order.cash_change_for
+                      ? `Troco para ${formatCurrency(order.cash_change_for)}`
+                      : "Sem troco"}
+                  </p>
+                )}
+              </div>
+            </section>
+          )}
 
           {/* ITENS */}
           <section className="rounded-2xl border border-[#EEE6DF]">
