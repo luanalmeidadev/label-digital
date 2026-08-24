@@ -36,6 +36,15 @@ function revalidateOrders(orderId: string) {
   revalidatePath(`/pedido/${orderId}`);
 }
 
+function statusError(
+  error: string
+): UpdateOrderStatusResult {
+  return {
+    notification: null,
+    error,
+  };
+}
+
 export async function updateOrderStatus(
   formData: FormData
 ): Promise<UpdateOrderStatusResult> {
@@ -55,15 +64,11 @@ export async function updateOrderStatus(
   );
 
   if (!id) {
-    throw new Error(
-      "Pedido inválido."
-    );
+    return statusError("Pedido inválido.");
   }
 
   if (!allowedStatuses.includes(status)) {
-    throw new Error(
-      "Status inválido."
-    );
+    return statusError("Status inválido.");
   }
 
   const { data: order } = await supabase
@@ -82,7 +87,7 @@ export async function updateOrderStatus(
     .single();
 
   if (!order) {
-    throw new Error(
+    return statusError(
       "Pedido não encontrado."
     );
   }
@@ -95,19 +100,19 @@ export async function updateOrderStatus(
         "completed",
       ].includes(status))
   ) {
-    throw new Error(
+    return statusError(
       "Você não tem permissão para realizar esta alteração."
     );
   }
 
   if (order.status === "completed") {
-    throw new Error(
+    return statusError(
       "Pedidos finalizados não podem ter o status alterado."
     );
   }
 
   if (order.status === "cancelled") {
-    throw new Error(
+    return statusError(
       "Pedidos cancelados não podem ter o status alterado."
     );
   }
@@ -119,7 +124,7 @@ export async function updateOrderStatus(
       order.order_type
     )
   ) {
-    throw new Error(
+    return statusError(
       "Essa alteração não corresponde à próxima etapa do pedido."
     );
   }
@@ -128,7 +133,7 @@ export async function updateOrderStatus(
     status === "out_for_delivery" &&
     order.order_type !== "delivery"
   ) {
-    throw new Error(
+    return statusError(
       "Somente pedidos de entrega podem sair para entrega."
     );
   }
@@ -137,7 +142,7 @@ export async function updateOrderStatus(
     status === "ready_for_pickup" &&
     order.order_type !== "pickup"
   ) {
-    throw new Error(
+    return statusError(
       "Somente pedidos de retirada podem ficar prontos para retirada."
     );
   }
@@ -168,17 +173,22 @@ export async function updateOrderStatus(
           .eq("id", id);
 
   if (error) {
+    console.error(
+      "Erro ao atualizar status do pedido:",
+      error
+    );
+
     if (
       error.message.includes(
         "Abra o caixa antes de receber um pedido em dinheiro"
       )
     ) {
-      throw new Error(
+      return statusError(
         "Abra o caixa antes de finalizar este pedido em dinheiro."
       );
     }
 
-    throw new Error(
+    return statusError(
       "Não foi possível atualizar o status do pedido."
     );
   }
@@ -192,6 +202,7 @@ export async function updateOrderStatus(
   revalidateOrders(order.id);
 
   return {
+    error: null,
     notification:
       isNotifiableOrderStatus(status) &&
       customer?.phone

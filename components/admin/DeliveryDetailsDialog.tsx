@@ -155,6 +155,11 @@ export default function DeliveryDetailsDialog({
       const result =
         await updateStatusAction(formData);
 
+      if (result.error) {
+        setActionError(result.error);
+        return;
+      }
+
       if (result.notification) {
         setNotification(
           result.notification

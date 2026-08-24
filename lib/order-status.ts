@@ -15,6 +15,7 @@ export type OrderStatusNotification = {
 
 export type UpdateOrderStatusResult = {
   notification: OrderStatusNotification | null;
+  error: string | null;
 };
 
 export function isNotifiableOrderStatus(
