@@ -17,6 +17,23 @@ export type CashierActionResult = {
   error?: string;
 };
 
+export type CashMovementType =
+  | "supply"
+  | "withdrawal"
+  | "expense";
+
+export type CashClosingResult =
+  | {
+      success: true;
+      expectedCash: number;
+      countedCash: number;
+      difference: number;
+    }
+  | {
+      success: false;
+      error: string;
+    };
+
 export type CashierSaleInput = {
   cashSessionId: string;
   reference: string;
@@ -259,5 +276,190 @@ export async function createCashierSale(
     orderNumber: Number(sale.order_number),
     total: Number(sale.total),
     change,
+  };
+}
+
+export async function createCashMovement(
+  formData: FormData
+): Promise<CashierActionResult> {
+  const access = await requireAdminPermission("cashier");
+  const cashSessionId = String(
+    formData.get("cash_session_id") ?? ""
+  );
+  const reference = String(
+    formData.get("movement_reference") ?? ""
+  );
+  const movementType = String(
+    formData.get("movement_type") ?? ""
+  ) as CashMovementType;
+  const amount = Number(formData.get("amount"));
+  const description = String(
+    formData.get("description") ?? ""
+  ).trim();
+  const allowedTypes = new Set<CashMovementType>([
+    "supply",
+    "withdrawal",
+    "expense",
+  ]);
+
+  if (
+    !uuidPattern.test(cashSessionId) ||
+    !uuidPattern.test(reference)
+  ) {
+    return {
+      success: false,
+      error: "Não foi possível identificar o caixa ou a movimentação.",
+    };
+  }
+
+  if (!allowedTypes.has(movementType)) {
+    return {
+      success: false,
+      error: "Escolha um tipo de movimentação válido.",
+    };
+  }
+
+  if (
+    !Number.isFinite(amount) ||
+    amount <= 0 ||
+    amount > 1000000
+  ) {
+    return {
+      success: false,
+      error: "Informe um valor maior que zero.",
+    };
+  }
+
+  if (description.length < 2 || description.length > 300) {
+    return {
+      success: false,
+      error: "Informe uma descrição entre 2 e 300 caracteres.",
+    };
+  }
+
+  const { data, error } = await access.supabase.rpc(
+    "create_cash_movement",
+    {
+      p_cash_session_id: cashSessionId,
+      p_movement_reference: reference,
+      p_movement_type: movementType,
+      p_amount: Number(amount.toFixed(2)),
+      p_description: description,
+    }
+  );
+  const movement = Array.isArray(data) ? data[0] : null;
+
+  if (error || !movement) {
+    console.error("Erro ao registrar movimentação de caixa:", error);
+    return {
+      success: false,
+      error: error?.message.includes("não está aberto")
+        ? "Este caixa não está mais aberto. Atualize a página."
+        : error?.message.includes("maior que o dinheiro disponível")
+          ? "A saída não pode ser maior que o dinheiro disponível no caixa."
+          : "Não foi possível registrar a movimentação.",
+    };
+  }
+
+  const movementLabels: Record<CashMovementType, string> = {
+    supply: "suprimento",
+    withdrawal: "sangria",
+    expense: "despesa",
+  };
+
+  await recordAdminAudit(access, {
+    action: "created",
+    entityType: "cash_movement",
+    entityId: movement.movement_id,
+    summary: `Registrou ${movementLabels[movementType]} no caixa`,
+    metadata: {
+      movement_type: movementType,
+      amount: Number(amount.toFixed(2)),
+      description,
+    },
+  });
+
+  revalidateCashier();
+  return { success: true };
+}
+
+export async function closeCashSession(
+  formData: FormData
+): Promise<CashClosingResult> {
+  const access = await requireAdminPermission("cashier");
+  const cashSessionId = String(
+    formData.get("cash_session_id") ?? ""
+  );
+  const countedCash = Number(
+    formData.get("closing_cash_counted")
+  );
+  const notes = String(formData.get("notes") ?? "").trim();
+
+  if (!uuidPattern.test(cashSessionId)) {
+    return {
+      success: false,
+      error: "Não foi possível identificar o caixa.",
+    };
+  }
+
+  if (
+    !Number.isFinite(countedCash) ||
+    countedCash < 0 ||
+    countedCash > 1000000
+  ) {
+    return {
+      success: false,
+      error: "Informe o valor contado no caixa.",
+    };
+  }
+
+  if (notes.length > 500) {
+    return {
+      success: false,
+      error: "As observações devem ter no máximo 500 caracteres.",
+    };
+  }
+
+  const { data, error } = await access.supabase.rpc(
+    "close_cash_session",
+    {
+      p_cash_session_id: cashSessionId,
+      p_closing_cash_counted: Number(countedCash.toFixed(2)),
+      p_notes: notes || null,
+    }
+  );
+  const closing = Array.isArray(data) ? data[0] : null;
+
+  if (error || !closing) {
+    console.error("Erro ao fechar caixa:", error);
+    return {
+      success: false,
+      error: error?.message.includes("já foi fechado")
+        ? "Este caixa já foi fechado. Atualize a página."
+        : "Não foi possível fechar o caixa.",
+    };
+  }
+
+  await recordAdminAudit(access, {
+    action: "updated",
+    entityType: "cash_session",
+    entityId: cashSessionId,
+    summary: "Fechou o caixa",
+    metadata: {
+      expected_cash: Number(closing.expected_cash),
+      counted_cash: Number(closing.counted_cash),
+      difference: Number(closing.difference),
+      cash_sales: Number(closing.cash_sales),
+      supplies: Number(closing.supplies),
+      outflows: Number(closing.outflows),
+    },
+  });
+
+  revalidateCashier();
+  return {
+    success: true,
+    expectedCash: Number(closing.expected_cash),
+    countedCash: Number(closing.counted_cash),
+    difference: Number(closing.difference),
   };
 }

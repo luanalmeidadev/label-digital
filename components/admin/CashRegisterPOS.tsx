@@ -265,9 +265,17 @@ export default function CashRegisterPOS({
               Aberto por {session.openedBy} · Saldo inicial {formatCurrency(session.openingBalance)}
             </p>
           </div>
-          <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-emerald-700">
-            Pronto para vender
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="rounded-full bg-white px-3 py-1.5 text-xs font-bold text-emerald-700">
+              Pronto para vender
+            </span>
+            <a
+              href="#controle-caixa"
+              className="rounded-full border border-emerald-300 px-3 py-1.5 text-xs font-bold text-emerald-800"
+            >
+              Movimentações e fechamento
+            </a>
+          </div>
         </div>
       </section>
 

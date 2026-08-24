@@ -31,6 +31,8 @@ function revalidateOrders(orderId: string) {
   revalidatePath("/admin");
   revalidatePath("/admin/pedidos");
   revalidatePath("/admin/entregas");
+  revalidatePath("/admin/caixa");
+  revalidatePath("/admin/faturamento");
   revalidatePath(`/pedido/${orderId}`);
 }
 
@@ -71,6 +73,7 @@ export async function updateOrderStatus(
       order_number,
       status,
       order_type,
+      sales_channel,
       customers (
         phone
       )
@@ -153,12 +156,28 @@ export async function updateOrderStatus(
     updateData.completed_at = null;
   }
 
-  const { error } = await supabase
-    .from("orders")
-    .update(updateData)
-    .eq("id", id);
+  const { error } =
+    status === "completed" &&
+    order.sales_channel === "online"
+      ? await supabase.rpc("complete_online_order", {
+          p_order_id: id,
+        })
+      : await supabase
+          .from("orders")
+          .update(updateData)
+          .eq("id", id);
 
   if (error) {
+    if (
+      error.message.includes(
+        "Abra o caixa antes de receber um pedido em dinheiro"
+      )
+    ) {
+      throw new Error(
+        "Abra o caixa antes de finalizar este pedido em dinheiro."
+      );
+    }
+
     throw new Error(
       "Não foi possível atualizar o status do pedido."
     );

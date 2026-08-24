@@ -3,10 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   isPaymentMethod,
   validateCashChange,
-} from "./payment-method";
+} from "@/lib/payment-method";
 
-describe("payment methods", () => {
-  it("accepts the supported methods", () => {
+describe("formas de pagamento", () => {
+  it("aceita as formas suportadas", () => {
     expect(isPaymentMethod("cash")).toBe(true);
     expect(isPaymentMethod("pix")).toBe(true);
     expect(isPaymentMethod("debit_card")).toBe(true);
@@ -14,13 +14,13 @@ describe("payment methods", () => {
     expect(isPaymentMethod("mixed")).toBe(false);
   });
 
-  it("accepts cash without change or with enough tendered value", () => {
+  it("aceita dinheiro sem troco ou com valor suficiente", () => {
     expect(validateCashChange("cash", null, 20)).toBe(true);
     expect(validateCashChange("cash", 50, 20)).toBe(true);
     expect(validateCashChange("cash", 10, 20)).toBe(false);
   });
 
-  it("rejects change values for non-cash methods", () => {
+  it("rejeita valor de troco em pagamentos que não são dinheiro", () => {
     expect(validateCashChange("pix", null, 20)).toBe(true);
     expect(validateCashChange("pix", 50, 20)).toBe(false);
   });

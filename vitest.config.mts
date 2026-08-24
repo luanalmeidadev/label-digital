@@ -15,7 +15,9 @@ export default defineConfig({
       reporter: ["text", "html", "json-summary"],
       include: [
         "lib/admin-permissions.ts",
+        "lib/cash-register.ts",
         "lib/order-status.ts",
+        "lib/payment-method.ts",
         "lib/preorder-request.ts",
         "lib/store-open-status.ts",
         "lib/whatsapp-link.ts",
