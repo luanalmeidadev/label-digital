@@ -572,12 +572,34 @@ export default function CashRegisterPOS({
                           min="0"
                           step="0.01"
                           value={paymentAmounts[method.id]}
-                          onChange={(event) =>
+                          onChange={(event) => {
+                            const nextValue = event.target.value;
+                            const previousCashAmount = Number(
+                              paymentAmounts.cash.replace(",", ".")
+                            );
+                            const receivedAmount = Number(
+                              cashReceived.replace(",", ".")
+                            );
+                            const receivedWasAutomatic =
+                              cashReceived === "" ||
+                              (Number.isFinite(receivedAmount) &&
+                                Number.isFinite(previousCashAmount) &&
+                                Math.abs(
+                                  receivedAmount - previousCashAmount
+                                ) < 0.005);
+
+                            if (
+                              method.id === "cash" &&
+                              receivedWasAutomatic
+                            ) {
+                              setCashReceived(nextValue);
+                            }
+
                             setPaymentAmounts((current) => ({
                               ...current,
-                              [method.id]: event.target.value,
-                            }))
-                          }
+                              [method.id]: nextValue,
+                            }));
+                          }}
                           className="min-w-0 flex-1 bg-transparent text-sm outline-none"
                         />
                       </div>
@@ -605,7 +627,7 @@ export default function CashRegisterPOS({
             {cashAmount > 0 && (
               <label className="mt-4 block">
                 <span className="text-xs font-bold text-[#49352C]">
-                  Valor recebido em dinheiro
+                  Valor entregue pelo cliente
                 </span>
                 <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] bg-white px-3 focus-within:border-[#8B0000]">
                   <span className="mr-2 text-xs font-bold text-[#756A66]">R$</span>
@@ -619,7 +641,14 @@ export default function CashRegisterPOS({
                   />
                 </div>
                 <p className="mt-2 text-xs font-semibold text-[#756A66]">
-                  Troco: <strong className="text-[#8B0000]">{formatCurrency(change)}</strong>
+                  Já preenchemos com a parcela em dinheiro. Altere somente se
+                  precisar calcular troco.
+                  <span className="mt-1 block">
+                    Troco:{" "}
+                    <strong className="text-[#8B0000]">
+                      {formatCurrency(change)}
+                    </strong>
+                  </span>
                 </p>
               </label>
             )}
