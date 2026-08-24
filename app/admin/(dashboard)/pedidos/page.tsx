@@ -13,6 +13,7 @@ import OrderDetailsDialog from "@/components/admin/OrderDetailsDialog";
 import OrdersPanelTabs from "@/components/admin/OrdersPanelTabs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicStoreSettings } from "@/lib/public-store-settings";
+import { cancelCompletedOrder } from "@/app/admin/(dashboard)/caixa/actions";
 
 import { updateOrderStatus } from "./actions";
 
@@ -80,6 +81,7 @@ export default async function PedidosPage() {
         payment_method,
         cash_change_for,
         cashier_customer_name,
+        cancellation_reason,
         status,
         subtotal,
         delivery_fee,
@@ -402,6 +404,9 @@ export default async function PedidosPage() {
                             cashier_customer_name:
                               order.cashier_customer_name,
 
+                            cancellation_reason:
+                              order.cancellation_reason,
+
                             subtotal:
                               Number(
                                 order.subtotal
@@ -481,6 +486,7 @@ export default async function PedidosPage() {
                           updateStatusAction={
                             updateOrderStatus
                           }
+                          cancelSaleAction={cancelCompletedOrder}
                         />
 
                         {canPrint && (

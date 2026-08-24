@@ -49,6 +49,7 @@ type OrderDetailsDialogProps = {
     payment_method: string | null;
     cash_change_for: number | null;
     cashier_customer_name: string | null;
+    cancellation_reason: string | null;
 
     subtotal: number;
     delivery_fee: number;
@@ -78,6 +79,9 @@ type OrderDetailsDialogProps = {
   updateStatusAction: (
     formData: FormData
   ) => Promise<UpdateOrderStatusResult>;
+  cancelSaleAction: (
+    formData: FormData
+  ) => Promise<{ success: boolean; error?: string }>;
 };
 
 const statusLabels: Record<string, string> = {
@@ -170,6 +174,7 @@ export default function OrderDetailsDialog({
   pickupAddress,
   order,
   updateStatusAction,
+  cancelSaleAction,
 }: OrderDetailsDialogProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -179,6 +184,9 @@ export default function OrderDetailsDialog({
     useState<OrderStatusNotification | null>(
       null
     );
+  const [showRefund, setShowRefund] = useState(false);
+  const [refundReason, setRefundReason] = useState("");
+  const [refundPending, setRefundPending] = useState(false);
 
   const nextStatus = getNextStatus(
     order.status,
@@ -207,6 +215,41 @@ export default function OrderDetailsDialog({
     if (!nextOpen) {
       setActionError("");
       setNotification(null);
+      setShowRefund(false);
+      setRefundReason("");
+    }
+  }
+
+  async function cancelAndRefund() {
+    const reason = refundReason.trim();
+
+    if (reason.length < 3 || refundPending) {
+      setActionError("Informe o motivo do cancelamento.");
+      return;
+    }
+
+    setRefundPending(true);
+    setActionError("");
+
+    try {
+      const formData = new FormData();
+      formData.set("order_id", order.id);
+      formData.set("reason", reason);
+
+      const result = await cancelSaleAction(formData);
+
+      if (!result.success) {
+        setActionError(
+          result.error ?? "Não foi possível estornar a venda."
+        );
+        return;
+      }
+
+      setOpen(false);
+    } catch {
+      setActionError("Não foi possível estornar a venda.");
+    } finally {
+      setRefundPending(false);
     }
   }
 
@@ -569,6 +612,62 @@ export default function OrderDetailsDialog({
                     </p>
                   </div>
                 </div>
+
+                {!showRefund ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowRefund(true)}
+                    className="mt-4 inline-flex items-center gap-2 text-sm font-bold text-red-700"
+                  >
+                    <XCircle size={17} />
+                    Cancelar e estornar venda
+                  </button>
+                ) : (
+                  <div className="mt-4 border-t border-green-200 pt-4">
+                    <label className="block text-xs font-bold text-[#49352C]">
+                      Motivo do cancelamento
+                      <textarea
+                        value={refundReason}
+                        onChange={(event) =>
+                          setRefundReason(event.target.value)
+                        }
+                        minLength={3}
+                        maxLength={300}
+                        rows={3}
+                        disabled={refundPending}
+                        placeholder="Ex.: cliente desistiu da compra"
+                        className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-3 py-2 text-sm font-normal outline-none focus:border-[#8B0000]"
+                      />
+                    </label>
+                    <p className="mt-2 text-xs leading-5 text-red-700">
+                      O pedido sairá do faturamento e os pagamentos serão
+                      registrados como estornados. Esta ação não pode ser
+                      desfeita.
+                    </p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        disabled={refundPending || refundReason.trim().length < 3}
+                        onClick={cancelAndRefund}
+                        className="rounded-xl bg-red-700 px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"
+                      >
+                        {refundPending ? "Estornando..." : "Confirmar estorno"}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={refundPending}
+                        onClick={() => {
+                          setShowRefund(false);
+                          setRefundReason("");
+                          setActionError("");
+                        }}
+                        className="rounded-xl border border-[#DDD3CB] px-4 py-2.5 text-xs font-bold text-[#49352C]"
+                      >
+                        Voltar
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -589,6 +688,12 @@ export default function OrderDetailsDialog({
                       Este pedido não entra no
                       faturamento.
                     </p>
+
+                    {order.cancellation_reason && (
+                      <p className="mt-2 text-xs text-red-700">
+                        Motivo: {order.cancellation_reason}
+                      </p>
+                    )}
                   </div>
                 </div>
               </div>

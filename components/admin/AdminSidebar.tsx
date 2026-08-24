@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import {
   BadgeDollarSign,
+  BarChart3,
   CakeSlice,
   Calculator,
   History,
@@ -86,6 +87,12 @@ const menuItems: Array<{
     label: "Faturamento",
     href: "/admin/faturamento",
     icon: BadgeDollarSign,
+    permission: "billing",
+  },
+  {
+    label: "Relatórios",
+    href: "/admin/relatorios",
+    icon: BarChart3,
     permission: "billing",
   },
   {

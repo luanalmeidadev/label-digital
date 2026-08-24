@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 
 import { recordAdminAudit } from "@/lib/admin-audit";
-import { requireAdminPermission } from "@/lib/admin-auth";
+import {
+  requireAdminPermission,
+  requireAnyAdminPermission,
+} from "@/lib/admin-auth";
 import {
   isPaymentMethod,
   type PaymentMethod,
@@ -43,12 +46,19 @@ export type CashierSaleInput = {
     productId: string;
     quantity: number;
   }>;
-  payment: {
+  payments: Array<{
     method: PaymentMethod;
     amount: number;
     tenderedAmount?: number | null;
-  };
+  }>;
 };
+
+export type ProductLossReason =
+  | "expired"
+  | "damaged"
+  | "production"
+  | "internal"
+  | "other";
 
 export type CashierSaleResult =
   | {
@@ -68,6 +78,7 @@ function revalidateCashier() {
   revalidatePath("/admin/caixa");
   revalidatePath("/admin/pedidos");
   revalidatePath("/admin/faturamento");
+  revalidatePath("/admin/relatorios");
   revalidatePath("/admin/atividades");
 }
 
@@ -181,40 +192,62 @@ export async function createCashierSale(
   }
 
   if (
-    !input.payment ||
-    !isPaymentMethod(input.payment.method) ||
-    !Number.isFinite(input.payment.amount) ||
-    input.payment.amount <= 0
+    !Array.isArray(input.payments) ||
+    input.payments.length < 1 ||
+    input.payments.length > 4 ||
+    input.payments.some(
+      (payment) =>
+        !isPaymentMethod(payment.method) ||
+        !Number.isFinite(payment.amount) ||
+        payment.amount <= 0
+    ) ||
+    new Set(input.payments.map((payment) => payment.method)).size !==
+      input.payments.length
   ) {
     return {
       success: false,
-      error: "Escolha uma forma de pagamento válida.",
+      error: "Revise as formas de pagamento.",
     };
   }
 
-  const amount = Number(input.payment.amount.toFixed(2));
-  const isCash = input.payment.method === "cash";
-  const tenderedInput = Number(
-    input.payment.tenderedAmount ?? amount
+  const normalizedPayments = input.payments.map((payment) => {
+    const amount = Number(payment.amount.toFixed(2));
+    const isCash = payment.method === "cash";
+    const tenderedInput = Number(
+      payment.tenderedAmount ?? amount
+    );
+    const tenderedAmount = isCash
+      ? Number(tenderedInput.toFixed(2))
+      : null;
+
+    return {
+      method: payment.method,
+      amount,
+      tenderedAmount,
+      changeAmount: isCash
+        ? Number((tenderedAmount! - amount).toFixed(2))
+        : null,
+    };
+  });
+  const invalidCashPayment = normalizedPayments.some(
+    (payment) =>
+      payment.method === "cash" &&
+      (!Number.isFinite(payment.tenderedAmount) ||
+        payment.tenderedAmount! < payment.amount)
   );
-  const tenderedAmount = isCash
-    ? Number(tenderedInput.toFixed(2))
-    : null;
 
-  if (
-    isCash &&
-    (!Number.isFinite(tenderedAmount) ||
-      tenderedAmount! < amount)
-  ) {
+  if (invalidCashPayment) {
     return {
       success: false,
-      error: "O valor recebido em dinheiro não pode ser menor que o total.",
+      error:
+        "O valor recebido em dinheiro não pode ser menor que a parcela em dinheiro.",
     };
   }
 
-  const change = isCash
-    ? Number((tenderedAmount! - amount).toFixed(2))
-    : 0;
+  const change = normalizedPayments.reduce(
+    (sum, payment) => sum + (payment.changeAmount ?? 0),
+    0
+  );
   const { data, error } = await access.supabase.rpc(
     "create_cashier_sale",
     {
@@ -224,14 +257,12 @@ export async function createCashierSale(
         product_id: item.productId,
         quantity: item.quantity,
       })),
-      p_payments: [
-        {
-          method: input.payment.method,
-          amount,
-          tendered_amount: tenderedAmount,
-          change_amount: isCash ? change : null,
-        },
-      ],
+      p_payments: normalizedPayments.map((payment) => ({
+        method: payment.method,
+        amount: payment.amount,
+        tendered_amount: payment.tenderedAmount,
+        change_amount: payment.changeAmount,
+      })),
       p_customer_name: customerName || null,
       p_notes: notes || null,
     }
@@ -260,7 +291,14 @@ export async function createCashierSale(
     metadata: {
       order_number: Number(sale.order_number),
       total: Number(sale.total),
-      payment_method: input.payment.method,
+      payment_method:
+        normalizedPayments.length === 1
+          ? normalizedPayments[0].method
+          : "mixed",
+      payments: normalizedPayments.map((payment) => ({
+        method: payment.method,
+        amount: payment.amount,
+      })),
       change,
       item_count: input.items.reduce(
         (sum, item) => sum + item.quantity,
@@ -277,6 +315,149 @@ export async function createCashierSale(
     total: Number(sale.total),
     change,
   };
+}
+
+export async function cancelCompletedOrder(
+  formData: FormData
+): Promise<CashierActionResult> {
+  const access = await requireAnyAdminPermission([
+    "cashier",
+    "orders",
+  ]);
+  const orderId = String(formData.get("order_id") ?? "");
+  const reason = String(formData.get("reason") ?? "").trim();
+
+  if (!uuidPattern.test(orderId)) {
+    return { success: false, error: "Pedido inválido." };
+  }
+
+  if (reason.length < 3 || reason.length > 300) {
+    return {
+      success: false,
+      error: "Informe um motivo entre 3 e 300 caracteres.",
+    };
+  }
+
+  const { data, error } = await access.supabase.rpc(
+    "cancel_completed_order",
+    {
+      p_order_id: orderId,
+      p_reason: reason,
+    }
+  );
+  const cancellation = Array.isArray(data) ? data[0] : null;
+
+  if (error || !cancellation) {
+    console.error("Erro ao estornar venda:", error);
+    return {
+      success: false,
+      error: error?.message.includes("Abra o caixa")
+        ? "Abra o caixa antes de estornar esta venda."
+        : error?.message.includes("dinheiro disponível")
+          ? "Não há dinheiro suficiente no caixa para realizar o estorno."
+          : error?.message.includes("já foi estornada")
+            ? "Esta venda já foi estornada."
+            : error?.message.includes("finalizados")
+              ? "Somente pedidos finalizados podem ser estornados."
+              : "Não foi possível cancelar e estornar a venda.",
+    };
+  }
+
+  await recordAdminAudit(access, {
+    action: "updated",
+    entityType: "order_refund",
+    entityId: orderId,
+    summary: "Cancelou e estornou uma venda",
+    metadata: {
+      reason,
+      refunded_total: Number(cancellation.refunded_total),
+    },
+  });
+
+  revalidateCashier();
+  revalidatePath(`/pedido/${orderId}`);
+  return { success: true };
+}
+
+export async function createProductLoss(
+  formData: FormData
+): Promise<CashierActionResult> {
+  const access = await requireAdminPermission("cashier");
+  const cashSessionId = String(
+    formData.get("cash_session_id") ?? ""
+  );
+  const reference = String(formData.get("loss_reference") ?? "");
+  const productId = String(formData.get("product_id") ?? "");
+  const quantity = Number(formData.get("quantity"));
+  const reason = String(
+    formData.get("reason") ?? ""
+  ) as ProductLossReason;
+  const notes = String(formData.get("notes") ?? "").trim();
+  const allowedReasons = new Set<ProductLossReason>([
+    "expired",
+    "damaged",
+    "production",
+    "internal",
+    "other",
+  ]);
+
+  if (
+    !uuidPattern.test(cashSessionId) ||
+    !uuidPattern.test(reference) ||
+    !uuidPattern.test(productId)
+  ) {
+    return {
+      success: false,
+      error: "Não foi possível identificar o caixa, produto ou registro.",
+    };
+  }
+
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 10000) {
+    return { success: false, error: "Informe uma quantidade válida." };
+  }
+
+  if (!allowedReasons.has(reason) || notes.length > 300) {
+    return { success: false, error: "Revise o motivo e as observações." };
+  }
+
+  const { data, error } = await access.supabase.rpc(
+    "create_product_loss",
+    {
+      p_cash_session_id: cashSessionId,
+      p_loss_reference: reference,
+      p_product_id: productId,
+      p_quantity: quantity,
+      p_reason: reason,
+      p_notes: notes || null,
+    }
+  );
+  const loss = Array.isArray(data) ? data[0] : null;
+
+  if (error || !loss) {
+    console.error("Erro ao registrar perda:", error);
+    return {
+      success: false,
+      error: error?.message.includes("não está aberto")
+        ? "Este caixa não está mais aberto. Atualize a página."
+        : "Não foi possível registrar a perda.",
+    };
+  }
+
+  await recordAdminAudit(access, {
+    action: "created",
+    entityType: "product_loss",
+    entityId: loss.loss_id,
+    summary: "Registrou uma perda de produto",
+    metadata: {
+      product_id: productId,
+      quantity,
+      reason,
+      estimated_value: Number(loss.estimated_value),
+    },
+  });
+
+  revalidateCashier();
+  return { success: true };
 }
 
 export async function createCashMovement(

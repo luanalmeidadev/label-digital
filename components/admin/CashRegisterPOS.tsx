@@ -50,6 +50,20 @@ type SaleResult = {
   change: number;
 };
 
+const paymentOptions = [
+  { id: "cash", label: "Dinheiro", icon: Banknote },
+  { id: "pix", label: "Pix", icon: QrCode },
+  { id: "debit_card", label: "Débito", icon: CreditCard },
+  { id: "credit_card", label: "Crédito", icon: CreditCard },
+] as const;
+
+const emptyPaymentAmounts: Record<PaymentMethod, string> = {
+  cash: "",
+  pix: "",
+  debit_card: "",
+  credit_card: "",
+};
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -147,6 +161,10 @@ export default function CashRegisterPOS({
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("pix");
+  const [splitPayment, setSplitPayment] = useState(false);
+  const [paymentAmounts, setPaymentAmounts] = useState<
+    Record<PaymentMethod, string>
+  >(emptyPaymentAmounts);
   const [cashReceived, setCashReceived] = useState("");
   const [reference, setReference] = useState(() =>
     createClientRequestId()
@@ -186,15 +204,36 @@ export default function CashRegisterPOS({
     (sum, product) => sum + product.price * cart[product.id],
     0
   );
+  const selectedPayments = splitPayment
+    ? paymentOptions.flatMap((method) => {
+        const amount = Number(
+          paymentAmounts[method.id].replace(",", ".")
+        );
+
+        return Number.isFinite(amount) && amount > 0
+          ? [{ method: method.id, amount }]
+          : [];
+      })
+    : [{ method: paymentMethod, amount: total }];
+  const paymentTotal = selectedPayments.reduce(
+    (sum, payment) => sum + payment.amount,
+    0
+  );
+  const cashAmount =
+    selectedPayments.find((payment) => payment.method === "cash")
+      ?.amount ?? 0;
   const parsedCashReceived = Number(cashReceived.replace(",", "."));
   const change =
-    paymentMethod === "cash" && Number.isFinite(parsedCashReceived)
-      ? Math.max(parsedCashReceived - total, 0)
+    cashAmount > 0 && Number.isFinite(parsedCashReceived)
+      ? Math.max(parsedCashReceived - cashAmount, 0)
       : 0;
   const paymentValid =
     total > 0 &&
-    (paymentMethod !== "cash" ||
-      (Number.isFinite(parsedCashReceived) && parsedCashReceived >= total));
+    selectedPayments.length > 0 &&
+    Math.abs(paymentTotal - total) < 0.005 &&
+    (cashAmount === 0 ||
+      (Number.isFinite(parsedCashReceived) &&
+        parsedCashReceived >= cashAmount));
 
   function changeQuantity(productId: string, delta: number) {
     setCart((current) => {
@@ -227,12 +266,12 @@ export default function CashRegisterPOS({
           productId: product.id,
           quantity: cart[product.id],
         })),
-        payment: {
-          method: paymentMethod,
-          amount: Number(total.toFixed(2)),
+        payments: selectedPayments.map((payment) => ({
+          method: payment.method,
+          amount: Number(payment.amount.toFixed(2)),
           tenderedAmount:
-            paymentMethod === "cash" ? parsedCashReceived : null,
-        },
+            payment.method === "cash" ? parsedCashReceived : null,
+        })),
       });
 
       if (!result.success) {
@@ -245,6 +284,8 @@ export default function CashRegisterPOS({
       setCustomerName("");
       setNotes("");
       setPaymentMethod("pix");
+      setSplitPayment(false);
+      setPaymentAmounts(emptyPaymentAmounts);
       setCashReceived("");
       setReference(createClientRequestId());
       router.refresh();
@@ -463,49 +504,114 @@ export default function CashRegisterPOS({
             </label>
 
             <div className="mt-5">
-              <p className="text-xs font-bold text-[#49352C]">Pagamento</p>
-              <div className="mt-2 grid grid-cols-2 gap-2">
-                {(
-                  [
-                    { id: "cash", label: "Dinheiro", icon: Banknote },
-                    { id: "pix", label: "Pix", icon: QrCode },
-                    { id: "debit_card", label: "Débito", icon: CreditCard },
-                    { id: "credit_card", label: "Crédito", icon: CreditCard },
-                  ] as const
-                ).map((method) => {
-                  const Icon = method.icon;
-                  const active = paymentMethod === method.id;
-
-                  return (
-                    <button
-                      key={method.id}
-                      type="button"
-                      onClick={() => {
-                        setPaymentMethod(method.id);
-                        setCashReceived(method.id === "cash" ? total.toFixed(2) : "");
-                      }}
-                      className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-xs font-bold ${
-                        active
-                          ? "border-[#8B0000] bg-[#8B0000] text-white"
-                          : "border-[#DDD3CB] bg-white text-[#49352C]"
-                      }`}
-                    >
-                      <Icon size={16} />
-                      {method.label}
-                    </button>
-                  );
-                })}
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs font-bold text-[#49352C]">Pagamento</p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !splitPayment;
+                    setSplitPayment(next);
+                    setPaymentAmounts(
+                      next
+                        ? {
+                            ...emptyPaymentAmounts,
+                            pix: total > 0 ? total.toFixed(2) : "",
+                          }
+                        : emptyPaymentAmounts
+                    );
+                    setPaymentMethod("pix");
+                    setCashReceived("");
+                  }}
+                  className="text-xs font-bold text-[#8B0000]"
+                >
+                  {splitPayment ? "Usar uma forma" : "Dividir pagamento"}
+                </button>
               </div>
+
+              {!splitPayment ? (
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                  {paymentOptions.map((method) => {
+                    const Icon = method.icon;
+                    const active = paymentMethod === method.id;
+
+                    return (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => {
+                          setPaymentMethod(method.id);
+                          setCashReceived(
+                            method.id === "cash" ? total.toFixed(2) : ""
+                          );
+                        }}
+                        className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-xs font-bold ${
+                          active
+                            ? "border-[#8B0000] bg-[#8B0000] text-white"
+                            : "border-[#DDD3CB] bg-white text-[#49352C]"
+                        }`}
+                      >
+                        <Icon size={16} />
+                        {method.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="mt-3 grid gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-3 sm:grid-cols-2">
+                  {paymentOptions.map((method) => (
+                    <label key={method.id}>
+                      <span className="text-[11px] font-bold text-[#49352C]">
+                        {method.label}
+                      </span>
+                      <div className="mt-1 flex h-10 items-center rounded-xl border border-[#DDD3CB] px-3 focus-within:border-[#8B0000]">
+                        <span className="mr-2 text-xs font-bold text-[#756A66]">
+                          R$
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={paymentAmounts[method.id]}
+                          onChange={(event) =>
+                            setPaymentAmounts((current) => ({
+                              ...current,
+                              [method.id]: event.target.value,
+                            }))
+                          }
+                          className="min-w-0 flex-1 bg-transparent text-sm outline-none"
+                        />
+                      </div>
+                    </label>
+                  ))}
+
+                  <p
+                    className={`text-xs font-semibold sm:col-span-2 ${
+                      Math.abs(paymentTotal - total) < 0.005
+                        ? "text-emerald-700"
+                        : "text-amber-700"
+                    }`}
+                  >
+                    Informado: {formatCurrency(paymentTotal)} ·{" "}
+                    {paymentTotal < total
+                      ? `Falta ${formatCurrency(total - paymentTotal)}`
+                      : paymentTotal > total
+                        ? `Excedeu ${formatCurrency(paymentTotal - total)}`
+                        : "Total conferido"}
+                  </p>
+                </div>
+              )}
             </div>
 
-            {paymentMethod === "cash" && (
+            {cashAmount > 0 && (
               <label className="mt-4 block">
-                <span className="text-xs font-bold text-[#49352C]">Valor recebido</span>
+                <span className="text-xs font-bold text-[#49352C]">
+                  Valor recebido em dinheiro
+                </span>
                 <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] bg-white px-3 focus-within:border-[#8B0000]">
                   <span className="mr-2 text-xs font-bold text-[#756A66]">R$</span>
                   <input
                     type="number"
-                    min={total}
+                    min={cashAmount}
                     step="0.01"
                     value={cashReceived}
                     onChange={(event) => setCashReceived(event.target.value)}

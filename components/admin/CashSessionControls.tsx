@@ -15,6 +15,7 @@ import {
   History,
   Loader2,
   LockKeyhole,
+  PackageX,
   ReceiptText,
   Scale,
 } from "lucide-react";
@@ -22,7 +23,9 @@ import {
 import {
   closeCashSession,
   createCashMovement,
+  createProductLoss,
   type CashMovementType,
+  type ProductLossReason,
 } from "@/app/admin/(dashboard)/caixa/actions";
 import { createClientRequestId } from "@/lib/client-request-id";
 
@@ -42,6 +45,20 @@ type SessionSummary = {
   withdrawals: number;
   expenses: number;
   expectedCash: number;
+};
+
+type LossProduct = {
+  id: string;
+  name: string;
+};
+
+type ProductLoss = {
+  id: string;
+  productName: string;
+  quantity: number;
+  reason: string;
+  estimatedValue: number;
+  createdAt: string;
 };
 
 const movementOptions = [
@@ -74,6 +91,14 @@ const movementLabels: Record<CashMovementType, string> = {
   expense: "Despesa",
 };
 
+const lossReasonLabels: Record<ProductLossReason, string> = {
+  expired: "Vencimento",
+  damaged: "Danificado",
+  production: "Erro de produção",
+  internal: "Consumo interno",
+  other: "Outro",
+};
+
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -91,9 +116,13 @@ function formatTime(value: string) {
 export default function CashSessionControls({
   session,
   movements,
+  products,
+  losses,
 }: {
   session: SessionSummary;
   movements: Movement[];
+  products: LossProduct[];
+  losses: ProductLoss[];
 }) {
   const router = useRouter();
   const movementFormRef = useRef<HTMLFormElement>(null);
@@ -109,6 +138,13 @@ export default function CashSessionControls({
   const [closingConfirmed, setClosingConfirmed] = useState(false);
   const [closingError, setClosingError] = useState("");
   const [closingPending, startClosingTransition] = useTransition();
+  const lossFormRef = useRef<HTMLFormElement>(null);
+  const [lossReference, setLossReference] = useState(() =>
+    createClientRequestId()
+  );
+  const [lossError, setLossError] = useState("");
+  const [lossSuccess, setLossSuccess] = useState("");
+  const [lossPending, startLossTransition] = useTransition();
 
   function handleMovement(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -153,6 +189,29 @@ export default function CashSessionControls({
         return;
       }
 
+      router.refresh();
+    });
+  }
+
+  function handleLoss(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    setLossError("");
+    setLossSuccess("");
+
+    startLossTransition(async () => {
+      const result = await createProductLoss(formData);
+
+      if (!result.success) {
+        setLossError(
+          result.error ?? "Não foi possível registrar a perda."
+        );
+        return;
+      }
+
+      setLossSuccess("Perda registrada com sucesso.");
+      lossFormRef.current?.reset();
+      setLossReference(createClientRequestId());
       router.refresh();
     });
   }
@@ -376,6 +435,140 @@ export default function CashSessionControls({
           ) : (
             <p className="p-8 text-center text-sm text-[#756A66]">
               Nenhuma movimentação registrada.
+            </p>
+          )}
+        </article>
+      </div>
+
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.7fr)]">
+        <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
+            <PackageX size={20} className="text-[#8B0000]" />
+            <div>
+              <h2 className="font-bold text-[#241B19]">Registrar perda</h2>
+              <p className="text-xs text-[#756A66]">
+                Produtos vencidos, danificados ou usados internamente.
+              </p>
+            </div>
+          </div>
+
+          <form ref={lossFormRef} onSubmit={handleLoss} className="p-5">
+            <input type="hidden" name="cash_session_id" value={session.id} />
+            <input type="hidden" name="loss_reference" value={lossReference} />
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label>
+                <span className="text-xs font-bold text-[#49352C]">Produto</span>
+                <select
+                  name="product_id"
+                  required
+                  disabled={lossPending}
+                  defaultValue=""
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                >
+                  <option value="" disabled>Selecione o produto</option>
+                  {products.map((product) => (
+                    <option key={product.id} value={product.id}>
+                      {product.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span className="text-xs font-bold text-[#49352C]">Quantidade</span>
+                <input
+                  name="quantity"
+                  type="number"
+                  min="1"
+                  max="10000"
+                  step="1"
+                  required
+                  disabled={lossPending}
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-[#8B0000]"
+                />
+              </label>
+
+              <label>
+                <span className="text-xs font-bold text-[#49352C]">Motivo</span>
+                <select
+                  name="reason"
+                  required
+                  disabled={lossPending}
+                  defaultValue="expired"
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                >
+                  {Object.entries(lossReasonLabels).map(([value, label]) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label>
+                <span className="text-xs font-bold text-[#49352C]">Observação</span>
+                <input
+                  name="notes"
+                  type="text"
+                  maxLength={300}
+                  disabled={lossPending}
+                  placeholder="Opcional"
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-[#8B0000]"
+                />
+              </label>
+            </div>
+
+            {lossError && (
+              <p className="mt-4 rounded-xl bg-red-50 p-3 text-xs font-semibold text-red-700">
+                {lossError}
+              </p>
+            )}
+            {lossSuccess && (
+              <p className="mt-4 rounded-xl bg-emerald-50 p-3 text-xs font-semibold text-emerald-700">
+                {lossSuccess}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={lossPending || products.length === 0}
+              className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white disabled:opacity-50"
+            >
+              {lossPending && <Loader2 size={16} className="animate-spin" />}
+              Registrar perda
+            </button>
+          </form>
+        </article>
+
+        <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
+          <div className="border-b border-[#EEE6DF] p-5">
+            <h2 className="font-bold text-[#241B19]">Perdas deste caixa</h2>
+            <p className="mt-1 text-xs text-[#756A66]">
+              {losses.reduce((sum, loss) => sum + loss.quantity, 0)} unidade(s)
+            </p>
+          </div>
+
+          {losses.length > 0 ? (
+            <div className="max-h-[360px] divide-y divide-[#EEE6DF] overflow-y-auto">
+              {losses.map((loss) => (
+                <div key={loss.id} className="flex items-start justify-between gap-4 p-4">
+                  <div>
+                    <p className="text-sm font-bold text-[#241B19]">
+                      {loss.quantity}x {loss.productName}
+                    </p>
+                    <p className="mt-1 text-xs text-[#756A66]">
+                      {lossReasonLabels[loss.reason as ProductLossReason] ?? loss.reason}
+                      {" · "}{formatTime(loss.createdAt)}
+                    </p>
+                  </div>
+                  <p className="whitespace-nowrap text-xs font-bold text-red-700">
+                    {formatCurrency(loss.estimatedValue)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="p-8 text-center text-sm text-[#756A66]">
+              Nenhuma perda registrada.
             </p>
           )}
         </article>

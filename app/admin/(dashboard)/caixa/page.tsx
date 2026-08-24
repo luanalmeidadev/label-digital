@@ -2,6 +2,8 @@ import {
   Calculator,
   CheckCircle2,
   CircleDollarSign,
+  History,
+  Printer,
   ReceiptText,
 } from "lucide-react";
 
@@ -30,7 +32,7 @@ function formatCurrency(value: number) {
 
 export default async function CaixaPage() {
   const access = await requireAdminPagePermission("cashier");
-  const [sessionResult, productsResult, salesResult, lastClosedResult] =
+  const [sessionResult, productsResult, salesResult, closedSessionsResult] =
     await Promise.all([
     access.supabase
       .from("cash_sessions")
@@ -39,9 +41,8 @@ export default async function CaixaPage() {
       .maybeSingle(),
     access.supabase
       .from("products")
-      .select("id, name, price, sort_order, categories(name, sort_order)")
+      .select("id, name, price, available, sort_order, categories(name, sort_order)")
       .eq("active", true)
-      .eq("available", true)
       .order("sort_order"),
     access.supabase
       .from("orders")
@@ -56,8 +57,7 @@ export default async function CaixaPage() {
       )
       .eq("status", "closed")
       .order("closed_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
+      .limit(20),
   ]);
 
   if (sessionResult.error) {
@@ -75,12 +75,12 @@ export default async function CaixaPage() {
     throw new Error("Não foi possível carregar as vendas do caixa.");
   }
 
-  if (lastClosedResult.error) {
+  if (closedSessionsResult.error) {
     console.error(
-      "Erro ao carregar o último fechamento:",
-      lastClosedResult.error
+      "Erro ao carregar os fechamentos:",
+      closedSessionsResult.error
     );
-    throw new Error("Não foi possível carregar o último fechamento.");
+    throw new Error("Não foi possível carregar os fechamentos.");
   }
 
   const openSession = sessionResult.data;
@@ -105,6 +105,7 @@ export default async function CaixaPage() {
       id: product.id,
       name: product.name,
       price: Number(product.price),
+      available: product.available,
       categoryName: category?.name ?? "Sem categoria",
     };
   });
@@ -124,25 +125,41 @@ export default async function CaixaPage() {
   let supplies = 0;
   let withdrawals = 0;
   let expenses = 0;
+  let losses: Array<{
+    id: string;
+    productName: string;
+    quantity: number;
+    reason: string;
+    estimatedValue: number;
+    createdAt: string;
+  }> = [];
 
   if (openSession) {
-    const [paymentsResult, movementsResult] = await Promise.all([
+    const [paymentsResult, movementsResult, lossesResult] = await Promise.all([
       access.supabase
         .from("order_payments")
-        .select("amount, method")
-        .eq("cash_session_id", openSession.id),
+        .select("amount, method, orders!inner(status)")
+        .eq("cash_session_id", openSession.id)
+        .eq("orders.status", "completed"),
       access.supabase
         .from("cash_movements")
         .select("id, movement_type, amount, description, created_at")
         .eq("cash_session_id", openSession.id)
         .order("created_at", { ascending: false })
         .limit(30),
+      access.supabase
+        .from("product_losses")
+        .select("id, product_name, quantity, reason, estimated_value, created_at")
+        .eq("cash_session_id", openSession.id)
+        .order("created_at", { ascending: false })
+        .limit(30),
     ]);
 
-    if (paymentsResult.error || movementsResult.error) {
+    if (paymentsResult.error || movementsResult.error || lossesResult.error) {
       console.error("Erro ao calcular o caixa:", {
         payments: paymentsResult.error,
         movements: movementsResult.error,
+        losses: lossesResult.error,
       });
       throw new Error("Não foi possível calcular os valores do caixa.");
     }
@@ -180,6 +197,15 @@ export default async function CaixaPage() {
         description: movement.description,
         createdAt: movement.created_at,
       }));
+
+    losses = (lossesResult.data ?? []).map((loss) => ({
+      id: loss.id,
+      productName: loss.product_name,
+      quantity: Number(loss.quantity),
+      reason: loss.reason,
+      estimatedValue: Number(loss.estimated_value),
+      createdAt: loss.created_at,
+    }));
   }
 
   const expectedCash = openSession
@@ -191,7 +217,8 @@ export default async function CaixaPage() {
         expenses,
       })
     : 0;
-  const lastClosed = lastClosedResult.data;
+  const closedSessions = closedSessionsResult.data ?? [];
+  const lastClosed = closedSessions[0];
 
   return (
     <main className="p-5 sm:p-8">
@@ -271,7 +298,7 @@ export default async function CaixaPage() {
           </section>
         )}
 
-        {products.length === 0 && openSession ? (
+        {products.filter((product) => product.available).length === 0 && openSession ? (
           <section className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-800">
             <div className="flex items-start gap-3">
               <Calculator size={22} className="mt-0.5 shrink-0" />
@@ -295,7 +322,7 @@ export default async function CaixaPage() {
                   }
                 : null
             }
-            products={products}
+            products={products.filter((product) => product.available)}
           />
         )}
 
@@ -311,8 +338,74 @@ export default async function CaixaPage() {
               expectedCash,
             }}
             movements={movements}
+            products={products.map((product) => ({
+              id: product.id,
+              name: product.name,
+            }))}
+            losses={losses}
           />
         )}
+
+        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
+            <History size={20} className="text-[#8B0000]" />
+            <div>
+              <h2 className="font-bold text-[#241B19]">Histórico de caixas</h2>
+              <p className="text-xs text-[#756A66]">
+                Últimos {closedSessions.length} fechamento(s)
+              </p>
+            </div>
+          </div>
+
+          {closedSessions.length > 0 ? (
+            <div className="divide-y divide-[#EEE6DF]">
+              {closedSessions.map((session) => (
+                <article
+                  key={session.id}
+                  className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <p className="font-bold text-[#241B19]">
+                      Caixa de{" "}
+                      {new Intl.DateTimeFormat("pt-BR", {
+                        dateStyle: "short",
+                        timeStyle: "short",
+                      }).format(new Date(session.opened_at))}
+                    </p>
+                    <p className="mt-1 text-xs text-[#756A66]">
+                      Esperado {formatCurrency(Number(session.expected_cash))}
+                      {" · "}Contado{" "}
+                      {formatCurrency(Number(session.closing_cash_counted))}
+                    </p>
+                    <p
+                      className={`mt-1 text-xs font-bold ${
+                        Number(session.difference) === 0
+                          ? "text-emerald-700"
+                          : "text-amber-700"
+                      }`}
+                    >
+                      Diferença {formatCurrency(Number(session.difference))}
+                    </p>
+                  </div>
+
+                  <a
+                    href={`/admin/caixa/${session.id}/imprimir?session=started`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000]"
+                  >
+                    <Printer size={16} />
+                    Imprimir fechamento
+                  </a>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="p-8 text-center text-sm text-[#756A66]">
+              Nenhum caixa fechado ainda.
+            </p>
+          )}
+        </section>
       </div>
     </main>
   );
