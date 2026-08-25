@@ -13,6 +13,7 @@ import OrderDetailsDialog from "@/components/admin/OrderDetailsDialog";
 import OrdersPanelTabs from "@/components/admin/OrdersPanelTabs";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getPublicStoreSettings } from "@/lib/public-store-settings";
+import { createOrderTrackingToken } from "@/lib/order-tracking-token";
 import { cancelCompletedOrder } from "@/app/admin/(dashboard)/caixa/actions";
 
 import { updateOrderStatus } from "./actions";
@@ -375,6 +376,7 @@ export default async function PedidosPage() {
                       <div className="flex flex-wrap items-center gap-2">
                         <OrderDetailsDialog
                           pickupAddress={storeSettings.pickupAddress}
+                          trackingToken={createOrderTrackingToken(order.id)}
                           order={{
                             id: order.id,
 

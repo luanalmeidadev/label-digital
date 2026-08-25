@@ -40,6 +40,7 @@ type OrderItem = {
 
 type OrderDetailsDialogProps = {
   pickupAddress: string;
+  trackingToken: string;
   order: {
     id: string;
     order_number: number;
@@ -172,6 +173,7 @@ function getNextStatus(
 
 export default function OrderDetailsDialog({
   pickupAddress,
+  trackingToken,
   order,
   updateStatusAction,
   cancelSaleAction,
@@ -202,6 +204,7 @@ export default function OrderDetailsDialog({
     isNotifiableOrderStatus(order.status)
       ? {
           orderId: order.id,
+          trackingToken,
           orderNumber: order.order_number,
           phone: order.customer.phone,
           status: order.status,

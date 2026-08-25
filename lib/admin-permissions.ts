@@ -62,12 +62,12 @@ export function getAdminRole(
 ): AdminRole {
   const role = appMetadata?.label_role;
 
-  if (role === "attendant") {
-    return "attendant";
+  if (role === "admin") {
+    return "admin";
   }
 
-  // Contas anteriores ao controle de acesso são administradoras.
-  return "admin";
+  // Fail closed: perfis sem papel explicito nunca viram administradores.
+  return "attendant";
 }
 
 export function normalizeAdminPermissions(

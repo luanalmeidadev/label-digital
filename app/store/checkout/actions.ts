@@ -1,6 +1,7 @@
 "use server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { createOrderTrackingToken } from "@/lib/order-tracking-token";
 import { getStoreOpenStatus } from "@/lib/store-open-status";
 import {
   isPaymentMethod,
@@ -12,6 +13,7 @@ import {
   completeIdempotentRequest,
   createActionFingerprint,
   enforcePublicOrderRateLimit,
+  getPublicRequestIp,
   inspectIdempotentRequest,
   releaseIdempotentRequest,
   validateIdempotencyKey,
@@ -63,6 +65,7 @@ type CreateOrderResult =
   | {
       success: true;
       orderId: string;
+      trackingToken: string;
       orderNumber: number;
       total: number;
       deliveryFee: number;
@@ -91,6 +94,62 @@ function normalizeCep(value: string) {
   return value.replace(/\D/g, "");
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isCheckoutAddress(value: unknown): value is CheckoutAddress {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  return (
+    typeof value.zipCode === "string" &&
+    typeof value.street === "string" &&
+    typeof value.number === "string" &&
+    typeof value.neighborhood === "string" &&
+    typeof value.city === "string" &&
+    (value.complement === undefined || typeof value.complement === "string") &&
+    (value.reference === undefined || typeof value.reference === "string") &&
+    (value.label === undefined || typeof value.label === "string") &&
+    (value.isDefault === undefined || typeof value.isDefault === "boolean")
+  );
+}
+
+function isCreateOrderInput(value: unknown): value is CreateOrderInput {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const cashChangeFor = value.cashChangeFor;
+  const address = value.address;
+
+  return (
+    typeof value.idempotencyKey === "string" &&
+    typeof value.turnstileToken === "string" &&
+    typeof value.firstName === "string" &&
+    typeof value.lastName === "string" &&
+    typeof value.phone === "string" &&
+    (value.orderType === "pickup" || value.orderType === "delivery") &&
+    isPaymentMethod(value.paymentMethod) &&
+    (cashChangeFor === undefined ||
+      cashChangeFor === null ||
+      (typeof cashChangeFor === "number" && Number.isFinite(cashChangeFor))) &&
+    (value.notes === undefined || typeof value.notes === "string") &&
+    (address === undefined || isCheckoutAddress(address)) &&
+    Array.isArray(value.items) &&
+    value.items.length > 0 &&
+    value.items.length <= 50 &&
+    value.items.every(
+      (item) =>
+        isRecord(item) &&
+        typeof item.productId === "string" &&
+        typeof item.quantity === "number" &&
+        Number.isFinite(item.quantity)
+    )
+  );
+}
+
 /*
  * =========================================
  * CRIAR PEDIDO
@@ -98,8 +157,16 @@ function normalizeCep(value: string) {
  */
 
 export async function createOrder(
-  input: CreateOrderInput
+  rawInput: unknown
 ): Promise<CreateOrderResult> {
+  if (!isCreateOrderInput(rawInput)) {
+    return {
+      success: false,
+      error: "Revise os dados do pedido e tente novamente.",
+    };
+  }
+
+  const input = rawInput;
   const idempotencyKey = String(
     input?.idempotencyKey ?? ""
   );
@@ -107,6 +174,43 @@ export async function createOrder(
   let requestFingerprint = "";
 
   try {
+    const protectedPhone = normalizePhone(input.phone);
+
+    if (protectedPhone.length < 10 || protectedPhone.length > 13) {
+      return {
+        success: false,
+        error: "Informe um WhatsApp v\u00e1lido.",
+      };
+    }
+
+    if (!validateIdempotencyKey(idempotencyKey)) {
+      return {
+        success: false,
+        error:
+          "N\u00e3o foi poss\u00edvel identificar esta solicita\u00e7\u00e3o. Atualize a p\u00e1gina e tente novamente.",
+      };
+    }
+
+    const requestIp = await getPublicRequestIp();
+    const turnstile = await verifyTurnstileToken(
+      input.turnstileToken,
+      "daily_order",
+      requestIp
+    );
+
+    if (!turnstile.success) {
+      return turnstile;
+    }
+
+    const rateLimit = await enforcePublicOrderRateLimit(
+      protectedPhone,
+      requestIp
+    );
+
+    if (!rateLimit.success) {
+      return rateLimit;
+    }
+
     const supabase =
       createSupabaseAdminClient();
 
@@ -533,26 +637,6 @@ export async function createOrder(
         error:
           "Esta solicitação não corresponde ao pedido atual. Atualize a página e tente novamente.",
       };
-    }
-
-    const rateLimit =
-      await enforcePublicOrderRateLimit(phone);
-
-    if (!rateLimit.success) {
-      return rateLimit;
-    }
-
-    const turnstile =
-      await verifyTurnstileToken(
-        String(
-          input.turnstileToken ?? ""
-        ),
-        "daily_order",
-        rateLimit.ip
-      );
-
-    if (!turnstile.success) {
-      return turnstile;
     }
 
     /*
@@ -1146,6 +1230,7 @@ export async function createOrder(
     const result: CreateOrderResult = {
       success: true,
       orderId: order.id,
+      trackingToken: createOrderTrackingToken(order.id),
 
       orderNumber:
         Number(

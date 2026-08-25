@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   completeIdempotentRequest: vi.fn(),
   createActionFingerprint: vi.fn(),
   enforcePublicOrderRateLimit: vi.fn(),
+  getPublicRequestIp: vi.fn(),
   inspectIdempotentRequest: vi.fn(),
   releaseIdempotentRequest: vi.fn(),
   validateIdempotencyKey: vi.fn(),
@@ -23,12 +24,17 @@ vi.mock("@/lib/supabase/admin", () => ({
     mocks.createSupabaseAdminClient,
 }));
 
+vi.mock("@/lib/order-tracking-token", () => ({
+  createOrderTrackingToken: vi.fn(() => "tracking-token"),
+}));
+
 vi.mock("@/lib/public-action-security", () => ({
   beginIdempotentRequest: mocks.beginIdempotentRequest,
   completeIdempotentRequest: mocks.completeIdempotentRequest,
   createActionFingerprint: mocks.createActionFingerprint,
   enforcePublicOrderRateLimit:
     mocks.enforcePublicOrderRateLimit,
+  getPublicRequestIp: mocks.getPublicRequestIp,
   inspectIdempotentRequest: mocks.inspectIdempotentRequest,
   releaseIdempotentRequest: mocks.releaseIdempotentRequest,
   validateIdempotencyKey: mocks.validateIdempotencyKey,
@@ -68,6 +74,37 @@ describe("criação de pedido diário", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-08-18T12:00:00.000Z"));
     vi.clearAllMocks();
+    mocks.getPublicRequestIp.mockResolvedValue("127.0.0.1");
+    mocks.verifyTurnstileToken.mockResolvedValue({ success: true });
+    mocks.enforcePublicOrderRateLimit.mockResolvedValue({
+      success: true,
+      ip: "127.0.0.1",
+    });
+    mocks.validateIdempotencyKey.mockReturnValue(true);
+  });
+
+  it("recusa payload malformado antes de acessar servicos externos", async () => {
+    const result = await createOrder(null);
+
+    expect(result).toEqual({
+      success: false,
+      error: "Revise os dados do pedido e tente novamente.",
+    });
+    expect(mocks.getPublicRequestIp).not.toHaveBeenCalled();
+    expect(mocks.createSupabaseAdminClient).not.toHaveBeenCalled();
+  });
+
+  it("valida o desafio de seguranca antes de consultar o banco", async () => {
+    mocks.verifyTurnstileToken.mockResolvedValue({
+      success: false,
+      error: "Desafio recusado.",
+    });
+
+    const result = await createOrder(baseInput);
+
+    expect(result.success).toBe(false);
+    expect(mocks.createSupabaseAdminClient).not.toHaveBeenCalled();
+    expect(mocks.enforcePublicOrderRateLimit).not.toHaveBeenCalled();
   });
 
   it("mantém o carrinho e bloqueia o envio com a loja fechada", async () => {

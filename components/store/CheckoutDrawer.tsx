@@ -713,7 +713,7 @@ export default function CheckoutDrawer({
 
           "\u{1F50E} *ACOMPANHE SEU PEDIDO*",
 
-          `${window.location.origin}/pedido/${result.orderId}`,
+          `${window.location.origin}/pedido/${result.orderId}?token=${encodeURIComponent(result.trackingToken)}`,
 
           "",
 

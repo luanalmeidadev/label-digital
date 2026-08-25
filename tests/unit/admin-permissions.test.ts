@@ -10,8 +10,8 @@ import {
 } from "@/lib/admin-permissions";
 
 describe("perfis administrativos", () => {
-  it("mantém contas antigas como administradoras", () => {
-    expect(getAdminRole(undefined)).toBe("admin");
+  it("nega privilégios administrativos quando o papel esté ausente", () => {
+    expect(getAdminRole(undefined)).toBe("attendant");
     expect(getAdminPermissions("admin", undefined)).toEqual(
       allAdminPermissions
     );

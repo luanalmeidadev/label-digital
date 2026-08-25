@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { recordAdminAudit } from "@/lib/admin-audit";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { validateImageUpload } from "@/lib/image-upload-validation";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   getImageDisplaySettings,
   removeDailyProductZoom,
@@ -59,13 +60,7 @@ function validateImage(image: File) {
   }
 }
 
-function createImagePath(image: File) {
-  const extension =
-    image.name
-      .split(".")
-      .pop()
-      ?.toLowerCase() ?? "jpg";
-
+function createImagePath(extension: string) {
   return `products/${crypto.randomUUID()}.${extension}`;
 }
 
@@ -98,19 +93,18 @@ function extractStoragePath(
 }
 
 async function uploadProductImage(
-  supabase: Awaited<
-    ReturnType<typeof createSupabaseServerClient>
-  >,
   image: File
 ) {
   validateImage(image);
+  const validatedImage = await validateImageUpload(image);
+  const supabase = createSupabaseAdminClient();
 
-  const filePath = createImagePath(image);
+  const filePath = createImagePath(validatedImage.extension);
 
   const { error } = await supabase.storage
     .from(PRODUCT_BUCKET)
     .upload(filePath, image, {
-      contentType: image.type,
+      contentType: validatedImage.contentType,
       upsert: false,
     });
 
@@ -133,11 +127,9 @@ async function uploadProductImage(
 }
 
 async function removeProductImage(
-  supabase: Awaited<
-    ReturnType<typeof createSupabaseServerClient>
-  >,
   imageUrl: string | null
 ) {
+  const supabase = createSupabaseAdminClient();
   const filePath =
     extractStoragePath(imageUrl);
 
@@ -269,7 +261,6 @@ export async function createProduct(
   ) {
     const upload =
       await uploadProductImage(
-        supabase,
         image
       );
 
@@ -312,7 +303,7 @@ export async function createProduct(
 
   if (error || !createdProduct) {
     if (uploadedPath) {
-      await supabase.storage
+      await createSupabaseAdminClient().storage
         .from(PRODUCT_BUCKET)
         .remove([uploadedPath]);
     }
@@ -335,7 +326,7 @@ export async function createProduct(
         .eq("id", createdProduct.id);
 
       if (uploadedPath) {
-        await supabase.storage
+        await createSupabaseAdminClient().storage
           .from(PRODUCT_BUCKET)
           .remove([uploadedPath]);
       }
@@ -492,7 +483,6 @@ export async function updateProduct(
   ) {
     const upload =
       await uploadProductImage(
-        supabase,
         newImage
       );
 
@@ -529,7 +519,7 @@ export async function updateProduct(
    */
   if (error) {
     if (newlyUploadedPath) {
-      await supabase.storage
+      await createSupabaseAdminClient().storage
         .from(PRODUCT_BUCKET)
         .remove([
           newlyUploadedPath,
@@ -553,7 +543,6 @@ export async function updateProduct(
     oldImageUrl
   ) {
     await removeProductImage(
-      supabase,
       oldImageUrl
     );
   }
@@ -848,7 +837,6 @@ export async function deleteProduct(
    */
   if (imageUrl) {
     await removeProductImage(
-      supabase,
       imageUrl
     );
   }

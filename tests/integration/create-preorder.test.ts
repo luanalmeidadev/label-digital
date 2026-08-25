@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   completeIdempotentRequest: vi.fn(),
   createActionFingerprint: vi.fn(() => "fingerprint"),
   enforcePublicOrderRateLimit: vi.fn(),
+  getPublicRequestIp: vi.fn(),
   inspectIdempotentRequest: vi.fn(),
   releaseIdempotentRequest: vi.fn(),
   validateIdempotencyKey: vi.fn(),
@@ -38,6 +39,7 @@ vi.mock("@/lib/public-action-security", () => ({
   createActionFingerprint: mocks.createActionFingerprint,
   enforcePublicOrderRateLimit:
     mocks.enforcePublicOrderRateLimit,
+  getPublicRequestIp: mocks.getPublicRequestIp,
   inspectIdempotentRequest: mocks.inspectIdempotentRequest,
   releaseIdempotentRequest: mocks.releaseIdempotentRequest,
   validateIdempotencyKey: mocks.validateIdempotencyKey,
@@ -77,6 +79,7 @@ describe("criação de encomenda", () => {
     vi.setSystemTime(new Date("2026-08-17T15:00:00.000Z"));
     vi.clearAllMocks();
     mocks.validateIdempotencyKey.mockReturnValue(true);
+    mocks.getPublicRequestIp.mockResolvedValue("127.0.0.1");
     mocks.inspectIdempotentRequest.mockResolvedValue({
       state: "missing",
     });

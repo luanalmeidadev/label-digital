@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { requireAdminPermission } from "@/lib/admin-auth";
 import { recordAdminAudit } from "@/lib/admin-audit";
+import { validateImageUpload } from "@/lib/image-upload-validation";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   getPreorderCatalogForUpdate,
   savePreorderCatalog,
@@ -98,15 +100,9 @@ function validateImage(image: File) {
 }
 
 function createImagePath(
-  image: File,
+  extension: string,
   folder = "preorders"
 ) {
-  const extension =
-    image.name
-      .split(".")
-      .pop()
-      ?.toLowerCase() ?? "jpg";
-
   return `${folder}/${crypto.randomUUID()}.${extension}`;
 }
 
@@ -212,7 +208,7 @@ export async function updatePreorderProduct(
   formData: FormData
 ): Promise<UpdatePreorderProductResult> {
   const access = await requireAdmin();
-  const { supabase } = access;
+  const storageClient = createSupabaseAdminClient();
 
   const categoryId = String(
     formData.get("category_id") ?? ""
@@ -461,11 +457,12 @@ export async function updatePreorderProduct(
   ) {
     try {
       validateImage(newImage);
-      uploadedImagePath = createImagePath(newImage);
-      const { error } = await supabase.storage
+      const validatedImage = await validateImageUpload(newImage);
+      uploadedImagePath = createImagePath(validatedImage.extension);
+      const { error } = await storageClient.storage
         .from(PRODUCT_IMAGE_BUCKET)
         .upload(uploadedImagePath, newImage, {
-          contentType: newImage.type,
+          contentType: validatedImage.contentType,
           upsert: false,
         });
 
@@ -477,7 +474,7 @@ export async function updatePreorderProduct(
 
       const {
         data: { publicUrl },
-      } = supabase.storage
+      } = storageClient.storage
         .from(PRODUCT_IMAGE_BUCKET)
         .getPublicUrl(uploadedImagePath);
 
@@ -517,7 +514,7 @@ export async function updatePreorderProduct(
     await savePreorderCatalog(catalog);
   } catch (error) {
     if (uploadedImagePath) {
-      await supabase.storage
+      await storageClient.storage
         .from(PRODUCT_IMAGE_BUCKET)
         .remove([uploadedImagePath]);
     }
@@ -536,7 +533,7 @@ export async function updatePreorderProduct(
       extractStoragePath(oldImage);
 
     if (oldImagePath) {
-      const { error } = await supabase.storage
+      const { error } = await storageClient.storage
         .from(PRODUCT_IMAGE_BUCKET)
         .remove([oldImagePath]);
 
@@ -591,7 +588,7 @@ export async function updatePreorderHero(
   formData: FormData
 ): Promise<UpdatePreorderProductResult> {
   const access = await requireAdmin();
-  const { supabase } = access;
+  const storageClient = createSupabaseAdminClient();
   const positionX = Number(
     formData.get("image_position_x") ?? 50
   );
@@ -636,14 +633,15 @@ export async function updatePreorderHero(
   ) {
     try {
       validateImage(newImage);
+      const validatedImage = await validateImageUpload(newImage);
       uploadedImagePath = createImagePath(
-        newImage,
+        validatedImage.extension,
         "preorders/hero"
       );
-      const { error } = await supabase.storage
+      const { error } = await storageClient.storage
         .from(PRODUCT_IMAGE_BUCKET)
         .upload(uploadedImagePath, newImage, {
-          contentType: newImage.type,
+          contentType: validatedImage.contentType,
           upsert: false,
         });
 
@@ -655,7 +653,7 @@ export async function updatePreorderHero(
 
       const {
         data: { publicUrl },
-      } = supabase.storage
+      } = storageClient.storage
         .from(PRODUCT_IMAGE_BUCKET)
         .getPublicUrl(uploadedImagePath);
 
@@ -682,7 +680,7 @@ export async function updatePreorderHero(
     await saveImageDisplaySettings(settings);
   } catch (error) {
     if (uploadedImagePath) {
-      await supabase.storage
+      await storageClient.storage
         .from(PRODUCT_IMAGE_BUCKET)
         .remove([uploadedImagePath]);
     }
@@ -701,7 +699,7 @@ export async function updatePreorderHero(
       extractStoragePath(oldImage);
 
     if (oldImagePath) {
-      const { error } = await supabase.storage
+      const { error } = await storageClient.storage
         .from(PRODUCT_IMAGE_BUCKET)
         .remove([oldImagePath]);
 

@@ -7,6 +7,7 @@ export type NotifiableOrderStatus =
 
 export type OrderStatusNotification = {
   orderId: string;
+  trackingToken: string;
   orderNumber: number;
   phone: string;
   status: NotifiableOrderStatus;

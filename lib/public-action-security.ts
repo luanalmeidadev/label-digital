@@ -91,7 +91,7 @@ function isStorageNotFound(error: {
   );
 }
 
-async function getRequestIp() {
+export async function getPublicRequestIp() {
   const requestHeaders = await headers();
   const forwarded =
     requestHeaders.get(
@@ -326,9 +326,10 @@ async function reserveRateLimitSlot(
 }
 
 export async function enforcePublicOrderRateLimit(
-  phone: string
+  phone: string,
+  requestIp?: string
 ) {
-  const ip = await getRequestIp();
+  const ip = requestIp ?? (await getPublicRequestIp());
   const phoneAllowed =
     await reserveRateLimitSlot(
       "phone",

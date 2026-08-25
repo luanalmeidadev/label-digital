@@ -14,6 +14,7 @@ import {
 import BrandLogo from "@/components/brand/BrandLogo";
 import OrderTrackingRefresh from "@/components/store/OrderTrackingRefresh";
 import { paymentMethodLabels } from "@/lib/payment-method";
+import { verifyOrderTrackingToken } from "@/lib/order-tracking-token";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
@@ -111,12 +112,19 @@ function getStageIndex(
 
 export default async function OrderTrackingPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ token?: string | string[] }>;
 }) {
   const { id } = await params;
+  const { token: rawToken } = await searchParams;
+  const token = Array.isArray(rawToken) ? undefined : rawToken;
 
-  if (!uuidPattern.test(id)) {
+  if (
+    !uuidPattern.test(id) ||
+    !verifyOrderTrackingToken(id, token)
+  ) {
     notFound();
   }
 

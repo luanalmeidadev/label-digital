@@ -8,6 +8,7 @@ import {
 
 import DeliveryDetailsDialog from "@/components/admin/DeliveryDetailsDialog";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createOrderTrackingToken } from "@/lib/order-tracking-token";
 
 import { updateOrderStatus } from "../pedidos/actions";
 
@@ -370,6 +371,7 @@ export default async function EntregasPage() {
                         </div>
 
                         <DeliveryDetailsDialog
+                          trackingToken={createOrderTrackingToken(delivery.id)}
                           delivery={{
                             id: delivery.id,
 

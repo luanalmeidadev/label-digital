@@ -25,6 +25,7 @@ import {
 } from "@/lib/order-status";
 
 type DeliveryDetailsDialogProps = {
+  trackingToken: string;
   delivery: {
     id: string;
     order_number: number;
@@ -105,6 +106,7 @@ function getNextDeliveryAction(status: string) {
 }
 
 export default function DeliveryDetailsDialog({
+  trackingToken,
   delivery,
   updateStatusAction,
 }: DeliveryDetailsDialogProps) {
@@ -127,6 +129,7 @@ export default function DeliveryDetailsDialog({
     )
       ? {
           orderId: delivery.id,
+          trackingToken,
           orderNumber:
             delivery.order_number,
           phone: delivery.customer.phone,

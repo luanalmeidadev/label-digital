@@ -15,6 +15,7 @@ import {
   completeIdempotentRequest,
   createActionFingerprint,
   enforcePublicOrderRateLimit,
+  getPublicRequestIp,
   inspectIdempotentRequest,
   releaseIdempotentRequest,
   validateIdempotencyKey,
@@ -237,24 +238,24 @@ export async function createPreorderRequest(
     };
   }
 
-  const rateLimit =
-    await enforcePublicOrderRateLimit(
-      customerPhone
-    );
-
-  if (!rateLimit.success) {
-    return rateLimit;
-  }
-
-  const turnstile =
-    await verifyTurnstileToken(
-      turnstileToken,
-      "preorder",
-      rateLimit.ip
-    );
+  const requestIp = await getPublicRequestIp();
+  const turnstile = await verifyTurnstileToken(
+    turnstileToken,
+    "preorder",
+    requestIp
+  );
 
   if (!turnstile.success) {
     return turnstile;
+  }
+
+  const rateLimit = await enforcePublicOrderRateLimit(
+    customerPhone,
+    requestIp
+  );
+
+  if (!rateLimit.success) {
+    return rateLimit;
   }
 
   const catalog = await getPreorderCatalog();

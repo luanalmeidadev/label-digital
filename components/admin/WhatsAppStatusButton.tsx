@@ -32,7 +32,7 @@ export default function WhatsAppStatusButton({
       return;
     }
 
-    const trackingUrl = `${window.location.origin}/pedido/${notification.orderId}`;
+    const trackingUrl = `${window.location.origin}/pedido/${notification.orderId}?token=${encodeURIComponent(notification.trackingToken)}`;
 
     const message =
       buildOrderStatusWhatsAppMessage({

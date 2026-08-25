@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { requireAnyAdminPermission } from "@/lib/admin-auth";
 import { hasAdminPermission } from "@/lib/admin-permissions";
+import { createOrderTrackingToken } from "@/lib/order-tracking-token";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import {
   isAllowedOrderStatusTransition,
   isNotifiableOrderStatus,
@@ -167,7 +169,7 @@ export async function updateOrderStatus(
       ? await supabase.rpc("complete_online_order", {
           p_order_id: id,
         })
-      : await supabase
+      : await createSupabaseAdminClient()
           .from("orders")
           .update(updateData)
           .eq("id", id);
@@ -208,6 +210,7 @@ export async function updateOrderStatus(
       customer?.phone
         ? {
             orderId: order.id,
+            trackingToken: createOrderTrackingToken(order.id),
             orderNumber: Number(
               order.order_number
             ),
