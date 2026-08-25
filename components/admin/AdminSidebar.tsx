@@ -248,7 +248,7 @@ export default function AdminSidebar({
           DESKTOP
       ===================================== */}
 
-      <aside className="hidden h-screen w-64 shrink-0 border-r border-white/10 bg-[#8B0000] lg:sticky lg:top-0 lg:block">
+      <aside className="hidden h-screen w-64 shrink-0 border-r border-white/10 bg-[#8B0000] print:hidden lg:sticky lg:top-0 lg:block">
         <div className="flex h-full flex-col px-4 py-6">
           <div className="mb-8 px-3">
             <BrandLogo variant="sidebar" eager />
@@ -277,7 +277,7 @@ export default function AdminSidebar({
           MOBILE - BARRA SUPERIOR
       ===================================== */}
 
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#EEE6DF] bg-[#8B0000] px-4 lg:hidden">
+      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#EEE6DF] bg-[#8B0000] px-4 print:hidden lg:hidden">
         <BrandLogo variant="mobile" eager />
 
         <button

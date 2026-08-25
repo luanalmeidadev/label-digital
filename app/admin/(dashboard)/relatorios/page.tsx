@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {
   BarChart3,
+  CalendarDays,
   CircleDollarSign,
   PackageSearch,
   ReceiptText,
@@ -9,17 +10,23 @@ import {
   Undo2,
 } from "lucide-react";
 
+import ReportsActions from "@/components/admin/ReportsActions";
 import { requireAdminPagePermission } from "@/lib/admin-auth";
+import {
+  buildReportCsv,
+  reportPeriodLabels,
+  resolveReportPeriod,
+} from "@/lib/admin-reporting";
+import {
+  paymentMethodLabels,
+  type PaymentMethod,
+} from "@/lib/payment-method";
 
-type SearchParams = Promise<{ period?: string }>;
-
-const periodLabels = {
-  today: "Hoje",
-  "7d": "7 dias",
-  "30d": "30 dias",
-  month: "Este mês",
-  all: "Todos",
-} as const;
+type SearchParams = Promise<{
+  period?: string;
+  from?: string;
+  to?: string;
+}>;
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -28,36 +35,13 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-function periodStart(period: keyof typeof periodLabels) {
-  const now = new Date();
-
-  if (period === "all") return null;
-
-  if (period === "today") {
-    now.setHours(0, 0, 0, 0);
-    return now;
-  }
-
-  if (period === "month") {
-    return new Date(now.getFullYear(), now.getMonth(), 1);
-  }
-
-  now.setDate(now.getDate() - (period === "7d" ? 6 : 29));
-  now.setHours(0, 0, 0, 0);
-  return now;
-}
-
 export default async function ReportsPage({
   searchParams,
 }: {
   searchParams: SearchParams;
 }) {
   const params = await searchParams;
-  const selectedPeriod =
-    params.period && params.period in periodLabels
-      ? (params.period as keyof typeof periodLabels)
-      : "30d";
-  const start = periodStart(selectedPeriod);
+  const period = resolveReportPeriod(params);
   const access = await requireAdminPagePermission("billing");
 
   let ordersQuery = access.supabase
@@ -77,12 +61,18 @@ export default async function ReportsPage({
     .from("product_losses")
     .select("product_id, product_name, quantity, estimated_value, created_at");
 
-  if (start) {
-    const startIso = start.toISOString();
-    ordersQuery = ordersQuery.gte("completed_at", startIso);
-    itemsQuery = itemsQuery.gte("orders.completed_at", startIso);
-    refundsQuery = refundsQuery.gte("created_at", startIso);
-    lossesQuery = lossesQuery.gte("created_at", startIso);
+  if (period.startIso) {
+    ordersQuery = ordersQuery.gte("completed_at", period.startIso);
+    itemsQuery = itemsQuery.gte("orders.completed_at", period.startIso);
+    refundsQuery = refundsQuery.gte("created_at", period.startIso);
+    lossesQuery = lossesQuery.gte("created_at", period.startIso);
+  }
+
+  if (period.endExclusiveIso) {
+    ordersQuery = ordersQuery.lt("completed_at", period.endExclusiveIso);
+    itemsQuery = itemsQuery.lt("orders.completed_at", period.endExclusiveIso);
+    refundsQuery = refundsQuery.lt("created_at", period.endExclusiveIso);
+    lossesQuery = lossesQuery.lt("created_at", period.endExclusiveIso);
   }
 
   const [ordersResult, itemsResult, refundsResult, lossesResult, productsResult] =
@@ -158,32 +148,119 @@ export default async function ReportsPage({
   const channelTotals = orders.reduce(
     (totals, order) => {
       const channel = order.sales_channel === "cashier" ? "Caixa" : "Site";
-      totals[channel] = (totals[channel] ?? 0) + Number(order.total);
+      const current = totals[channel] ?? { count: 0, total: 0 };
+      current.count += 1;
+      current.total += Number(order.total);
+      totals[channel] = current;
       return totals;
     },
-    {} as Record<string, number>
+    {} as Record<string, { count: number; total: number }>
   );
+  const paymentTotals = orders.reduce(
+    (totals, order) => {
+      const method = order.payment_method as PaymentMethod | "mixed" | null;
+      const label = method
+        ? (paymentMethodLabels[method] ?? "Não informado")
+        : "Não informado";
+      const current = totals[label] ?? { count: 0, total: 0 };
+      current.count += 1;
+      current.total += Number(order.total);
+      totals[label] = current;
+      return totals;
+    },
+    {} as Record<string, { count: number; total: number }>
+  );
+  const lossByProduct = losses.reduce(
+    (totals, loss) => {
+      const key = loss.product_id ?? loss.product_name;
+      const current = totals.get(key) ?? {
+        name: loss.product_name,
+        quantity: 0,
+        total: 0,
+      };
+      current.quantity += Number(loss.quantity);
+      current.total += Number(loss.estimated_value);
+      totals.set(key, current);
+      return totals;
+    },
+    new Map<string, { name: string; quantity: number; total: number }>()
+  );
+  const csv = buildReportCsv([
+    ["RELATÓRIO LA'BEL CONFEITARIA"],
+    ["Período", period.label],
+    [],
+    ["RESUMO"],
+    ["Indicador", "Valor"],
+    ["Vendas concluídas", orders.length],
+    ["Faturamento", formatCurrency(revenue)],
+    ["Ticket médio", formatCurrency(averageTicket)],
+    ["Estornos", formatCurrency(refundTotal)],
+    ["Perdas estimadas", formatCurrency(lossTotal)],
+    [],
+    ["PRODUTOS VENDIDOS"],
+    ["Produto", "Quantidade", "Faturamento"],
+    ...[...productSales.values()]
+      .sort((a, b) => b.quantity - a.quantity)
+      .map((product) => [
+        product.name,
+        product.quantity,
+        formatCurrency(product.revenue),
+      ]),
+    [],
+    ["VENDAS POR ORIGEM"],
+    ["Origem", "Vendas", "Faturamento"],
+    ...Object.entries(channelTotals).map(([label, values]) => [
+      label,
+      values.count,
+      formatCurrency(values.total),
+    ]),
+    [],
+    ["VENDAS POR PAGAMENTO"],
+    ["Forma de pagamento", "Vendas", "Faturamento"],
+    ...Object.entries(paymentTotals).map(([label, values]) => [
+      label,
+      values.count,
+      formatCurrency(values.total),
+    ]),
+    [],
+    ["PERDAS"],
+    ["Produto", "Quantidade", "Valor estimado"],
+    ...[...lossByProduct.values()].map((loss) => [
+      loss.name,
+      loss.quantity,
+      formatCurrency(loss.total),
+    ]),
+  ]);
 
   return (
-    <main className="p-5 sm:p-8">
+    <main className="p-5 print:p-0 sm:p-8">
       <div className="mx-auto max-w-7xl">
-        <header>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
-            Desempenho da loja
-          </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">Relatórios</h1>
-          <p className="mt-2 text-sm text-[#756A66]">
-            Acompanhe vendas, produtos com maior e menor saída, estornos e perdas.
-          </p>
+        <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+              Desempenho da loja
+            </p>
+            <h1 className="mt-2 text-3xl font-bold text-[#241B19]">Relatórios</h1>
+            <p className="mt-2 text-sm text-[#756A66]">
+              Acompanhe vendas, produtos com maior e menor saída, estornos e perdas.
+            </p>
+            <p className="mt-2 hidden text-xs font-bold text-[#756A66] print:block">
+              Período: {period.label}
+            </p>
+          </div>
+          <ReportsActions
+            csv={csv}
+            filename={`relatorio-label-${period.from || "completo"}-${period.to || "atual"}.csv`}
+          />
         </header>
 
-        <nav className="mt-6 flex flex-wrap gap-2" aria-label="Período do relatório">
-          {Object.entries(periodLabels).map(([period, label]) => (
+        <nav className="mt-6 flex flex-wrap gap-2 print:hidden" aria-label="Período do relatório">
+          {Object.entries(reportPeriodLabels).map(([periodKey, label]) => (
             <Link
-              key={period}
-              href={`/admin/relatorios?period=${period}`}
+              key={periodKey}
+              href={`/admin/relatorios?period=${periodKey}`}
               className={`rounded-xl px-4 py-2.5 text-sm font-bold ${
-                selectedPeriod === period
+                period.selectedPeriod === periodKey
                   ? "bg-[#8B0000] text-white"
                   : "border border-[#EEE6DF] bg-white text-[#756A66]"
               }`}
@@ -192,6 +269,48 @@ export default async function ReportsPage({
             </Link>
           ))}
         </nav>
+
+        <form
+          method="get"
+          className="mt-4 grid gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm print:hidden sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end"
+        >
+          <div className="flex items-center gap-2 self-center text-sm font-bold text-[#241B19]">
+            <CalendarDays size={18} className="text-[#8B0000]" />
+            Período personalizado
+          </div>
+          <label className="text-xs font-bold text-[#756A66]">
+            De
+            <input
+              type="date"
+              name="from"
+              required
+              defaultValue={period.from}
+              className="mt-1 h-11 w-full rounded-xl border border-[#D9CDC4] bg-white px-3 text-sm text-[#241B19]"
+            />
+          </label>
+          <label className="text-xs font-bold text-[#756A66]">
+            Até
+            <input
+              type="date"
+              name="to"
+              required
+              defaultValue={period.to}
+              className="mt-1 h-11 w-full rounded-xl border border-[#D9CDC4] bg-white px-3 text-sm text-[#241B19]"
+            />
+          </label>
+          <input type="hidden" name="period" value="custom" />
+          <button
+            type="submit"
+            className="h-11 rounded-xl bg-[#241B19] px-5 text-sm font-bold text-white transition hover:bg-black"
+          >
+            Aplicar
+          </button>
+        </form>
+        {period.validationError && (
+          <p className="mt-2 text-sm font-semibold text-red-700 print:hidden">
+            {period.validationError}
+          </p>
+        )}
 
         <section className="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[
@@ -259,21 +378,56 @@ export default async function ReportsPage({
           </article>
         </section>
 
-        <section className="mt-7 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-            <BarChart3 size={20} className="text-[#8B0000]" />
-            <h2 className="font-bold text-[#241B19]">Vendas por origem</h2>
-          </div>
-          <div className="grid gap-3 p-5 sm:grid-cols-2">
-            {["Site", "Caixa"].map((channel) => (
-              <div key={channel} className="rounded-2xl bg-[#FFF7F5] p-4">
-                <p className="text-xs font-bold uppercase text-[#756A66]">{channel}</p>
-                <p className="mt-2 text-xl font-bold text-[#8B0000]">
-                  {formatCurrency(channelTotals[channel] ?? 0)}
+        <section className="mt-7 grid gap-5 lg:grid-cols-2">
+          <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
+              <BarChart3 size={20} className="text-[#8B0000]" />
+              <h2 className="font-bold text-[#241B19]">Vendas por origem</h2>
+            </div>
+            <div className="grid gap-3 p-5 sm:grid-cols-2">
+              {["Site", "Caixa"].map((channel) => {
+                const values = channelTotals[channel] ?? { count: 0, total: 0 };
+                return (
+                  <div key={channel} className="rounded-2xl bg-[#FFF7F5] p-4">
+                    <p className="text-xs font-bold uppercase text-[#756A66]">{channel}</p>
+                    <p className="mt-2 text-xl font-bold text-[#8B0000]">
+                      {formatCurrency(values.total)}
+                    </p>
+                    <p className="mt-1 text-xs text-[#756A66]">
+                      {values.count} venda(s)
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </article>
+
+          <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
+              <ReceiptText size={20} className="text-[#8B0000]" />
+              <h2 className="font-bold text-[#241B19]">Formas de pagamento</h2>
+            </div>
+            <div className="divide-y divide-[#EEE6DF]">
+              {Object.entries(paymentTotals)
+                .sort(([, a], [, b]) => b.total - a.total)
+                .map(([label, values]) => (
+                  <div key={label} className="flex items-center justify-between gap-4 p-4">
+                    <div>
+                      <p className="text-sm font-bold text-[#241B19]">{label}</p>
+                      <p className="text-xs text-[#756A66]">{values.count} venda(s)</p>
+                    </div>
+                    <p className="text-sm font-bold text-[#8B0000]">
+                      {formatCurrency(values.total)}
+                    </p>
+                  </div>
+                ))}
+              {Object.keys(paymentTotals).length === 0 && (
+                <p className="p-8 text-center text-sm text-[#756A66]">
+                  Sem vendas no período.
                 </p>
-              </div>
-            ))}
-          </div>
+              )}
+            </div>
+          </article>
         </section>
       </div>
     </main>
