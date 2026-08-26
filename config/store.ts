@@ -1,22 +1,26 @@
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
+const installation = getPublicInstallationProfile();
+
 export const storeConfig = {
-  name: "La'Bel Confeitaria",
+  name: installation.identity.name,
 
-  whatsapp: "5548988681096",
+  whatsapp: installation.contact.whatsapp,
 
-  instagram: "@label_confeitaria",
+  instagram: installation.contact.instagram,
 
   address: {
-    street: "Rua Capitão Augusto Vidal",
-    number: "3600",
-    city: "Palhoça",
-    state: "SC",
+    street: installation.address.street,
+    number: installation.address.number,
+    city: installation.address.city,
+    state: installation.address.state,
   },
 
   deliveryCities: ["Palhoça", "São José"],
 
   orderTypes: {
-    pickup: true,
-    delivery: true,
+    pickup: installation.modules.pickup,
+    delivery: installation.modules.delivery,
   },
 
   businessHours: {

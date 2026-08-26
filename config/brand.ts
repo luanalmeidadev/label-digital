@@ -1,28 +1,32 @@
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
+const installation = getPublicInstallationProfile();
+
 export const brand = {
-  name: "La'bel Confeitaria",
-  shortName: "La'bel",
+  name: installation.identity.name,
+  shortName: installation.identity.shortName,
 
   colors: {
-    wine: "#8B0000",
-    cream: "#D2B48C",
+    wine: installation.theme.primary,
+    cream: installation.theme.accent,
 
-    background: "#FFFDF9",
-    surface: "#FFFFFF",
+    background: installation.theme.background,
+    surface: installation.theme.surface,
 
-    text: "#241B19",
-    mutedText: "#756A66",
+    text: installation.theme.text,
+    mutedText: installation.theme.mutedText,
 
-    border: "#EEE6DF",
+    border: installation.theme.border,
   },
 
   assets: {
-    logo: "/brand/logo.svg",
-    logoCream: "/brand/logo-creme.svg",
+    logo: installation.identity.assets.logos.default,
+    logoCream: installation.identity.assets.logos.onPrimary,
 
-    iconWine: "/brand/icon-vermelho.svg",
-    iconCream: "/brand/icon-bege.svg",
+    iconWine: installation.identity.assets.brandIcons.default,
+    iconCream: installation.identity.assets.brandIcons.onPrimary,
 
-    monogramWine: "/brand/monograma-vinho.svg",
-    monogramCream: "/brand/monograma-bege.svg",
+    monogramWine: installation.identity.assets.monograms.default,
+    monogramCream: installation.identity.assets.monograms.onPrimary,
   },
 } as const;

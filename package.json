@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:backup": "vitest run tests/unit/backup-inventory.test.ts",
+    "test:installation": "vitest run tests/unit/installation-profile.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "typecheck": "tsc --noEmit",

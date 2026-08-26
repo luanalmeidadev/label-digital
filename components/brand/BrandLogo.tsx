@@ -1,6 +1,9 @@
 import Image from "next/image";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { cn } from "@/lib/utils";
+
+const installation = getPublicInstallationProfile();
 
 const logoSizes = {
   header:
@@ -24,8 +27,8 @@ export default function BrandLogo({
 }) {
   return (
     <Image
-      src="/brand/logo-creme.svg"
-      alt="La'Bel Confeitaria"
+      src={installation.identity.assets.logos.onPrimary}
+      alt={installation.identity.name}
       width={260}
       height={100}
       loading={eager ? "eager" : "lazy"}
