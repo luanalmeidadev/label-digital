@@ -304,7 +304,7 @@ export default function OrderDetailsDialog({
         render={
           <button
             type="button"
-            className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+            className="rounded-xl border border-brand-border px-4 py-2.5 text-sm font-bold text-brand-primary transition hover:border-brand-secondary"
           />
         }
       >
@@ -350,8 +350,8 @@ export default function OrderDetailsDialog({
         <div className="mt-5 space-y-6">
           {/* CLIENTE / RECEBIMENTO */}
           <section className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-2xl border border-[#EEE6DF] p-4">
-              <div className="flex items-center gap-2 text-[#8B0000]">
+            <div className="rounded-2xl border border-brand-border p-4">
+              <div className="flex items-center gap-2 text-brand-primary">
                 <User size={18} />
 
                 <p className="text-sm font-bold">
@@ -359,7 +359,7 @@ export default function OrderDetailsDialog({
                 </p>
               </div>
 
-              <p className="mt-3 font-bold text-[#241B19]">
+              <p className="mt-3 font-bold text-brand-foreground">
                 {order.customer
                   ? `${order.customer.first_name} ${order.customer.last_name}`
                   : order.cashier_customer_name ||
@@ -367,15 +367,15 @@ export default function OrderDetailsDialog({
               </p>
 
               {order.customer && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-[#756A66]">
+                <div className="mt-2 flex items-center gap-2 text-sm text-brand-muted-foreground">
                   <Phone size={14} />
                   {order.customer.phone}
                 </div>
               )}
             </div>
 
-            <div className="rounded-2xl border border-[#EEE6DF] p-4">
-              <div className="flex items-center gap-2 text-[#8B0000]">
+            <div className="rounded-2xl border border-brand-border p-4">
+              <div className="flex items-center gap-2 text-brand-primary">
                 <MapPin size={18} />
 
                 <p className="text-sm font-bold">
@@ -383,7 +383,7 @@ export default function OrderDetailsDialog({
                 </p>
               </div>
 
-              <p className="mt-3 font-bold text-[#241B19]">
+              <p className="mt-3 font-bold text-brand-foreground">
                 {order.order_type === "delivery"
                   ? "Entrega"
                   : "Retirada na loja"}
@@ -392,7 +392,7 @@ export default function OrderDetailsDialog({
               {order.order_type ===
                 "delivery" &&
                 order.address && (
-                  <p className="mt-2 text-sm leading-6 text-[#756A66]">
+                  <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
                     {order.address.street},{" "}
                     {order.address.number}
 
@@ -418,13 +418,13 @@ export default function OrderDetailsDialog({
           </section>
 
           {order.payment_method && (
-            <section className="rounded-2xl border border-[#EEE6DF] p-4">
+            <section className="rounded-2xl border border-brand-border p-4">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm text-[#756A66]">
+                  <p className="text-sm text-brand-muted-foreground">
                     Forma de pagamento
                   </p>
-                  <p className="mt-1 font-bold text-[#241B19]">
+                  <p className="mt-1 font-bold text-brand-foreground">
                     {paymentMethodLabels[
                       order.payment_method as keyof typeof paymentMethodLabels
                     ] ?? order.payment_method}
@@ -432,7 +432,7 @@ export default function OrderDetailsDialog({
                 </div>
 
                 {order.payment_method === "cash" && (
-                  <p className="text-right text-sm font-semibold text-[#756A66]">
+                  <p className="text-right text-sm font-semibold text-brand-muted-foreground">
                     {order.cash_change_for
                       ? `Troco para ${formatCurrency(order.cash_change_for)}`
                       : "Sem troco"}
@@ -443,8 +443,8 @@ export default function OrderDetailsDialog({
           )}
 
           {/* ITENS */}
-          <section className="rounded-2xl border border-[#EEE6DF]">
-            <div className="flex items-center gap-2 border-b border-[#EEE6DF] p-4 text-[#8B0000]">
+          <section className="rounded-2xl border border-brand-border">
+            <div className="flex items-center gap-2 border-b border-brand-border p-4 text-brand-primary">
               <ClipboardList size={18} />
 
               <p className="text-sm font-bold">
@@ -452,7 +452,7 @@ export default function OrderDetailsDialog({
               </p>
             </div>
 
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {order.items.map((item) => {
                 const itemTotal =
                   Number(item.unit_price) *
@@ -464,12 +464,12 @@ export default function OrderDetailsDialog({
                     className="flex items-start justify-between gap-4 p-4"
                   >
                     <div>
-                      <p className="font-bold text-[#241B19]">
+                      <p className="font-bold text-brand-foreground">
                         {item.quantity}x{" "}
                         {item.product_name}
                       </p>
 
-                      <p className="mt-1 text-xs text-[#756A66]">
+                      <p className="mt-1 text-xs text-brand-muted-foreground">
                         {formatCurrency(
                           Number(
                             item.unit_price
@@ -479,7 +479,7 @@ export default function OrderDetailsDialog({
                       </p>
                     </div>
 
-                    <p className="font-bold text-[#241B19]">
+                    <p className="font-bold text-brand-foreground">
                       {formatCurrency(
                         itemTotal
                       )}
@@ -494,11 +494,11 @@ export default function OrderDetailsDialog({
           <section className="rounded-2xl bg-[#FFF7F5] p-5">
             <div className="space-y-3">
               <div className="flex justify-between gap-4 text-sm">
-                <span className="text-[#756A66]">
+                <span className="text-brand-muted-foreground">
                   Subtotal
                 </span>
 
-                <span className="font-bold text-[#241B19]">
+                <span className="font-bold text-brand-foreground">
                   {formatCurrency(
                     Number(order.subtotal)
                   )}
@@ -506,11 +506,11 @@ export default function OrderDetailsDialog({
               </div>
 
               <div className="flex justify-between gap-4 text-sm">
-                <span className="text-[#756A66]">
+                <span className="text-brand-muted-foreground">
                   Taxa de entrega
                 </span>
 
-                <span className="font-bold text-[#241B19]">
+                <span className="font-bold text-brand-foreground">
                   {formatCurrency(
                     Number(
                       order.delivery_fee
@@ -521,11 +521,11 @@ export default function OrderDetailsDialog({
 
               <div className="border-t border-[#E8D9D2] pt-3">
                 <div className="flex justify-between gap-4">
-                  <span className="font-bold text-[#241B19]">
+                  <span className="font-bold text-brand-foreground">
                     Total
                   </span>
 
-                  <span className="text-xl font-bold text-[#8B0000]">
+                  <span className="text-xl font-bold text-brand-primary">
                     {formatCurrency(
                       Number(order.total)
                     )}
@@ -538,25 +538,25 @@ export default function OrderDetailsDialog({
           {/* OBSERVAÇÕES */}
           {order.notes && (
             <section>
-              <p className="text-sm font-bold text-[#241B19]">
+              <p className="text-sm font-bold text-brand-foreground">
                 Observações
               </p>
 
-              <div className="mt-2 rounded-2xl border border-[#EEE6DF] bg-white p-4 text-sm leading-6 text-[#756A66]">
+              <div className="mt-2 rounded-2xl border border-brand-border bg-white p-4 text-sm leading-6 text-brand-muted-foreground">
                 {order.notes}
               </div>
             </section>
           )}
 
           {/* CONTROLE DE STATUS */}
-          <section className="rounded-2xl border border-[#EEE6DF] p-5">
+          <section className="rounded-2xl border border-brand-border p-5">
             <div className="flex items-center gap-2">
               <PackageCheck
                 size={18}
-                className="text-[#8B0000]"
+                className="text-brand-primary"
               />
 
-              <p className="font-bold text-[#241B19]">
+              <p className="font-bold text-brand-foreground">
                 Andamento do pedido
               </p>
             </div>
@@ -639,7 +639,7 @@ export default function OrderDetailsDialog({
                         rows={3}
                         disabled={refundPending}
                         placeholder="Ex.: cliente desistiu da compra"
-                        className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-3 py-2 text-sm font-normal outline-none focus:border-[#8B0000]"
+                        className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-3 py-2 text-sm font-normal outline-none focus:border-brand-primary"
                       />
                     </label>
                     <p className="mt-2 text-xs leading-5 text-red-700">
@@ -706,7 +706,7 @@ export default function OrderDetailsDialog({
               !locked &&
               nextStatus && (
               <div className="mt-4">
-                <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-[#756A66]">
+                <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-brand-muted-foreground">
                   Próxima etapa
                 </p>
 
@@ -718,7 +718,7 @@ export default function OrderDetailsDialog({
                       nextStatus.status
                     )
                   }
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 py-3.5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <nextStatus.icon size={18} />
 
@@ -741,7 +741,7 @@ export default function OrderDetailsDialog({
               )}
 
             {!notification && !locked && (
-              <div className="mt-4 border-t border-[#EEE6DF] pt-4">
+              <div className="mt-4 border-t border-brand-border pt-4">
                 <button
                   type="button"
                   disabled={saving}

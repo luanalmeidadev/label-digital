@@ -44,8 +44,8 @@ function ProductCard({
   whatsapp: string;
 }) {
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-      <div className="relative aspect-[4/3] overflow-hidden bg-[#F7F0EA]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
+      <div className="relative aspect-[4/3] overflow-hidden bg-brand-surface-muted">
         <Image
           src={product.image}
           alt={product.imageAlt}
@@ -63,11 +63,11 @@ function ProductCard({
       </div>
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <h3 className="text-xl font-bold text-[#241B19] sm:text-2xl">
+        <h3 className="text-xl font-bold text-brand-foreground sm:text-2xl">
           {product.name}
         </h3>
 
-        <p className="mt-2 text-sm leading-6 text-[#756A66]">
+        <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
           {product.description}
         </p>
 
@@ -77,10 +77,10 @@ function ProductCard({
               key={`${price.label}-${price.value}`}
               className="rounded-2xl bg-[#FFF7F5] px-4 py-3"
             >
-              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-[#756A66]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.1em] text-brand-muted-foreground">
                 {price.label}
               </p>
-              <p className="mt-1 text-lg font-bold text-[#8B0000]">
+              <p className="mt-1 text-lg font-bold text-brand-primary">
                 {price.value}
               </p>
             </div>
@@ -89,23 +89,23 @@ function ProductCard({
 
         {product.flavors && (
           <div className="mt-5">
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
               Sabores e opções
             </p>
-            <p className="mt-2 text-sm leading-6 text-[#756A66]">
+            <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
               {product.flavors.join(" · ")}
             </p>
           </div>
         )}
 
         {product.details && (
-          <ul className="mt-5 space-y-2 text-sm leading-5 text-[#756A66]">
+          <ul className="mt-5 space-y-2 text-sm leading-5 text-brand-muted-foreground">
             {product.details.map((detail) => (
               <li
                 key={detail}
                 className="flex gap-2"
               >
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#D2B48C]" />
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-secondary" />
                 {detail}
               </li>
             ))}
@@ -113,7 +113,7 @@ function ProductCard({
         )}
 
         {product.notice && (
-          <div className="mt-5 rounded-2xl border border-[#E8D2C1] bg-[#FFF9F3] px-4 py-3 text-sm font-semibold leading-5 text-[#8B0000]">
+          <div className="mt-5 rounded-2xl border border-[#E8D2C1] bg-[#FFF9F3] px-4 py-3 text-sm font-semibold leading-5 text-brand-primary">
             {product.notice}
           </div>
         )}
@@ -146,9 +146,9 @@ export default async function EncomendasPage() {
   const instagramUrl = buildInstagramUrl(storeSettings.instagram);
 
   return (
-    <main className="min-h-screen bg-[#FFFDF9]">
+    <main className="min-h-screen bg-brand-background">
       <StoreRealtimeRefresh />
-      <header className="bg-[#8B0000]">
+      <header className="bg-brand-primary">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <Link
             href="/"
@@ -170,13 +170,13 @@ export default async function EncomendasPage() {
         </div>
       </header>
 
-      <section className="relative overflow-hidden bg-[#8B0000] pb-14 pt-8 text-white sm:pb-20 sm:pt-12">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#D2B48C]/15 blur-3xl" />
+      <section className="relative overflow-hidden bg-brand-primary pb-14 pt-8 text-brand-primary-foreground sm:pb-20 sm:pt-12">
+        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-brand-secondary/15 blur-3xl" />
         <div className="absolute -bottom-40 left-1/3 h-80 w-80 rounded-full bg-white/5 blur-3xl" />
 
         <div className="relative mx-auto grid max-w-6xl items-center gap-9 px-5 lg:grid-cols-[1.05fr_0.95fr]">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#D2B48C]">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-brand-secondary">
               Cardápio de encomendas
             </p>
 
@@ -191,7 +191,7 @@ export default async function EncomendasPage() {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <a
                 href="#catalogo"
-                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#D2B48C] px-5 py-3.5 text-sm font-bold text-[#8B0000] transition hover:bg-[#E1C7A5]"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand-secondary px-5 py-3.5 text-sm font-bold text-brand-primary transition hover:bg-[#E1C7A5]"
               >
                 <CakeSlice size={18} />
                 Ver opções
@@ -206,7 +206,7 @@ export default async function EncomendasPage() {
           </div>
 
           <div className="relative mx-auto w-full max-w-lg">
-            <div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] border border-white/15 bg-[#F7F0EA] shadow-2xl">
+            <div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] border border-white/15 bg-brand-surface-muted shadow-2xl">
               <Image
                 src={imageSettings.preorderHero.image}
                 alt={`Bolo personalizado da ${installation.identity.name}`}
@@ -222,8 +222,8 @@ export default async function EncomendasPage() {
               />
             </div>
 
-            <div className="absolute -bottom-5 -left-2 rounded-2xl border border-white/10 bg-[#241B19]/90 px-5 py-4 shadow-xl backdrop-blur sm:-left-6">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#D2B48C]">
+            <div className="absolute -bottom-5 -left-2 rounded-2xl border border-white/10 bg-brand-foreground/90 px-5 py-4 shadow-xl backdrop-blur sm:-left-6">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-secondary">
                 Feito artesanalmente
               </p>
               <p className="mt-1 text-sm font-semibold text-white">
@@ -263,16 +263,16 @@ export default async function EncomendasPage() {
             return (
               <div
                 key={item.title}
-                className="flex items-start gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm"
+                className="flex items-start gap-3 rounded-2xl border border-brand-border bg-white p-4 shadow-sm"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
                   <Icon size={19} />
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-[#241B19]">
+                  <p className="text-sm font-bold text-brand-foreground">
                     {item.title}
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-[#756A66]">
+                  <p className="mt-1 text-xs leading-5 text-brand-muted-foreground">
                     {item.text}
                   </p>
                 </div>
@@ -282,13 +282,13 @@ export default async function EncomendasPage() {
         </div>
       </section>
 
-      <nav className="sticky top-0 z-30 border-y border-[#EEE6DF] bg-[#FFFDF9]/95 backdrop-blur">
+      <nav className="sticky top-0 z-30 border-y border-brand-border bg-brand-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-6xl gap-2 overflow-x-auto px-5 py-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {preorderCategories.map((category) => (
             <a
               key={category.id}
               href={`#${category.id}`}
-              className="shrink-0 rounded-full border border-[#E8D2C1] bg-white px-4 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#8B0000] hover:bg-[#FFF7F5]"
+              className="shrink-0 rounded-full border border-[#E8D2C1] bg-white px-4 py-2 text-xs font-bold text-brand-primary transition hover:border-brand-primary hover:bg-[#FFF7F5]"
             >
               {category.name}
             </a>
@@ -301,18 +301,18 @@ export default async function EncomendasPage() {
         className="mx-auto max-w-6xl px-5 pb-16 pt-12 sm:pb-24 sm:pt-16"
       >
         <div className="max-w-2xl">
-          <div className="flex items-center gap-2 text-[#8B0000]">
+          <div className="flex items-center gap-2 text-brand-primary">
             <Sparkles size={18} />
             <p className="text-xs font-bold uppercase tracking-[0.18em]">
               Escolha o seu favorito
             </p>
           </div>
 
-          <h2 className="mt-3 text-3xl font-bold text-[#241B19] sm:text-4xl">
+          <h2 className="mt-3 text-3xl font-bold text-brand-foreground sm:text-4xl">
             Nosso cardápio de encomendas
           </h2>
 
-          <p className="mt-3 text-sm leading-6 text-[#756A66] sm:text-base">
+          <p className="mt-3 text-sm leading-6 text-brand-muted-foreground sm:text-base">
             Valores e opções conforme o cardápio vigente. Personalizações podem alterar o orçamento final.
           </p>
         </div>
@@ -324,17 +324,17 @@ export default async function EncomendasPage() {
               id={category.id}
               className="scroll-mt-24"
             >
-              <div className="mb-6 flex items-end justify-between gap-4 border-b border-[#EEE6DF] pb-4">
+              <div className="mb-6 flex items-end justify-between gap-4 border-b border-brand-border pb-4">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8B0000]">
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-primary">
                     {category.eyebrow}
                   </p>
-                  <h2 className="mt-1 text-2xl font-bold text-[#241B19] sm:text-3xl">
+                  <h2 className="mt-1 text-2xl font-bold text-brand-foreground sm:text-3xl">
                     {category.name}
                   </h2>
                 </div>
 
-                <span className="text-xs font-semibold text-[#756A66]">
+                <span className="text-xs font-semibold text-brand-muted-foreground">
                   {category.products.length}{" "}
                   {category.products.length === 1
                     ? "opção"
@@ -358,13 +358,13 @@ export default async function EncomendasPage() {
         </div>
       </div>
 
-      <section className="bg-[#D2B48C]">
+      <section className="bg-brand-secondary">
         <div className="mx-auto grid max-w-6xl items-center gap-7 px-5 py-12 sm:py-16 lg:grid-cols-[1fr_auto]">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
               Algo único para a sua festa
             </p>
-            <h2 className="mt-2 max-w-2xl text-3xl font-bold text-[#8B0000] sm:text-4xl">
+            <h2 className="mt-2 max-w-2xl text-3xl font-bold text-brand-primary sm:text-4xl">
               Não encontrou exatamente o que imaginou?
             </h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-[#49352C]">
@@ -380,7 +380,7 @@ export default async function EncomendasPage() {
         </div>
       </section>
 
-      <footer className="bg-[#241B19] text-white">
+      <footer className="bg-brand-foreground text-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-9 sm:flex-row sm:items-center sm:justify-between">
           <BrandLogo variant="footer" />
 
@@ -390,7 +390,7 @@ export default async function EncomendasPage() {
                 href={instagramUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 transition hover:text-[#D2B48C]"
+                className="inline-flex items-center gap-2 transition hover:text-brand-secondary"
               >
                 <AtSign size={17} />
                 {instagramHandle}
@@ -399,7 +399,7 @@ export default async function EncomendasPage() {
 
             <Link
               href="/"
-              className="inline-flex items-center gap-2 transition hover:text-[#D2B48C]"
+              className="inline-flex items-center gap-2 transition hover:text-brand-secondary"
             >
               <ArrowLeft size={17} />
               Voltar ao cardápio do dia
@@ -407,7 +407,7 @@ export default async function EncomendasPage() {
 
             <Link
               href="/privacidade"
-              className="transition hover:text-[#D2B48C]"
+              className="transition hover:text-brand-secondary"
             >
               Privacidade
             </Link>

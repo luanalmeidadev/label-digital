@@ -225,26 +225,26 @@ export default function CashSessionControls({
   return (
     <section id="controle-caixa" className="mt-6 scroll-mt-6 space-y-5">
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
-          <div className="flex items-center gap-2 text-[#8B0000]">
+        <article className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-brand-primary">
             <Banknote size={18} />
             <p className="text-xs font-bold uppercase tracking-[0.12em]">
               Saldo inicial
             </p>
           </div>
-          <p className="mt-3 text-xl font-bold text-[#241B19]">
+          <p className="mt-3 text-xl font-bold text-brand-foreground">
             {formatCurrency(session.openingBalance)}
           </p>
         </article>
 
-        <article className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
+        <article className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
           <div className="flex items-center gap-2 text-emerald-700">
             <CircleDollarSign size={18} />
             <p className="text-xs font-bold uppercase tracking-[0.12em]">
               Total vendido
             </p>
           </div>
-          <p className="mt-3 text-xl font-bold text-[#241B19]">
+          <p className="mt-3 text-xl font-bold text-brand-foreground">
             {formatCurrency(
               Object.values(session.paymentTotals).reduce(
                 (total, amount) => total + amount,
@@ -254,39 +254,39 @@ export default function CashSessionControls({
           </p>
         </article>
 
-        <article className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
+        <article className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
           <div className="flex items-center gap-2 text-amber-700">
             <ArrowUpFromLine size={18} />
             <p className="text-xs font-bold uppercase tracking-[0.12em]">
               Saídas
             </p>
           </div>
-          <p className="mt-3 text-xl font-bold text-[#241B19]">
+          <p className="mt-3 text-xl font-bold text-brand-foreground">
             {formatCurrency(session.withdrawals + session.expenses)}
           </p>
         </article>
 
-        <article className="rounded-2xl border border-[#D2B48C] bg-[#FFF7F5] p-4 shadow-sm">
-          <div className="flex items-center gap-2 text-[#8B0000]">
+        <article className="rounded-2xl border border-brand-secondary bg-[#FFF7F5] p-4 shadow-sm">
+          <div className="flex items-center gap-2 text-brand-primary">
             <Scale size={18} />
             <p className="text-xs font-bold uppercase tracking-[0.12em]">
               Esperado em dinheiro
             </p>
           </div>
-          <p className="mt-3 text-xl font-bold text-[#8B0000]">
+          <p className="mt-3 text-xl font-bold text-brand-primary">
             {formatCurrency(session.expectedCash)}
           </p>
         </article>
       </div>
 
-      <article className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
+      <article className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
         <div className="flex items-center gap-2">
-          <CircleDollarSign size={18} className="text-[#8B0000]" />
+          <CircleDollarSign size={18} className="text-brand-primary" />
           <div>
-            <h2 className="text-sm font-bold text-[#241B19]">
+            <h2 className="text-sm font-bold text-brand-foreground">
               Vendas por forma de pagamento
             </h2>
-            <p className="text-xs text-[#756A66]">
+            <p className="text-xs text-brand-muted-foreground">
               O esperado em dinheiro considera somente pagamentos e saídas em espécie.
             </p>
           </div>
@@ -294,10 +294,10 @@ export default function CashSessionControls({
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
           {paymentMethods.map((method) => (
             <div key={method} className="rounded-xl bg-[#FFF7F5] p-3">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-[#756A66]">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-brand-muted-foreground">
                 {paymentMethodLabels[method]}
               </p>
-              <p className="mt-1 text-sm font-bold text-[#241B19]">
+              <p className="mt-1 text-sm font-bold text-brand-foreground">
                 {formatCurrency(session.paymentTotals[method])}
               </p>
             </div>
@@ -306,12 +306,12 @@ export default function CashSessionControls({
       </article>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.7fr)]">
-        <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
-            <h2 className="font-bold text-[#241B19]">
+        <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="border-b border-brand-border p-5">
+            <h2 className="font-bold text-brand-foreground">
               Movimentar caixa
             </h2>
-            <p className="mt-1 text-xs text-[#756A66]">
+            <p className="mt-1 text-xs text-brand-muted-foreground">
               Registre toda entrada ou saída que não seja uma venda.
             </p>
           </div>
@@ -353,7 +353,7 @@ export default function CashSessionControls({
                     className={`rounded-2xl border p-3 text-left transition ${
                       selected
                         ? option.className
-                        : "border-[#EEE6DF] bg-white text-[#756A66]"
+                        : "border-brand-border bg-white text-brand-muted-foreground"
                     }`}
                   >
                     <Icon size={18} />
@@ -377,8 +377,8 @@ export default function CashSessionControls({
                 <span className="text-xs font-bold text-[#49352C]">
                   Valor
                 </span>
-                <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] px-3 focus-within:border-[#8B0000]">
-                  <span className="mr-2 text-xs font-bold text-[#756A66]">
+                <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] px-3 focus-within:border-brand-primary">
+                  <span className="mr-2 text-xs font-bold text-brand-muted-foreground">
                     R$
                   </span>
                   <input
@@ -404,7 +404,7 @@ export default function CashSessionControls({
                     defaultValue="cash"
                     required
                     disabled={movementPending}
-                    className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                    className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
                   >
                     {paymentMethods.map((method) => (
                       <option key={method} value={method}>
@@ -427,7 +427,7 @@ export default function CashSessionControls({
                   required
                   disabled={movementPending}
                   placeholder="Ex.: retirada para depósito"
-                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-[#8B0000]"
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-brand-primary"
                 />
               </label>
             </div>
@@ -446,7 +446,7 @@ export default function CashSessionControls({
             <button
               type="submit"
               disabled={movementPending}
-              className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white disabled:opacity-60"
+              className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground disabled:opacity-60"
             >
               {movementPending && (
                 <Loader2 size={16} className="animate-spin" />
@@ -456,21 +456,21 @@ export default function CashSessionControls({
           </form>
         </article>
 
-        <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-            <History size={19} className="text-[#8B0000]" />
+        <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-brand-border p-5">
+            <History size={19} className="text-brand-primary" />
             <div>
-              <h2 className="font-bold text-[#241B19]">
+              <h2 className="font-bold text-brand-foreground">
                 Movimentações recentes
               </h2>
-              <p className="text-xs text-[#756A66]">
+              <p className="text-xs text-brand-muted-foreground">
                 Últimos registros deste caixa
               </p>
             </div>
           </div>
 
           {movements.length > 0 ? (
-            <div className="max-h-[340px] divide-y divide-[#EEE6DF] overflow-y-auto">
+            <div className="max-h-[340px] divide-y divide-brand-border overflow-y-auto">
               {movements.map((movement) => {
                 const isSupply = movement.movementType === "supply";
 
@@ -480,10 +480,10 @@ export default function CashSessionControls({
                     className="flex items-start justify-between gap-4 p-4"
                   >
                     <div>
-                      <p className="text-sm font-bold text-[#241B19]">
+                      <p className="text-sm font-bold text-brand-foreground">
                         {movementLabels[movement.movementType]}
                       </p>
-                      <p className="mt-1 text-xs leading-5 text-[#756A66]">
+                      <p className="mt-1 text-xs leading-5 text-brand-muted-foreground">
                         {movement.description} ·{" "}
                         {paymentMethodLabels[movement.paymentMethod]} ·{" "}
                         {formatTime(movement.createdAt)}
@@ -502,7 +502,7 @@ export default function CashSessionControls({
               })}
             </div>
           ) : (
-            <p className="p-8 text-center text-sm text-[#756A66]">
+            <p className="p-8 text-center text-sm text-brand-muted-foreground">
               Nenhuma movimentação registrada.
             </p>
           )}
@@ -510,12 +510,12 @@ export default function CashSessionControls({
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.7fr)]">
-        <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-            <PackageX size={20} className="text-[#8B0000]" />
+        <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-brand-border p-5">
+            <PackageX size={20} className="text-brand-primary" />
             <div>
-              <h2 className="font-bold text-[#241B19]">Registrar perda</h2>
-              <p className="text-xs text-[#756A66]">
+              <h2 className="font-bold text-brand-foreground">Registrar perda</h2>
+              <p className="text-xs text-brand-muted-foreground">
                 Produtos vencidos, danificados ou usados internamente.
               </p>
             </div>
@@ -533,7 +533,7 @@ export default function CashSessionControls({
                   required
                   disabled={lossPending}
                   defaultValue=""
-                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
                 >
                   <option value="" disabled>Selecione o produto</option>
                   {products.map((product) => (
@@ -554,7 +554,7 @@ export default function CashSessionControls({
                   step="1"
                   required
                   disabled={lossPending}
-                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-[#8B0000]"
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-brand-primary"
                 />
               </label>
 
@@ -565,7 +565,7 @@ export default function CashSessionControls({
                   required
                   disabled={lossPending}
                   defaultValue="expired"
-                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
                 >
                   {Object.entries(lossReasonLabels).map(([value, label]) => (
                     <option key={value} value={value}>{label}</option>
@@ -581,7 +581,7 @@ export default function CashSessionControls({
                   maxLength={300}
                   disabled={lossPending}
                   placeholder="Opcional"
-                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-[#8B0000]"
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-brand-primary"
                 />
               </label>
             </div>
@@ -600,7 +600,7 @@ export default function CashSessionControls({
             <button
               type="submit"
               disabled={lossPending || products.length === 0}
-              className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white disabled:opacity-50"
+              className="mt-4 inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground disabled:opacity-50"
             >
               {lossPending && <Loader2 size={16} className="animate-spin" />}
               Registrar perda
@@ -608,23 +608,23 @@ export default function CashSessionControls({
           </form>
         </article>
 
-        <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
-            <h2 className="font-bold text-[#241B19]">Perdas deste caixa</h2>
-            <p className="mt-1 text-xs text-[#756A66]">
+        <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="border-b border-brand-border p-5">
+            <h2 className="font-bold text-brand-foreground">Perdas deste caixa</h2>
+            <p className="mt-1 text-xs text-brand-muted-foreground">
               {losses.reduce((sum, loss) => sum + loss.quantity, 0)} unidade(s)
             </p>
           </div>
 
           {losses.length > 0 ? (
-            <div className="max-h-[360px] divide-y divide-[#EEE6DF] overflow-y-auto">
+            <div className="max-h-[360px] divide-y divide-brand-border overflow-y-auto">
               {losses.map((loss) => (
                 <div key={loss.id} className="flex items-start justify-between gap-4 p-4">
                   <div>
-                    <p className="text-sm font-bold text-[#241B19]">
+                    <p className="text-sm font-bold text-brand-foreground">
                       {loss.quantity}x {loss.productName}
                     </p>
-                    <p className="mt-1 text-xs text-[#756A66]">
+                    <p className="mt-1 text-xs text-brand-muted-foreground">
                       {lossReasonLabels[loss.reason as ProductLossReason] ?? loss.reason}
                       {" · "}{formatTime(loss.createdAt)}
                     </p>
@@ -636,7 +636,7 @@ export default function CashSessionControls({
               ))}
             </div>
           ) : (
-            <p className="p-8 text-center text-sm text-[#756A66]">
+            <p className="p-8 text-center text-sm text-brand-muted-foreground">
               Nenhuma perda registrada.
             </p>
           )}
@@ -654,13 +654,13 @@ export default function CashSessionControls({
               <LockKeyhole size={20} />
             </div>
             <div>
-              <h2 className="font-bold text-[#241B19]">Fechar caixa</h2>
-              <p className="mt-1 text-xs text-[#756A66]">
+              <h2 className="font-bold text-brand-foreground">Fechar caixa</h2>
+              <p className="mt-1 text-xs text-brand-muted-foreground">
                 Confira o dinheiro físico ao terminar o expediente.
               </p>
             </div>
           </div>
-          <span className="text-sm font-bold text-[#8B0000]">
+          <span className="text-sm font-bold text-brand-primary">
             {showClosing ? "Cancelar" : "Conferir e fechar"}
           </span>
         </button>
@@ -681,8 +681,8 @@ export default function CashSessionControls({
                 <span className="text-xs font-bold text-[#49352C]">
                   Dinheiro contado no caixa
                 </span>
-                <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] bg-white px-3 focus-within:border-[#8B0000]">
-                  <span className="mr-2 text-xs font-bold text-[#756A66]">
+                <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] bg-white px-3 focus-within:border-brand-primary">
+                  <span className="mr-2 text-xs font-bold text-brand-muted-foreground">
                     R$
                   </span>
                   <input
@@ -709,7 +709,7 @@ export default function CashSessionControls({
                   maxLength={500}
                   disabled={closingPending}
                   placeholder="Explique alguma diferença, se houver"
-                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                  className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
                 />
               </label>
             </div>
@@ -721,7 +721,7 @@ export default function CashSessionControls({
                 onChange={(event) =>
                   setClosingConfirmed(event.target.checked)
                 }
-                className="mt-0.5 h-4 w-4 accent-[#8B0000]"
+                className="mt-0.5 h-4 w-4 accent-brand-primary"
               />
               Conferi os valores. Entendo que, após fechar, novas vendas exigirão
               a abertura de outro caixa.

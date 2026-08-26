@@ -225,8 +225,8 @@ export default function EditPreorderProductDialog({
             }
             className={
               triggerMode === "image"
-                ? "group relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-[#F7F0EA]"
-                : "inline-flex items-center gap-2 rounded-xl border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C] hover:bg-[#FFF7F5]"
+                ? "group relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-brand-surface-muted"
+                : "inline-flex items-center gap-2 rounded-xl border border-brand-border px-3 py-2 text-xs font-bold text-brand-primary transition hover:border-brand-secondary hover:bg-[#FFF7F5]"
             }
           />
         }
@@ -257,8 +257,8 @@ export default function EditPreorderProductDialog({
       </DialogTrigger>
 
       <DialogContent className="max-h-[92vh] overflow-y-auto p-0 sm:max-w-2xl">
-        <DialogHeader className="border-b border-[#EEE6DF] px-5 py-5 pr-14 sm:px-6">
-          <DialogTitle className="text-xl font-bold text-[#241B19]">
+        <DialogHeader className="border-b border-brand-border px-5 py-5 pr-14 sm:px-6">
+          <DialogTitle className="text-xl font-bold text-brand-foreground">
             {product.name}
           </DialogTitle>
           <DialogDescription>
@@ -282,7 +282,7 @@ export default function EditPreorderProductDialog({
           />
 
           <fieldset>
-            <legend className="text-sm font-bold text-[#241B19]">
+            <legend className="text-sm font-bold text-brand-foreground">
               Foto do produto
             </legend>
             <div className="mt-3 space-y-4">
@@ -293,9 +293,9 @@ export default function EditPreorderProductDialog({
                 accept="image/jpeg,image/png,image/webp"
                 disabled={saving}
                 onChange={handleImageChange}
-                className="block w-full text-sm text-[#756A66] file:mr-3 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-3 file:py-2.5 file:text-xs file:font-bold file:text-[#8B0000]"
+                className="block w-full text-sm text-brand-muted-foreground file:mr-3 file:rounded-xl file:border-0 file:bg-brand-primary/10 file:px-3 file:py-2.5 file:text-xs file:font-bold file:text-brand-primary"
               />
-              <p className="text-xs leading-5 text-[#756A66]">
+              <p className="text-xs leading-5 text-brand-muted-foreground">
                 JPG, PNG ou WebP, com até 5 MB. Se nenhuma foto for escolhida, a atual será mantida.
               </p>
 
@@ -339,7 +339,7 @@ export default function EditPreorderProductDialog({
 
           <fieldset>
             <div className="flex items-center justify-between gap-3">
-              <legend className="text-sm font-bold text-[#241B19]">
+              <legend className="text-sm font-bold text-brand-foreground">
                 Tamanhos e preços
               </legend>
               <button
@@ -352,7 +352,7 @@ export default function EditPreorderProductDialog({
                   setError("");
                 }}
                 disabled={saving}
-                className="inline-flex items-center gap-1 text-xs font-bold text-[#8B0000] disabled:opacity-50"
+                className="inline-flex items-center gap-1 text-xs font-bold text-brand-primary disabled:opacity-50"
               >
                 <Plus size={15} />
                 Adicionar opção
@@ -378,7 +378,7 @@ export default function EditPreorderProductDialog({
                     placeholder="Ex.: Médio"
                     maxLength={80}
                     disabled={saving}
-                    className="h-11 min-w-0 rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+                    className="h-11 min-w-0 rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
                   />
                   <input
                     type="text"
@@ -393,7 +393,7 @@ export default function EditPreorderProductDialog({
                     placeholder="Ex.: R$ 150,00"
                     maxLength={40}
                     disabled={saving}
-                    className="h-11 min-w-0 rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+                    className="h-11 min-w-0 rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
                   />
                   <button
                     type="button"
@@ -414,10 +414,10 @@ export default function EditPreorderProductDialog({
           </fieldset>
 
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">
+            <span className="text-sm font-bold text-brand-foreground">
               Sabores
             </span>
-            <span className="mt-1 block text-xs text-[#756A66]">
+            <span className="mt-1 block text-xs text-brand-muted-foreground">
               Digite um sabor por linha. Deixe vazio quando o produto não tiver escolha de sabor.
             </span>
             <textarea
@@ -427,13 +427,13 @@ export default function EditPreorderProductDialog({
               }
               rows={7}
               disabled={saving}
-              className="mt-2 w-full resize-y rounded-xl border border-[#DDD3CC] px-4 py-3 text-sm leading-6 outline-none focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 w-full resize-y rounded-xl border border-[#DDD3CC] px-4 py-3 text-sm leading-6 outline-none focus:border-brand-primary disabled:opacity-60"
             />
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Quantidade mínima
               </span>
               <input
@@ -447,12 +447,12 @@ export default function EditPreorderProductDialog({
                   product.minimumQuantity ?? 1
                 }
                 disabled={saving}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Quantidades rápidas
               </span>
               <input
@@ -463,15 +463,15 @@ export default function EditPreorderProductDialog({
                 }
                 placeholder="Ex.: 25, 50, 75, 100"
                 disabled={saving}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
               />
-              <span className="mt-1 block text-xs leading-5 text-[#756A66]">
+              <span className="mt-1 block text-xs leading-5 text-brand-muted-foreground">
                 Opções exibidas na caixa de seleção.
               </span>
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Incremento acima das opções
               </span>
               <input
@@ -485,18 +485,18 @@ export default function EditPreorderProductDialog({
                 }
                 placeholder="Ex.: 25"
                 disabled={saving}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
               />
-              <span className="mt-1 block text-xs leading-5 text-[#756A66]">
+              <span className="mt-1 block text-xs leading-5 text-brand-muted-foreground">
                 Permite continuar acima da maior opção, nesse intervalo.
               </span>
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 O preço corresponde a
               </span>
-              <div className="mt-2 flex h-11 overflow-hidden rounded-xl border border-[#DDD3CC] focus-within:border-[#8B0000]">
+              <div className="mt-2 flex h-11 overflow-hidden rounded-xl border border-[#DDD3CC] focus-within:border-brand-primary">
                 <input
                   type="number"
                   name="price_base_quantity"
@@ -510,14 +510,14 @@ export default function EditPreorderProductDialog({
                   disabled={saving}
                   className="min-w-0 flex-1 px-3 text-sm outline-none disabled:opacity-60"
                 />
-                <span className="flex items-center border-l border-[#EEE6DF] bg-[#FFF9F3] px-3 text-xs text-[#756A66]">
+                <span className="flex items-center border-l border-brand-border bg-[#FFF9F3] px-3 text-xs text-brand-muted-foreground">
                   itens
                 </span>
               </div>
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Unidade da quantidade
               </span>
               <input
@@ -530,15 +530,15 @@ export default function EditPreorderProductDialog({
                 }
                 placeholder="Ex.: bolo(s)"
                 disabled={saving}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Antecedência mínima
               </span>
-              <div className="mt-2 flex h-11 overflow-hidden rounded-xl border border-[#DDD3CC] focus-within:border-[#8B0000]">
+              <div className="mt-2 flex h-11 overflow-hidden rounded-xl border border-[#DDD3CC] focus-within:border-brand-primary">
                 <input
                   type="number"
                   name="lead_time_days"
@@ -552,14 +552,14 @@ export default function EditPreorderProductDialog({
                   disabled={saving}
                   className="min-w-0 flex-1 px-3 text-sm outline-none disabled:opacity-60"
                 />
-                <span className="flex items-center border-l border-[#EEE6DF] bg-[#FFF9F3] px-3 text-xs text-[#756A66]">
+                <span className="flex items-center border-l border-brand-border bg-[#FFF9F3] px-3 text-xs text-brand-muted-foreground">
                   dias
                 </span>
               </div>
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Máximo de sabores
               </span>
               <input
@@ -573,12 +573,12 @@ export default function EditPreorderProductDialog({
                 }
                 placeholder="Sem limite"
                 disabled={saving}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Quantidade para liberar 1 sabor
               </span>
               <input
@@ -592,9 +592,9 @@ export default function EditPreorderProductDialog({
                 }
                 placeholder="Ex.: 25"
                 disabled={saving}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
               />
-              <span className="mt-1 block text-xs leading-5 text-[#756A66]">
+              <span className="mt-1 block text-xs leading-5 text-brand-muted-foreground">
                 Ex.: 25 libera 1 sabor, 50 libera 2. Deixe vazio para não usar essa regra.
               </span>
             </label>
@@ -609,7 +609,7 @@ export default function EditPreorderProductDialog({
             </div>
           )}
 
-          <div className="flex flex-col-reverse gap-3 border-t border-[#EEE6DF] pt-5 sm:flex-row sm:justify-end">
+          <div className="flex flex-col-reverse gap-3 border-t border-brand-border pt-5 sm:flex-row sm:justify-end">
             <button
               type="button"
               onClick={() => {
@@ -617,14 +617,14 @@ export default function EditPreorderProductDialog({
                 setOpen(false);
               }}
               disabled={saving}
-              className="rounded-xl border border-[#EEE6DF] px-5 py-3 text-sm font-bold text-[#756A66] disabled:opacity-50"
+              className="rounded-xl border border-brand-border px-5 py-3 text-sm font-bold text-brand-muted-foreground disabled:opacity-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+              className="rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:opacity-60"
             >
               {saving
                 ? "Salvando..."

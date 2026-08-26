@@ -176,7 +176,7 @@ export default function ImagePositionEditor({
         onPointerCancel={finishDragging}
         onKeyDown={handleKeyDown}
         className={cn(
-          "group relative touch-none select-none overflow-hidden border border-[#EEE6DF] bg-[#FFF7F5] outline-none transition focus-visible:ring-2 focus-visible:ring-[#8B0000] focus-visible:ring-offset-2",
+          "group relative touch-none select-none overflow-hidden border border-brand-border bg-[#FFF7F5] outline-none transition focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2",
           disabled
             ? "cursor-not-allowed opacity-60"
             : isDragging
@@ -204,10 +204,10 @@ export default function ImagePositionEditor({
         </span>
       </div>
 
-      <label className="block rounded-2xl border border-[#EEE6DF] bg-[#FFFDF9] p-4">
+      <label className="block rounded-2xl border border-brand-border bg-brand-background p-4">
         <span className="flex items-center justify-between text-xs font-bold text-[#49352C]">
           Zoom / distância
-          <span className="font-normal text-[#756A66]">
+          <span className="font-normal text-brand-muted-foreground">
             {zoom}%
           </span>
         </span>
@@ -221,7 +221,7 @@ export default function ImagePositionEditor({
             onZoomChange(Number(event.target.value))
           }
           aria-label="Zoom da imagem"
-          className="mt-2 w-full accent-[#8B0000]"
+          className="mt-2 w-full accent-brand-primary"
         />
 
         <span className="mt-3 flex flex-wrap gap-2">
@@ -232,7 +232,7 @@ export default function ImagePositionEditor({
               onPositionXChange(50);
               onPositionYChange(50);
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E8DDD5] bg-white px-3 py-2 text-xs font-bold text-[#49352C] transition hover:border-[#D2B48C] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E8DDD5] bg-white px-3 py-2 text-xs font-bold text-[#49352C] transition hover:border-brand-secondary disabled:opacity-50"
           >
             <Crosshair size={14} />
             Centralizar
@@ -247,7 +247,7 @@ export default function ImagePositionEditor({
                 normalizeImageZoom(resetZoom)
               );
             }}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E8DDD5] bg-white px-3 py-2 text-xs font-bold text-[#49352C] transition hover:border-[#D2B48C] disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#E8DDD5] bg-white px-3 py-2 text-xs font-bold text-[#49352C] transition hover:border-brand-secondary disabled:opacity-50"
           >
             <RotateCcw size={14} />
             Restaurar

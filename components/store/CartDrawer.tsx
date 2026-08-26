@@ -57,20 +57,20 @@ export default function CartDrawer({
       />
 
       {/* DRAWER */}
-      <aside className="absolute bottom-0 right-0 flex max-h-[92vh] w-full flex-col rounded-t-3xl bg-[#FFFDF9] shadow-2xl sm:bottom-auto sm:top-0 sm:h-full sm:max-h-none sm:max-w-md sm:rounded-none">
+      <aside className="absolute bottom-0 right-0 flex max-h-[92vh] w-full flex-col rounded-t-3xl bg-brand-background shadow-2xl sm:bottom-auto sm:top-0 sm:h-full sm:max-h-none sm:max-w-md sm:rounded-none">
         {/* CABEÇALHO */}
-        <div className="flex items-center justify-between border-b border-[#EEE6DF] p-5">
+        <div className="flex items-center justify-between border-b border-brand-border p-5">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <ShoppingBag size={20} />
             </div>
 
             <div>
-              <h2 className="font-bold text-[#241B19]">
+              <h2 className="font-bold text-brand-foreground">
                 Sua sacola
               </h2>
 
-              <p className="text-xs text-[#756A66]">
+              <p className="text-xs text-brand-muted-foreground">
                 {items.length} produto(s)
               </p>
             </div>
@@ -80,7 +80,7 @@ export default function CartDrawer({
             type="button"
             onClick={onClose}
             aria-label="Fechar sacola"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EEE6DF] text-[#756A66]"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-brand-border text-brand-muted-foreground"
           >
             <X size={19} />
           </button>
@@ -93,10 +93,10 @@ export default function CartDrawer({
               {items.map((item) => (
                 <article
                   key={item.id}
-                  className="rounded-2xl border border-[#EEE6DF] bg-white p-4"
+                  className="rounded-2xl border border-brand-border bg-white p-4"
                 >
                   <div className="flex gap-3">
-                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#F7F0EA]">
+                    <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-brand-surface-muted">
                       {item.image_url ? (
                         <Image
                           src={item.image_url}
@@ -115,11 +115,11 @@ export default function CartDrawer({
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <div>
-                          <h3 className="font-bold text-[#241B19]">
+                          <h3 className="font-bold text-brand-foreground">
                             {item.name}
                           </h3>
 
-                          <p className="mt-1 text-sm font-bold text-[#8B0000]">
+                          <p className="mt-1 text-sm font-bold text-brand-primary">
                             {formatCurrency(
                               item.price
                             )}
@@ -139,7 +139,7 @@ export default function CartDrawer({
                       </div>
 
                       <div className="mt-4 flex items-center justify-between">
-                        <div className="flex items-center rounded-xl border border-[#EEE6DF]">
+                        <div className="flex items-center rounded-xl border border-brand-border">
                           <button
                             type="button"
                             onClick={() =>
@@ -147,12 +147,12 @@ export default function CartDrawer({
                                 item.id
                               )
                             }
-                            className="flex h-9 w-9 items-center justify-center text-[#8B0000]"
+                            className="flex h-9 w-9 items-center justify-center text-brand-primary"
                           >
                             <Minus size={15} />
                           </button>
 
-                          <span className="min-w-8 text-center text-sm font-bold text-[#241B19]">
+                          <span className="min-w-8 text-center text-sm font-bold text-brand-foreground">
                             {item.quantity}
                           </span>
 
@@ -163,13 +163,13 @@ export default function CartDrawer({
                                 item.id
                               )
                             }
-                            className="flex h-9 w-9 items-center justify-center text-[#8B0000]"
+                            className="flex h-9 w-9 items-center justify-center text-brand-primary"
                           >
                             <Plus size={15} />
                           </button>
                         </div>
 
-                        <p className="font-bold text-[#241B19]">
+                        <p className="font-bold text-brand-foreground">
                           {formatCurrency(
                             item.price *
                               item.quantity
@@ -185,14 +185,14 @@ export default function CartDrawer({
             <div className="py-16 text-center">
               <ShoppingBag
                 size={36}
-                className="mx-auto text-[#D2B48C]"
+                className="mx-auto text-brand-secondary"
               />
 
-              <p className="mt-4 font-bold text-[#241B19]">
+              <p className="mt-4 font-bold text-brand-foreground">
                 Sua sacola está vazia
               </p>
 
-              <p className="mt-2 text-sm text-[#756A66]">
+              <p className="mt-2 text-sm text-brand-muted-foreground">
                 Adicione alguns produtos para continuar.
               </p>
             </div>
@@ -201,7 +201,7 @@ export default function CartDrawer({
 
         {/* RODAPÉ */}
         {items.length > 0 && (
-          <div className="border-t border-[#EEE6DF] bg-white p-5">
+          <div className="border-t border-brand-border bg-white p-5">
             {!storeStatus?.isOpen && (
               <div
                 role="status"
@@ -222,11 +222,11 @@ export default function CartDrawer({
             )}
 
             <div className="flex items-center justify-between">
-              <span className="text-sm text-[#756A66]">
+              <span className="text-sm text-brand-muted-foreground">
                 Subtotal
               </span>
 
-              <span className="text-xl font-bold text-[#8B0000]">
+              <span className="text-xl font-bold text-brand-primary">
                 {formatCurrency(subtotal)}
               </span>
             </div>
@@ -235,7 +235,7 @@ export default function CartDrawer({
               type="button"
               onClick={onContinue}
               disabled={!storeStatus?.isOpen}
-              className="mt-4 h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:bg-[#B9ACA8]"
+              className="mt-4 h-12 w-full rounded-xl bg-brand-primary text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:bg-[#B9ACA8]"
             >
               {storeStatus?.isOpen
                 ? "Continuar pedido"

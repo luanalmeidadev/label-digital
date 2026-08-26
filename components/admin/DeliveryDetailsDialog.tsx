@@ -190,7 +190,7 @@ export default function DeliveryDetailsDialog({
         render={
           <button
             type="button"
-            className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+            className="rounded-xl border border-brand-border px-4 py-2.5 text-sm font-bold text-brand-primary transition hover:border-brand-secondary"
           />
         }
       >
@@ -221,34 +221,34 @@ export default function DeliveryDetailsDialog({
         </DialogHeader>
 
         <div className="mt-5 space-y-5">
-          <section className="rounded-2xl border border-[#EEE6DF] p-5">
-            <div className="flex items-center gap-2 text-[#8B0000]">
+          <section className="rounded-2xl border border-brand-border p-5">
+            <div className="flex items-center gap-2 text-brand-primary">
               <UserRound size={18} />
               <p className="font-bold">Cliente</p>
             </div>
 
-            <p className="mt-3 font-bold text-[#241B19]">
+            <p className="mt-3 font-bold text-brand-foreground">
               {delivery.customer
                 ? `${delivery.customer.first_name} ${delivery.customer.last_name}`
                 : "Cliente não identificado"}
             </p>
 
             {delivery.customer && (
-              <div className="mt-2 flex items-center gap-2 text-sm text-[#756A66]">
+              <div className="mt-2 flex items-center gap-2 text-sm text-brand-muted-foreground">
                 <Phone size={14} />
                 {delivery.customer.phone}
               </div>
             )}
           </section>
 
-          <section className="rounded-2xl border border-[#EEE6DF] p-5">
-            <div className="flex items-center gap-2 text-[#8B0000]">
+          <section className="rounded-2xl border border-brand-border p-5">
+            <div className="flex items-center gap-2 text-brand-primary">
               <MapPin size={18} />
               <p className="font-bold">Endereço de entrega</p>
             </div>
 
             {delivery.address ? (
-              <p className="mt-3 text-sm leading-6 text-[#756A66]">
+              <p className="mt-3 text-sm leading-6 text-brand-muted-foreground">
                 {delivery.address.street},{" "}
                 {delivery.address.number}
 
@@ -278,21 +278,21 @@ export default function DeliveryDetailsDialog({
 
           <section className="grid gap-3 sm:grid-cols-2">
             <div className="rounded-2xl bg-[#FFF7F5] p-4">
-              <p className="text-xs text-[#756A66]">
+              <p className="text-xs text-brand-muted-foreground">
                 Taxa de entrega
               </p>
 
-              <p className="mt-1 font-bold text-[#241B19]">
+              <p className="mt-1 font-bold text-brand-foreground">
                 {formatCurrency(delivery.delivery_fee)}
               </p>
             </div>
 
             <div className="rounded-2xl bg-[#FFF7F5] p-4">
-              <p className="text-xs text-[#756A66]">
+              <p className="text-xs text-brand-muted-foreground">
                 Total do pedido
               </p>
 
-              <p className="mt-1 font-bold text-[#8B0000]">
+              <p className="mt-1 font-bold text-brand-primary">
                 {formatCurrency(delivery.total)}
               </p>
             </div>
@@ -300,18 +300,18 @@ export default function DeliveryDetailsDialog({
 
           {delivery.notes && (
             <section>
-              <p className="text-sm font-bold text-[#241B19]">
+              <p className="text-sm font-bold text-brand-foreground">
                 Observações
               </p>
 
-              <div className="mt-2 rounded-2xl border border-[#EEE6DF] p-4 text-sm leading-6 text-[#756A66]">
+              <div className="mt-2 rounded-2xl border border-brand-border p-4 text-sm leading-6 text-brand-muted-foreground">
                 {delivery.notes}
               </div>
             </section>
           )}
 
-          <section className="rounded-2xl border border-[#EEE6DF] p-5">
-            <div className="flex items-center gap-2 text-[#8B0000]">
+          <section className="rounded-2xl border border-brand-border p-5">
+            <div className="flex items-center gap-2 text-brand-primary">
               <Truck size={18} />
               <p className="font-bold">Andamento da entrega</p>
             </div>
@@ -358,7 +358,7 @@ export default function DeliveryDetailsDialog({
                 onClick={() =>
                   changeStatus(nextAction.status)
                 }
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+                className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 py-3.5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:opacity-60"
               >
                 <nextAction.icon size={18} />
 
@@ -367,7 +367,7 @@ export default function DeliveryDetailsDialog({
                   : nextAction.label}
               </button>
             ) : (
-              <div className="mt-4 rounded-xl bg-[#FFF7F5] p-4 text-sm text-[#756A66]">
+              <div className="mt-4 rounded-xl bg-[#FFF7F5] p-4 text-sm text-brand-muted-foreground">
                 {delivery.status === "completed"
                   ? "Esta entrega já foi concluída."
                   : delivery.status === "cancelled"

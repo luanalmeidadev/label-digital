@@ -22,8 +22,8 @@ O contrato está em `config/installation/types.ts`, a validação em
 ## Preset La'Bel
 
 O preset compatível atual fica em
-`config/installation/presets/label.ts`. Ele possui `schemaVersion: 2` e
-`preset.version: 2`, e reproduz os valores atualmente encontrados no código:
+`config/installation/presets/label.ts`. Ele possui `schemaVersion: 3` e
+`preset.version: 3`, e reproduz os valores atualmente encontrados no código:
 
 - identidade, assets e paleta La'Bel;
 - WhatsApp e Instagram;
@@ -41,6 +41,8 @@ privada de instalação porque esta fase não precisa dela.
 ## Resolução e compatibilidade
 
 `getPublicInstallationProfile()` é a entrada única para consumidores públicos.
+Ela delega a seleção a `config/installation/resolve.ts`. A instalação La'Bel é
+sempre o padrão seguro.
 As seguintes áreas já estão conectadas ao perfil:
 
 1. os fallbacks de `config/store.ts` para nome, contatos, endereço e
@@ -63,8 +65,51 @@ produção da Vercel; o fallback para localhost é restrito ao fluxo local e
 previews podem usar a URL fornecida pela Vercel.
 
 `lib/public-store-settings.ts` continua sendo a fonte operacional do banco para
-nome, contato, endereço, horários, regiões e modalidades. O preset é o fallback
-local e não substitui alterações já feitas no admin ou em `store_settings`.
+nome, contato, endereço, horários, regiões e modalidades da La'Bel. Presets de
+demonstração usam seus próprios dados fictícios e não consultam essa identidade
+operacional, evitando que a marca La'Bel apareça durante a validação local.
+
+## Tema semântico
+
+O tema efetivo é aplicado no elemento `html` por meio de dez variáveis CSS:
+
+- `primary`, `primary-foreground` e `primary-hover`;
+- `secondary`;
+- `background`, `surface` e `surface-muted`;
+- `foreground` e `muted-foreground`;
+- `border`.
+
+`config/installation/theme.ts` converte o tema do perfil nas variáveis
+`--installation-*`. `app/globals.css` as expõe ao Tailwind com utilitários como
+`bg-brand-primary`, `text-brand-foreground` e `border-brand-border`. Estados
+funcionais de sucesso, erro, alerta e informação continuam com suas cores
+semânticas próprias e não devem ser tratados como branding.
+
+## Preset de validação demo-burger
+
+`config/installation/presets/demo-burger.ts` é fictício e existe somente para
+provar que o mesmo core troca identidade, tema, textos, contatos, endereço e SEO
+sem editar componentes. Ele não implementa catálogo, adicionais ou fluxos
+específicos de hamburgueria.
+
+Para executar localmente no PowerShell:
+
+```powershell
+$env:NEXT_PUBLIC_INSTALLATION_PRESET="demo-burger"
+npm.cmd run dev
+```
+
+Para voltar ao padrão La'Bel:
+
+```powershell
+Remove-Item Env:NEXT_PUBLIC_INSTALLATION_PRESET
+npm.cmd run dev
+```
+
+O identificador do preset é público e não contém secrets. O resolver rejeita
+explicitamente qualquer preset diferente de `label` quando `NODE_ENV` é
+`production`, portanto uma build de produção não pode selecionar o demo por
+engano. Não existe seletor no painel administrativo.
 
 ## Divergências encontradas
 
@@ -83,17 +128,21 @@ local e não substitui alterações já feitas no admin ou em `store_settings`.
 
 A aplicação ainda não é totalmente white-label. Permanecem temporariamente:
 
-- cores hardcoded e tokens com namespace La'Bel;
+- tons auxiliares ainda hardcoded que não fazem parte da paleta mínima de marca;
 - horários e cidades de fallback em `config/store.ts`;
 - descrições do catálogo e o fluxo de encomendas específicos de confeitaria;
 - textos operacionais que não representam identidade institucional;
 - namespaces técnicos de Auth e localStorage;
 - configuração operacional armazenada em `store_settings` e tabelas auxiliares.
 
-As cores gerais continuam propositalmente fora desta fase. Somente metadata,
-manifest, Open Graph e branding central leem o tema do perfil. Não se deve
-interpretar esta integração como white-label completo ou como desacoplamento
-dos módulos.
+As cores principais de marca nas lojas pública, autenticação, administrativo,
+componentes compartilhados, botões, badges e impressões já consomem os tokens.
+Tons auxiliares usados em formulários e superfícies específicas permanecem
+temporariamente literais para evitar ampliar o contrato ou produzir alterações
+visuais acidentais. O favicon file-based em `app/icon.svg` também permanece
+estático; manifest, logos e Open Graph já leem o perfil. Não se deve interpretar
+esta integração como white-label completo, catálogo multissegmento ou
+desacoplamento dos módulos.
 
 ## Regra para novos hardcodes
 
@@ -112,8 +161,9 @@ devem ser renomeados sem uma migração de compatibilidade.
 ## Presets futuros
 
 Um novo preset deverá implementar o mesmo `InstallationProfile`, passar por
-`defineInstallationProfile` e possuir identificador e versão próprios. Antes
-disso, será necessário definir como a instalação ativa é selecionada e criar
-testes de caracterização equivalentes. Não se deve copiar o repositório, criar
+`defineInstallationProfile`, possuir identificador e versão próprios e ser
+registrado no resolver. Presets comerciais futuros precisarão de uma estratégia
+de seleção própria para cada instalação; a variável pública atual é deliberada
+e restrita ao desenvolvimento/teste. Não se deve copiar o repositório, criar
 uma branch permanente por cliente ou introduzir condicionais pelo nome da
 empresa.

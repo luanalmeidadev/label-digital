@@ -7,7 +7,7 @@ const installation = getPublicInstallationProfile();
 export default function EmptyProducts() {
   return (
     <section className="pb-8">
-      <div className="rounded-3xl border border-[#EEE6DF] bg-white p-8 text-center shadow-sm">
+      <div className="rounded-3xl border border-brand-border bg-white p-8 text-center shadow-sm">
         <Image
           src="/brand/icon-vermelho.svg"
           alt=""
@@ -16,11 +16,11 @@ export default function EmptyProducts() {
           className="mx-auto opacity-20"
         />
 
-        <h2 className="mt-5 text-xl font-bold text-[#241B19]">
+        <h2 className="mt-5 text-xl font-bold text-brand-foreground">
           Produtos em breve
         </h2>
 
-        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+        <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
           Estamos preparando o cardápio digital da {installation.identity.shortName}.
           Os produtos serão cadastrados em breve.
         </p>

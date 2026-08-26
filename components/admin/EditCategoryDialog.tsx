@@ -44,7 +44,7 @@ export default function EditCategoryDialog({
         render={
           <button
             type="button"
-            className="flex items-center gap-2 rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+            className="flex items-center gap-2 rounded-lg border border-brand-border px-3 py-2 text-xs font-bold text-brand-primary transition hover:border-brand-secondary"
               />
             }
           >
@@ -68,7 +68,7 @@ export default function EditCategoryDialog({
           <div>
             <label
               htmlFor={`category-${id}`}
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Nome da categoria
             </label>
@@ -82,7 +82,7 @@ export default function EditCategoryDialog({
               maxLength={50}
               required
               disabled={saving}
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </div>
 
@@ -91,7 +91,7 @@ export default function EditCategoryDialog({
               type="button"
               onClick={() => setOpen(false)}
               disabled={saving}
-              className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#756A66] disabled:opacity-50"
+              className="rounded-xl border border-brand-border px-4 py-2.5 text-sm font-bold text-brand-muted-foreground disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -99,7 +99,7 @@ export default function EditCategoryDialog({
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#8B0000] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? "Salvando..." : "Salvar alterações"}
             </button>

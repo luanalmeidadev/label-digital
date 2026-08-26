@@ -847,12 +847,12 @@ export default function CheckoutDrawer({
       />
 
       {/* DRAWER */}
-      <aside className="absolute bottom-0 right-0 flex max-h-[95vh] w-full flex-col rounded-t-3xl bg-[#FFFDF9] shadow-2xl sm:bottom-auto sm:top-0 sm:h-full sm:max-h-none sm:max-w-lg sm:rounded-none">
+      <aside className="absolute bottom-0 right-0 flex max-h-[95vh] w-full flex-col rounded-t-3xl bg-brand-background shadow-2xl sm:bottom-auto sm:top-0 sm:h-full sm:max-h-none sm:max-w-lg sm:rounded-none">
         {/* =====================================
             CABEÇALHO
         ===================================== */}
 
-        <div className="flex items-center justify-between border-b border-[#EEE6DF] p-5">
+        <div className="flex items-center justify-between border-b border-brand-border p-5">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -860,7 +860,7 @@ export default function CheckoutDrawer({
                 handleBack
               }
               aria-label="Voltar"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EEE6DF] bg-white text-[#8B0000]"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-brand-border bg-white text-brand-primary"
             >
               <ArrowLeft
                 size={18}
@@ -868,11 +868,11 @@ export default function CheckoutDrawer({
             </button>
 
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+              <p className="text-[10px] font-bold uppercase tracking-[0.15em] text-brand-primary">
                 Checkout
               </p>
 
-              <h2 className="font-bold text-[#241B19]">
+              <h2 className="font-bold text-brand-foreground">
                 {step ===
                 "customer"
                   ? "Finalizar pedido"
@@ -890,7 +890,7 @@ export default function CheckoutDrawer({
               onClose
             }
             aria-label="Fechar checkout"
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EEE6DF] bg-white text-[#756A66]"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-brand-border bg-white text-brand-muted-foreground"
           >
             <X size={19} />
           </button>
@@ -902,27 +902,27 @@ export default function CheckoutDrawer({
 
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
           {/* RESUMO */}
-          <div className="flex items-center justify-between rounded-2xl bg-[#F7F0EA] p-4">
+          <div className="flex items-center justify-between rounded-2xl bg-brand-surface-muted p-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#8B0000]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand-primary">
                 <ShoppingBag
                   size={18}
                 />
               </div>
 
               <div>
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   Sua sacola
                 </p>
 
-                <p className="text-sm font-bold text-[#241B19]">
+                <p className="text-sm font-bold text-brand-foreground">
                   {totalItems}{" "}
                   item(ns)
                 </p>
               </div>
             </div>
 
-            <p className="font-bold text-[#8B0000]">
+            <p className="font-bold text-brand-primary">
               {formatCurrency(
                 subtotal
               )}
@@ -937,15 +937,15 @@ export default function CheckoutDrawer({
             "customer" && (
             <>
               <section className="mt-7">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                   Seus dados
                 </p>
 
-                <h3 className="mt-1 text-lg font-bold text-[#241B19]">
+                <h3 className="mt-1 text-lg font-bold text-brand-foreground">
                   Identifique seu pedido
                 </h3>
 
-                <p className="mt-1 text-sm leading-6 text-[#756A66]">
+                <p className="mt-1 text-sm leading-6 text-brand-muted-foreground">
                   Informe seu nome e o
                   WhatsApp que será usado
                   no atendimento do pedido.
@@ -973,7 +973,7 @@ export default function CheckoutDrawer({
                       placeholder="(48) 99999-9999"
                       autoComplete="tel"
                       inputMode="tel"
-                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none transition focus:border-[#8B0000]"
+                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-brand-foreground outline-none transition focus:border-brand-primary"
                     />
                   </div>
                 </label>
@@ -1001,7 +1001,7 @@ export default function CheckoutDrawer({
                       }
                       placeholder="Seu nome"
                       autoComplete="given-name"
-                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none focus:border-[#8B0000]"
+                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-brand-foreground outline-none focus:border-brand-primary"
                     />
                   </label>
 
@@ -1026,7 +1026,7 @@ export default function CheckoutDrawer({
                       }
                       placeholder="Seu sobrenome"
                       autoComplete="family-name"
-                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none focus:border-[#8B0000]"
+                      className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-brand-foreground outline-none focus:border-brand-primary"
                     />
                   </label>
                 </div>
@@ -1034,11 +1034,11 @@ export default function CheckoutDrawer({
 
               {/* RECEBIMENTO */}
               <section className="mt-8">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                   Recebimento
                 </p>
 
-                <h3 className="mt-1 text-lg font-bold text-[#241B19]">
+                <h3 className="mt-1 text-lg font-bold text-brand-foreground">
                   Como deseja receber?
                 </h3>
 
@@ -1061,16 +1061,16 @@ export default function CheckoutDrawer({
                     className={`rounded-2xl border p-4 text-left transition ${
                       fulfillmentType ===
                       "pickup"
-                        ? "border-[#8B0000] bg-[#8B0000]/5"
-                        : "border-[#EEE6DF] bg-white"
+                        ? "border-brand-primary bg-brand-primary/5"
+                        : "border-brand-border bg-white"
                     }`}
                   >
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-xl ${
                         fulfillmentType ===
                         "pickup"
-                          ? "bg-[#8B0000] text-white"
-                          : "bg-[#F7F0EA] text-[#8B0000]"
+                          ? "bg-brand-primary text-brand-primary-foreground"
+                          : "bg-brand-surface-muted text-brand-primary"
                       }`}
                     >
                       <Store
@@ -1080,11 +1080,11 @@ export default function CheckoutDrawer({
                       />
                     </div>
 
-                    <p className="mt-3 text-sm font-bold text-[#241B19]">
+                    <p className="mt-3 text-sm font-bold text-brand-foreground">
                       Retirada
                     </p>
 
-                    <p className="mt-1 text-xs leading-5 text-[#756A66]">
+                    <p className="mt-1 text-xs leading-5 text-brand-muted-foreground">
                       Retirar na
                       {installation.identity.shortName}.
                     </p>
@@ -1103,16 +1103,16 @@ export default function CheckoutDrawer({
                     className={`rounded-2xl border p-4 text-left transition ${
                       fulfillmentType ===
                       "delivery"
-                        ? "border-[#8B0000] bg-[#8B0000]/5"
-                        : "border-[#EEE6DF] bg-white"
+                        ? "border-brand-primary bg-brand-primary/5"
+                        : "border-brand-border bg-white"
                     }`}
                   >
                     <div
                       className={`flex h-10 w-10 items-center justify-center rounded-xl ${
                         fulfillmentType ===
                         "delivery"
-                          ? "bg-[#8B0000] text-white"
-                          : "bg-[#F7F0EA] text-[#8B0000]"
+                          ? "bg-brand-primary text-brand-primary-foreground"
+                          : "bg-brand-surface-muted text-brand-primary"
                       }`}
                     >
                       <Truck
@@ -1122,11 +1122,11 @@ export default function CheckoutDrawer({
                       />
                     </div>
 
-                    <p className="mt-3 text-sm font-bold text-[#241B19]">
+                    <p className="mt-3 text-sm font-bold text-brand-foreground">
                       Entrega
                     </p>
 
-                    <p className="mt-1 text-xs leading-5 text-[#756A66]">
+                    <p className="mt-1 text-xs leading-5 text-brand-muted-foreground">
                       Receber no seu
                       endereço.
                     </p>
@@ -1144,21 +1144,21 @@ export default function CheckoutDrawer({
 
                 {fulfillmentType ===
                   "pickup" && (
-                  <div className="mt-4 flex gap-3 rounded-2xl bg-[#F7F0EA] p-4">
+                  <div className="mt-4 flex gap-3 rounded-2xl bg-brand-surface-muted p-4">
                     <MapPin
                       size={
                         18
                       }
-                      className="mt-0.5 shrink-0 text-[#8B0000]"
+                      className="mt-0.5 shrink-0 text-brand-primary"
                     />
 
                     <div>
-                      <p className="text-xs font-bold text-[#241B19]">
+                      <p className="text-xs font-bold text-brand-foreground">
                         Endereço para
                         retirada
                       </p>
 
-                      <p className="mt-1 text-xs leading-5 text-[#756A66]">
+                      <p className="mt-1 text-xs leading-5 text-brand-muted-foreground">
                         {storeSettings.pickupAddress}
                       </p>
                     </div>
@@ -1175,20 +1175,20 @@ export default function CheckoutDrawer({
           {step ===
             "address" && (
             <section className="mt-7">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                 Entrega
               </p>
 
-              <h3 className="mt-1 text-lg font-bold text-[#241B19]">
+              <h3 className="mt-1 text-lg font-bold text-brand-foreground">
                 Onde devemos entregar?
               </h3>
 
               <div className="mt-5">
-                <p className="font-bold text-[#241B19]">
+                <p className="font-bold text-brand-foreground">
                   Informe seu endereço
                 </p>
 
-                  <p className="mt-1 text-sm leading-6 text-[#756A66]">
+                  <p className="mt-1 text-sm leading-6 text-brand-muted-foreground">
                     Informe seu CEP e
                     preencheremos os
                     dados automaticamente.
@@ -1239,7 +1239,7 @@ export default function CheckoutDrawer({
                         maxLength={
                           9
                         }
-                        className="h-12 min-w-0 flex-1 rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-[#241B19] outline-none transition focus:border-[#8B0000]"
+                        className="h-12 min-w-0 flex-1 rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm text-brand-foreground outline-none transition focus:border-brand-primary"
                       />
 
                       <button
@@ -1250,7 +1250,7 @@ export default function CheckoutDrawer({
                         disabled={
                           cepLoading
                         }
-                        className="h-12 rounded-xl bg-[#8B0000] px-4 text-sm font-bold text-white disabled:opacity-50"
+                        className="h-12 rounded-xl bg-brand-primary px-4 text-sm font-bold text-brand-primary-foreground disabled:opacity-50"
                       >
                         {cepLoading ? (
                           <Loader2
@@ -1316,7 +1316,7 @@ export default function CheckoutDrawer({
                             )
                           }
                           placeholder="Rua"
-                          className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                          className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-brand-primary"
                         />
                       </label>
 
@@ -1343,7 +1343,7 @@ export default function CheckoutDrawer({
                             }
                             placeholder="123"
                             inputMode="numeric"
-                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-brand-primary"
                           />
                         </label>
 
@@ -1367,7 +1367,7 @@ export default function CheckoutDrawer({
                               )
                             }
                             placeholder="Apto, bloco..."
-                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-brand-primary"
                           />
                         </label>
                       </div>
@@ -1393,7 +1393,7 @@ export default function CheckoutDrawer({
                             )
                           }
                           placeholder="Bairro"
-                          className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-[#8B0000]"
+                          className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-white px-4 text-sm outline-none focus:border-brand-primary"
                         />
                       </label>
 
@@ -1410,7 +1410,7 @@ export default function CheckoutDrawer({
                               city
                             }
                             readOnly
-                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-[#F7F0EA] px-4 text-sm text-[#756A66]"
+                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-brand-surface-muted px-4 text-sm text-brand-muted-foreground"
                           />
                         </label>
 
@@ -1425,7 +1425,7 @@ export default function CheckoutDrawer({
                               uf
                             }
                             readOnly
-                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-[#F7F0EA] px-4 text-sm text-[#756A66]"
+                            className="h-12 w-full rounded-xl border border-[#E6DDD6] bg-brand-surface-muted px-4 text-sm text-brand-muted-foreground"
                           />
                         </label>
                       </div>
@@ -1451,7 +1451,7 @@ export default function CheckoutDrawer({
                           }
                           placeholder="Ex.: portão preto, próximo à farmácia..."
                           rows={3}
-                          className="w-full resize-none rounded-xl border border-[#E6DDD6] bg-white px-4 py-3 text-sm outline-none focus:border-[#8B0000]"
+                          className="w-full resize-none rounded-xl border border-[#E6DDD6] bg-white px-4 py-3 text-sm outline-none focus:border-brand-primary"
                         />
                       </label>
 
@@ -1469,52 +1469,52 @@ export default function CheckoutDrawer({
             "review" && (
             <div className="mt-7 space-y-5">
               {/* CLIENTE */}
-              <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+              <section className="rounded-2xl border border-brand-border bg-white p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                   Cliente
                 </p>
 
-                <p className="mt-2 font-bold text-[#241B19]">
+                <p className="mt-2 font-bold text-brand-foreground">
                   {firstName}{" "}
                   {lastName}
                 </p>
 
-                <p className="mt-1 text-sm text-[#756A66]">
+                <p className="mt-1 text-sm text-brand-muted-foreground">
                   {phone}
                 </p>
               </section>
 
               {/* RECEBIMENTO */}
-              <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+              <section className="rounded-2xl border border-brand-border bg-white p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                   Recebimento
                 </p>
 
                 {fulfillmentType ===
                 "pickup" ? (
                   <>
-                    <p className="mt-2 font-bold text-[#241B19]">
+                    <p className="mt-2 font-bold text-brand-foreground">
                       Retirada na
                       loja
                     </p>
 
-                    <p className="mt-1 text-sm leading-6 text-[#756A66]">
+                    <p className="mt-1 text-sm leading-6 text-brand-muted-foreground">
                       {storeSettings.pickupAddress}
                     </p>
                   </>
                 ) : (
                   <>
                     <div className="mt-2 flex items-center gap-2">
-                      <p className="font-bold text-[#241B19]">
+                      <p className="font-bold text-brand-foreground">
                         Entrega
                       </p>
 
-                      <span className="rounded-full bg-[#F7F0EA] px-2 py-1 text-[10px] font-bold text-[#8B0000]">
+                      <span className="rounded-full bg-brand-surface-muted px-2 py-1 text-[10px] font-bold text-brand-primary">
                         Endereço informado
                       </span>
                     </div>
 
-                    <p className="mt-2 text-sm leading-6 text-[#756A66]">
+                    <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
                       {street},{" "}
                       {number}
 
@@ -1529,7 +1529,7 @@ export default function CheckoutDrawer({
                     </p>
 
                     {reference && (
-                      <p className="mt-2 text-xs text-[#756A66]">
+                      <p className="mt-2 text-xs text-brand-muted-foreground">
                         Referência:{" "}
                         {
                           reference
@@ -1537,13 +1537,13 @@ export default function CheckoutDrawer({
                       </p>
                     )}
 
-                    <div className="mt-3 rounded-xl bg-[#F7F0EA] p-3">
-                      <p className="text-xs text-[#756A66]">
+                    <div className="mt-3 rounded-xl bg-brand-surface-muted p-3">
+                      <p className="text-xs text-brand-muted-foreground">
                         Taxa de
                         entrega
                       </p>
 
-                      <p className="mt-1 text-sm font-bold text-[#8B0000]">
+                      <p className="mt-1 text-sm font-bold text-brand-primary">
                         A consultar
                       </p>
                     </div>
@@ -1552,8 +1552,8 @@ export default function CheckoutDrawer({
               </section>
 
               {/* VALORES */}
-              <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+              <section className="rounded-2xl border border-brand-border bg-white p-4">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                   Forma de pagamento
                 </p>
 
@@ -1600,8 +1600,8 @@ export default function CheckoutDrawer({
                         }}
                         className={`flex min-h-16 items-center gap-2 rounded-xl border p-3 text-left text-sm font-bold transition ${
                           selected
-                            ? "border-[#8B0000] bg-[#8B0000] text-white"
-                            : "border-[#E6DDD6] text-[#49352C] hover:border-[#D2B48C]"
+                            ? "border-brand-primary bg-brand-primary text-brand-primary-foreground"
+                            : "border-[#E6DDD6] text-[#49352C] hover:border-brand-secondary"
                         }`}
                       >
                         <Icon size={18} />
@@ -1624,18 +1624,18 @@ export default function CheckoutDrawer({
                             setCashChangeFor("");
                           }
                         }}
-                        className="h-4 w-4 accent-[#8B0000]"
+                        className="h-4 w-4 accent-brand-primary"
                       />
                       Preciso de troco
                     </label>
 
                     {needsChange && (
                       <label className="mt-3 block">
-                        <span className="mb-2 block text-xs font-bold text-[#756A66]">
+                        <span className="mb-2 block text-xs font-bold text-brand-muted-foreground">
                           Troco para quanto?
                         </span>
-                        <div className="flex h-11 items-center rounded-xl border border-[#E6DDD6] bg-white px-3 focus-within:border-[#8B0000]">
-                          <span className="mr-2 text-sm font-bold text-[#756A66]">
+                        <div className="flex h-11 items-center rounded-xl border border-[#E6DDD6] bg-white px-3 focus-within:border-brand-primary">
+                          <span className="mr-2 text-sm font-bold text-brand-muted-foreground">
                             R$
                           </span>
                           <input
@@ -1663,13 +1663,13 @@ export default function CheckoutDrawer({
               </section>
 
               {/* VALORES */}
-              <section className="rounded-2xl border border-[#EEE6DF] bg-white p-4">
+              <section className="rounded-2xl border border-brand-border bg-white p-4">
                 <div className="flex justify-between gap-4">
-                  <span className="text-sm text-[#756A66]">
+                  <span className="text-sm text-brand-muted-foreground">
                     Produtos
                   </span>
 
-                  <span className="font-bold text-[#241B19]">
+                  <span className="font-bold text-brand-foreground">
                     {formatCurrency(
                       subtotal
                     )}
@@ -1679,22 +1679,22 @@ export default function CheckoutDrawer({
                 {fulfillmentType ===
                   "delivery" && (
                   <div className="mt-3 flex justify-between gap-4">
-                    <span className="text-sm text-[#756A66]">
+                    <span className="text-sm text-brand-muted-foreground">
                       Entrega
                     </span>
 
-                    <span className="text-sm font-bold text-[#8B0000]">
+                    <span className="text-sm font-bold text-brand-primary">
                       A consultar
                     </span>
                   </div>
                 )}
 
-                <div className="mt-4 flex justify-between gap-4 border-t border-[#EEE6DF] pt-4">
-                  <span className="font-bold text-[#241B19]">
+                <div className="mt-4 flex justify-between gap-4 border-t border-brand-border pt-4">
+                  <span className="font-bold text-brand-foreground">
                     Subtotal
                   </span>
 
-                  <span className="text-xl font-bold text-[#8B0000]">
+                  <span className="text-xl font-bold text-brand-primary">
                     {formatCurrency(
                       subtotal
                     )}
@@ -1709,7 +1709,7 @@ export default function CheckoutDrawer({
             RODAPÉ
         ===================================== */}
 
-        <div className="border-t border-[#EEE6DF] bg-white p-5">
+        <div className="border-t border-brand-border bg-white p-5">
           {/* CLIENTE */}
           {step ===
             "customer" && (
@@ -1719,7 +1719,7 @@ export default function CheckoutDrawer({
               onClick={
                 handleCustomerContinue
               }
-              className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-12 w-full rounded-xl bg-brand-primary text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               Continuar
             </button>
@@ -1736,7 +1736,7 @@ export default function CheckoutDrawer({
               onClick={
                 handleAddressContinue
               }
-              className="h-12 w-full rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-12 w-full rounded-xl bg-brand-primary text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               {cepLoading
                 ? "Consultando CEP..."
@@ -1774,13 +1774,13 @@ export default function CheckoutDrawer({
                 </div>
               )}
 
-              <p className="text-center text-[11px] leading-4 text-[#756A66]">
+              <p className="text-center text-[11px] leading-4 text-brand-muted-foreground">
                 Ao enviar, seus dados serão usados para atender e acompanhar
                 o pedido, conforme o{" "}
                 <Link
                   href="/privacidade"
                   target="_blank"
-                  className="font-bold text-[#8B0000] underline underline-offset-2"
+                  className="font-bold text-brand-primary underline underline-offset-2"
                 >
                   Aviso de Privacidade
                 </Link>
@@ -1798,7 +1798,7 @@ export default function CheckoutDrawer({
                   !storeStatus?.isOpen ||
                   !paymentValid
                 }
-                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
+                className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {isPending ? (
                   <>

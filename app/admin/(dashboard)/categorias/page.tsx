@@ -34,15 +34,15 @@ export default async function CategoriasPage() {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
               Catálogo
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+            <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
               Categorias
             </h1>
 
-            <p className="mt-2 text-sm text-[#756A66]">
+            <p className="mt-2 text-sm text-brand-muted-foreground">
               Organize as categorias exibidas no cardápio digital.
             </p>
           </div>
@@ -58,12 +58,12 @@ export default async function CategoriasPage() {
               minLength={2}
               maxLength={50}
               placeholder="Nome da categoria"
-              className="min-w-0 flex-1 rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#8B0000] sm:w-56"
+              className="min-w-0 flex-1 rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-primary sm:w-56"
             />
 
             <button
               type="submit"
-              className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000]"
+              className="flex shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
             >
               <Plus size={18} />
               Adicionar
@@ -71,26 +71,26 @@ export default async function CategoriasPage() {
           </form>
         </div>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="border-b border-brand-border p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
                 <Tags size={20} />
               </div>
 
               <div>
-                <h2 className="font-bold text-[#241B19]">
+                <h2 className="font-bold text-brand-foreground">
                   Categorias cadastradas
                 </h2>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   {categories?.length ?? 0} categoria(s)
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="divide-y divide-[#EEE6DF]">
+          <div className="divide-y divide-brand-border">
             {categories?.map((category, index) => {
               const firstCategory = index === 0;
               const lastCategory = index === categories.length - 1;
@@ -101,16 +101,16 @@ export default async function CategoriasPage() {
                   className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="flex items-center gap-4">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF7F5] text-sm font-bold text-[#8B0000]">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#FFF7F5] text-sm font-bold text-brand-primary">
                       {category.sort_order}
                     </div>
 
                     <div>
-                      <p className="font-bold text-[#241B19]">
+                      <p className="font-bold text-brand-foreground">
                         {category.name}
                       </p>
 
-                      <p className="mt-1 text-xs text-[#756A66]">
+                      <p className="mt-1 text-xs text-brand-muted-foreground">
                         /{category.slug}
                       </p>
                     </div>
@@ -142,7 +142,7 @@ export default async function CategoriasPage() {
 
                       <button
                         type="submit"
-                        className="rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+                        className="rounded-lg border border-brand-border px-3 py-2 text-xs font-bold text-brand-primary transition hover:border-brand-secondary"
                       >
                         {category.active ? "Desativar" : "Ativar"}
                       </button>
@@ -154,7 +154,7 @@ export default async function CategoriasPage() {
                       updateAction={updateCategory}
                     />
 
-                    <div className="mx-1 hidden h-6 w-px bg-[#EEE6DF] sm:block" />
+                    <div className="mx-1 hidden h-6 w-px bg-brand-border sm:block" />
 
                     <form action={moveCategory}>
                       <input
@@ -173,7 +173,7 @@ export default async function CategoriasPage() {
                         type="submit"
                         title="Mover para cima"
                         disabled={firstCategory}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#EEE6DF] text-[#8B0000] transition hover:border-[#D2B48C] disabled:cursor-not-allowed disabled:opacity-30"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-border text-brand-primary transition hover:border-brand-secondary disabled:cursor-not-allowed disabled:opacity-30"
                       >
                         <ArrowUp size={15} />
                       </button>
@@ -196,7 +196,7 @@ export default async function CategoriasPage() {
                         type="submit"
                         title="Mover para baixo"
                         disabled={lastCategory}
-                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#EEE6DF] text-[#8B0000] transition hover:border-[#D2B48C] disabled:cursor-not-allowed disabled:opacity-30"
+                        className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-border text-brand-primary transition hover:border-brand-secondary disabled:cursor-not-allowed disabled:opacity-30"
                       >
                         <ArrowDown size={15} />
                       </button>
@@ -216,14 +216,14 @@ export default async function CategoriasPage() {
               <div className="p-10 text-center">
                 <Tags
                   size={36}
-                  className="mx-auto text-[#D2B48C]"
+                  className="mx-auto text-brand-secondary"
                 />
 
-                <p className="mt-4 font-bold text-[#241B19]">
+                <p className="mt-4 font-bold text-brand-foreground">
                   Nenhuma categoria cadastrada
                 </p>
 
-                <p className="mt-2 text-sm text-[#756A66]">
+                <p className="mt-2 text-sm text-brand-muted-foreground">
                   Crie a primeira categoria para começar a organizar o
                   cardápio.
                 </p>

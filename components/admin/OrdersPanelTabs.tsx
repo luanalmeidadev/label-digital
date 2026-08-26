@@ -46,15 +46,15 @@ export default function OrdersPanelTabs({
             }
             className={`flex items-center gap-3 rounded-2xl border p-4 transition ${
               selected
-                ? "border-[#8B0000] bg-[#8B0000] text-white shadow-sm"
-                : "border-[#EEE6DF] bg-white text-[#241B19] hover:border-[#D2B48C]"
+                ? "border-brand-primary bg-brand-primary text-brand-primary-foreground shadow-sm"
+                : "border-brand-border bg-white text-brand-foreground hover:border-brand-secondary"
             }`}
           >
             <span
               className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
                 selected
-                  ? "bg-white/15 text-[#D2B48C]"
-                  : "bg-[#8B0000]/10 text-[#8B0000]"
+                  ? "bg-white/15 text-brand-secondary"
+                  : "bg-brand-primary/10 text-brand-primary"
               }`}
             >
               <Icon size={19} />
@@ -67,7 +67,7 @@ export default function OrdersPanelTabs({
                 className={`mt-0.5 block text-xs ${
                   selected
                     ? "text-white/70"
-                    : "text-[#756A66]"
+                    : "text-brand-muted-foreground"
                 }`}
               >
                 {tab.description}

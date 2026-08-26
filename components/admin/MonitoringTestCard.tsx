@@ -22,17 +22,17 @@ export default function MonitoringTestCard() {
   }
 
   return (
-    <section className="mt-8 rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm sm:p-6">
+    <section className="mt-8 rounded-3xl border border-brand-border bg-white p-5 shadow-sm sm:p-6">
       <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
             <Activity size={20} />
           </div>
           <div>
-            <h2 className="font-bold text-[#241B19]">
+            <h2 className="font-bold text-brand-foreground">
               Monitoramento do sistema
             </h2>
-            <p className="mt-1 max-w-2xl text-xs leading-5 text-[#756A66]">
+            <p className="mt-1 max-w-2xl text-xs leading-5 text-brand-muted-foreground">
               Envie um evento controlado para confirmar que os erros estão
               chegando ao Sentry. Nenhum pedido ou dado de cliente será usado.
             </p>

@@ -124,91 +124,91 @@ export default async function EntregasPage() {
     <main className="p-5 sm:p-8">
       <div className="mx-auto max-w-7xl">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
             Logística
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+          <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
             Entregas
           </h1>
 
-          <p className="mt-2 text-sm text-[#756A66]">
+          <p className="mt-2 text-sm text-brand-muted-foreground">
             Acompanhe e gerencie os pedidos que serão
             entregues no endereço dos clientes.
           </p>
         </div>
 
         <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <Truck size={20} />
             </div>
 
-           <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm"> 
+           <p className="mt-4 text-xs leading-4 text-brand-muted-foreground sm:mt-5 sm:text-sm">
               Entregas
             </p>
 
-            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-1 text-xl font-bold text-brand-foreground sm:text-2xl">
               {totalDeliveries}
             </p>
           </article>
 
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
               <Clock3 size={20} />
             </div>
 
-            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
+            <p className="mt-4 text-xs leading-4 text-brand-muted-foreground sm:mt-5 sm:text-sm">
               Aguardando saída
             </p>
 
-            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-1 text-xl font-bold text-brand-foreground sm:text-2xl">
               {waitingDeliveries}
             </p>
           </article>
 
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-orange-100 text-orange-700">
               <Truck size={20} />
             </div>
 
-            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
+            <p className="mt-4 text-xs leading-4 text-brand-muted-foreground sm:mt-5 sm:text-sm">
               Em rota
             </p>
 
-            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-1 text-xl font-bold text-brand-foreground sm:text-2xl">
               {onRouteDeliveries}
             </p>
           </article>
 
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <CheckCircle2 size={20} />
             </div>
 
-            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
+            <p className="mt-4 text-xs leading-4 text-brand-muted-foreground sm:mt-5 sm:text-sm">
               Concluídas
             </p>
 
-            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-1 text-xl font-bold text-brand-foreground sm:text-2xl">
               {completedDeliveries}
             </p>
           </article>
         </section>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="border-b border-brand-border p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
                 <Truck size={20} />
               </div>
 
               <div>
-                <h2 className="font-bold text-[#241B19]">
+                <h2 className="font-bold text-brand-foreground">
                   Pedidos para entrega
                 </h2>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   {totalDeliveries} entrega(s)
                 </p>
               </div>
@@ -217,7 +217,7 @@ export default async function EntregasPage() {
 
           {deliveries &&
           deliveries.length > 0 ? (
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {deliveries.map(
                 (delivery) => {
                   const customer =
@@ -241,7 +241,7 @@ export default async function EntregasPage() {
                     >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-3">
-                          <h3 className="font-bold text-[#241B19]">
+                          <h3 className="font-bold text-brand-foreground">
                             Pedido #
                             {
                               delivery.order_number
@@ -263,14 +263,14 @@ export default async function EntregasPage() {
                           </span>
                         </div>
 
-                        <p className="mt-3 font-bold text-[#241B19]">
+                        <p className="mt-3 font-bold text-brand-foreground">
                           {customer
                             ? `${customer.first_name} ${customer.last_name}`
                             : "Cliente não identificado"}
                         </p>
 
                         {customer && (
-                          <div className="mt-1 flex items-center gap-2 text-sm text-[#756A66]">
+                          <div className="mt-1 flex items-center gap-2 text-sm text-brand-muted-foreground">
                             <Phone
                               size={14}
                             />
@@ -282,7 +282,7 @@ export default async function EntregasPage() {
                         )}
 
                         {address ? (
-                          <div className="mt-4 flex items-start gap-2 text-sm leading-6 text-[#756A66]">
+                          <div className="mt-4 flex items-start gap-2 text-sm leading-6 text-brand-muted-foreground">
                             <MapPin
                               size={15}
                               className="mt-1 shrink-0"
@@ -329,7 +329,7 @@ export default async function EntregasPage() {
                           </p>
                         )}
 
-                        <p className="mt-3 text-xs text-[#756A66]">
+                        <p className="mt-3 text-xs text-brand-muted-foreground">
                           Criado em{" "}
                           {formatDate(
                             delivery.created_at
@@ -340,12 +340,12 @@ export default async function EntregasPage() {
                       <div className="flex flex-col gap-4 xl:items-end">
                         <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[320px]">
                           <div className="rounded-xl bg-[#FFF7F5] p-4">
-                            <p className="text-xs text-[#756A66]">
+                            <p className="text-xs text-brand-muted-foreground">
                               Taxa de
                               entrega
                             </p>
 
-                            <p className="mt-1 font-bold text-[#241B19]">
+                            <p className="mt-1 font-bold text-brand-foreground">
                               {formatCurrency(
                                 Number(
                                   delivery.delivery_fee
@@ -355,12 +355,12 @@ export default async function EntregasPage() {
                           </div>
 
                           <div className="rounded-xl bg-[#FFF7F5] p-4">
-                            <p className="text-xs text-[#756A66]">
+                            <p className="text-xs text-brand-muted-foreground">
                               Total do
                               pedido
                             </p>
 
-                            <p className="mt-1 font-bold text-[#8B0000]">
+                            <p className="mt-1 font-bold text-brand-primary">
                               {formatCurrency(
                                 Number(
                                   delivery.total
@@ -443,15 +443,15 @@ export default async function EntregasPage() {
             </div>
           ) : (
             <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
                 <Truck size={28} />
               </div>
 
-              <h3 className="mt-5 text-xl font-bold text-[#241B19]">
+              <h3 className="mt-5 text-xl font-bold text-brand-foreground">
                 Nenhuma entrega ainda
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
                 Pedidos escolhidos para
                 retirada não aparecem aqui.
                 Somente entregas são listadas

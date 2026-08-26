@@ -108,7 +108,7 @@ export default function CustomerDetailsDialog({
         render={
           <button
             type="button"
-            className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#8B0000] transition hover:border-[#D2B48C] hover:bg-[#FFF7F5]"
+            className="rounded-xl border border-brand-border px-4 py-2.5 text-sm font-bold text-brand-primary transition hover:border-brand-secondary hover:bg-[#FFF7F5]"
           />
         }
       >
@@ -129,24 +129,24 @@ export default function CustomerDetailsDialog({
 
         <div className="mt-5 space-y-6">
           {/* DADOS DO CLIENTE */}
-          <section className="rounded-2xl border border-[#EEE6DF] p-5">
-            <div className="flex items-center gap-2 text-[#8B0000]">
+          <section className="rounded-2xl border border-brand-border p-5">
+            <div className="flex items-center gap-2 text-brand-primary">
               <UserRound size={18} />
 
               <p className="font-bold">Dados do cliente</p>
             </div>
 
             <div className="mt-4">
-              <p className="font-bold text-[#241B19]">
+              <p className="font-bold text-brand-foreground">
                 {customer.first_name} {customer.last_name}
               </p>
 
-              <div className="mt-2 flex items-center gap-2 text-sm text-[#756A66]">
+              <div className="mt-2 flex items-center gap-2 text-sm text-brand-muted-foreground">
                 <Phone size={15} />
                 {customer.phone}
               </div>
 
-              <p className="mt-2 text-xs text-[#756A66]">
+              <p className="mt-2 text-xs text-brand-muted-foreground">
                 Cliente desde {formatDate(customer.created_at)}
               </p>
             </div>
@@ -155,39 +155,39 @@ export default function CustomerDetailsDialog({
           {/* RESUMO */}
           <section className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl bg-[#FFF7F5] p-4">
-              <div className="flex items-center gap-2 text-[#756A66]">
+              <div className="flex items-center gap-2 text-brand-muted-foreground">
                 <ShoppingBag size={16} />
 
                 <p className="text-xs">Pedidos</p>
               </div>
 
-              <p className="mt-2 text-xl font-bold text-[#241B19]">
+              <p className="mt-2 text-xl font-bold text-brand-foreground">
                 {orders.length}
               </p>
             </div>
 
             <div className="rounded-2xl bg-[#FFF7F5] p-4">
-              <div className="flex items-center gap-2 text-[#756A66]">
+              <div className="flex items-center gap-2 text-brand-muted-foreground">
                 <CheckCircle2 size={16} />
 
                 <p className="text-xs">Finalizados</p>
               </div>
 
-              <p className="mt-2 text-xl font-bold text-[#241B19]">
+              <p className="mt-2 text-xl font-bold text-brand-foreground">
                 {completedOrders.length}
               </p>
             </div>
 
             <div className="rounded-2xl bg-[#FFF7F5] p-4">
-              <p className="text-xs text-[#756A66]">
+              <p className="text-xs text-brand-muted-foreground">
                 Total gasto
               </p>
 
-              <p className="mt-2 text-xl font-bold text-[#8B0000]">
+              <p className="mt-2 text-xl font-bold text-brand-primary">
                 {formatCurrency(totalSpent)}
               </p>
 
-              <p className="mt-1 text-[11px] text-[#756A66]">
+              <p className="mt-1 text-[11px] text-brand-muted-foreground">
                 Somente finalizados
               </p>
             </div>
@@ -196,9 +196,9 @@ export default function CustomerDetailsDialog({
           {/* ENDEREÇOS */}
           <section>
             <div className="flex items-center gap-2">
-              <MapPin size={18} className="text-[#8B0000]" />
+              <MapPin size={18} className="text-brand-primary" />
 
-              <h3 className="font-bold text-[#241B19]">
+              <h3 className="font-bold text-brand-foreground">
                 Endereços
               </h3>
             </div>
@@ -208,21 +208,21 @@ export default function CustomerDetailsDialog({
                 {customer.addresses.map((address) => (
                   <div
                     key={address.id}
-                    className="rounded-2xl border border-[#EEE6DF] p-4"
+                    className="rounded-2xl border border-brand-border p-4"
                   >
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="font-bold text-[#241B19]">
+                      <p className="font-bold text-brand-foreground">
                         {address.label || "Endereço"}
                       </p>
 
                       {address.is_default && (
-                        <span className="rounded-full bg-[#8B0000]/10 px-2.5 py-1 text-[11px] font-bold text-[#8B0000]">
+                        <span className="rounded-full bg-brand-primary/10 px-2.5 py-1 text-[11px] font-bold text-brand-primary">
                           Principal
                         </span>
                       )}
                     </div>
 
-                    <p className="mt-2 text-sm leading-6 text-[#756A66]">
+                    <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
                       {address.street}, {address.number}
 
                       {address.complement
@@ -244,7 +244,7 @@ export default function CustomerDetailsDialog({
                 ))}
               </div>
             ) : (
-              <div className="mt-3 rounded-2xl border border-dashed border-[#EEE6DF] p-5 text-sm text-[#756A66]">
+              <div className="mt-3 rounded-2xl border border-dashed border-brand-border p-5 text-sm text-brand-muted-foreground">
                 Nenhum endereço cadastrado.
               </div>
             )}
@@ -253,16 +253,16 @@ export default function CustomerDetailsDialog({
           {/* HISTÓRICO */}
           <section>
             <div className="flex items-center gap-2">
-              <Clock3 size={18} className="text-[#8B0000]" />
+              <Clock3 size={18} className="text-brand-primary" />
 
-              <h3 className="font-bold text-[#241B19]">
+              <h3 className="font-bold text-brand-foreground">
                 Histórico de pedidos
               </h3>
             </div>
 
             {orders.length > 0 ? (
-              <div className="mt-3 overflow-hidden rounded-2xl border border-[#EEE6DF]">
-                <div className="divide-y divide-[#EEE6DF]">
+              <div className="mt-3 overflow-hidden rounded-2xl border border-brand-border">
+                <div className="divide-y divide-brand-border">
                   {orders.map((order) => (
                     <div
                       key={order.id}
@@ -270,7 +270,7 @@ export default function CustomerDetailsDialog({
                     >
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <p className="font-bold text-[#241B19]">
+                          <p className="font-bold text-brand-foreground">
                             Pedido #{order.order_number}
                           </p>
 
@@ -285,7 +285,7 @@ export default function CustomerDetailsDialog({
                           </span>
                         </div>
 
-                        <p className="mt-2 text-xs text-[#756A66]">
+                        <p className="mt-2 text-xs text-brand-muted-foreground">
                           {order.order_type === "delivery"
                             ? "Entrega"
                             : "Retirada"}{" "}
@@ -294,11 +294,11 @@ export default function CustomerDetailsDialog({
                       </div>
 
                       <div className="sm:text-right">
-                        <p className="text-xs text-[#756A66]">
+                        <p className="text-xs text-brand-muted-foreground">
                           Total
                         </p>
 
-                        <p className="mt-1 font-bold text-[#8B0000]">
+                        <p className="mt-1 font-bold text-brand-primary">
                           {formatCurrency(Number(order.total))}
                         </p>
                       </div>
@@ -307,7 +307,7 @@ export default function CustomerDetailsDialog({
                 </div>
               </div>
             ) : (
-              <div className="mt-3 rounded-2xl border border-dashed border-[#EEE6DF] p-5 text-sm text-[#756A66]">
+              <div className="mt-3 rounded-2xl border border-dashed border-brand-border p-5 text-sm text-brand-muted-foreground">
                 Este cliente ainda não possui pedidos.
               </div>
             )}

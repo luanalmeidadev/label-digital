@@ -5,12 +5,16 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --label-wine: #8b0000;
-  --label-cream: #d2b48c;
-  --surface: #ffffff;
-
-  --text-primary: #241b19;
-  --text-secondary: #756a66;
+  --installation-primary: #8b0000;
+  --installation-primary-foreground: #ffffff;
+  --installation-primary-hover: #700000;
+  --installation-secondary: #d2b48c;
+  --installation-background: #fffdf9;
+  --installation-surface: #ffffff;
+  --installation-surface-muted: #f7f0ea;
+  --installation-foreground: #241b19;
+  --installation-muted-foreground: #756a66;
+  --installation-border: #eee6df;
 
   --border: oklch(0.922 0 0);
 
@@ -56,7 +60,7 @@
 
 body {
   margin: 0;
-  color: var(--text-primary);
+  color: var(--installation-foreground);
 
   font-family:
     var(--font-archivo),
@@ -77,11 +81,21 @@ button {
 }
 
 ::selection {
-  background: var(--label-cream);
-  color: var(--label-wine);
+  background: var(--installation-secondary);
+  color: var(--installation-primary);
 }
 
 @theme inline {
+  --color-brand-primary: var(--installation-primary);
+  --color-brand-primary-foreground: var(--installation-primary-foreground);
+  --color-brand-primary-hover: var(--installation-primary-hover);
+  --color-brand-secondary: var(--installation-secondary);
+  --color-brand-background: var(--installation-background);
+  --color-brand-surface: var(--installation-surface);
+  --color-brand-surface-muted: var(--installation-surface-muted);
+  --color-brand-foreground: var(--installation-foreground);
+  --color-brand-muted-foreground: var(--installation-muted-foreground);
+  --color-brand-border: var(--installation-border);
   --font-heading: var(--font-sans);
   --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);

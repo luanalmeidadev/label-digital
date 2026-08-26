@@ -16,15 +16,15 @@ export default function AdminErrorPage({
   }, [error]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#FFFDF9] px-5 py-12">
-      <section className="w-full max-w-lg rounded-3xl border border-[#EEE6DF] bg-white p-7 text-center shadow-sm sm:p-10">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+    <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-12">
+      <section className="w-full max-w-lg rounded-3xl border border-brand-border bg-white p-7 text-center shadow-sm sm:p-10">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
           Painel administrativo
         </p>
-        <h1 className="mt-3 text-2xl font-bold text-[#241B19]">
+        <h1 className="mt-3 text-2xl font-bold text-brand-foreground">
           Não foi possível carregar esta área
         </h1>
-        <p className="mt-3 text-sm leading-6 text-[#756A66]">
+        <p className="mt-3 text-sm leading-6 text-brand-muted-foreground">
           Nenhuma alteração foi realizada. Tente novamente e,
           se o problema continuar, informe o código abaixo.
         </p>
@@ -39,14 +39,14 @@ export default function AdminErrorPage({
           <button
             type="button"
             onClick={reset}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white transition hover:bg-[#700000]"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
           >
             <RefreshCw size={17} />
             Tentar novamente
           </button>
           <Link
             href="/admin"
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-[#D2B48C] px-5 text-sm font-bold text-[#8B0000] transition hover:bg-[#FFF7F5]"
+            className="inline-flex h-12 items-center justify-center rounded-xl border border-brand-secondary px-5 text-sm font-bold text-brand-primary transition hover:bg-[#FFF7F5]"
           >
             Voltar à Visão geral
           </Link>

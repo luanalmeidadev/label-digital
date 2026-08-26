@@ -106,7 +106,7 @@ export default async function CashClosingPrintPage({
   );
 
   return (
-    <main className="min-h-screen bg-[#F8F4EF] p-5 text-[#241B19] print:bg-white print:p-0">
+    <main className="min-h-screen bg-[#F8F4EF] p-5 text-brand-foreground print:bg-white print:p-0">
       <div className="mx-auto max-w-3xl">
         <div className="mb-5 flex justify-end print:hidden">
           <PrintOrderButton />
@@ -118,7 +118,7 @@ export default async function CashClosingPrintPage({
               {installation.identity.name}
             </h1>
             <p className="mt-1 text-sm font-bold uppercase">Fechamento de caixa</p>
-            <p className="mt-2 text-xs text-[#756A66]">
+            <p className="mt-2 text-xs text-brand-muted-foreground">
               Aberto em {formatDate(session.opened_at)} · Fechado em{" "}
               {formatDate(session.closed_at)}
             </p>
@@ -131,8 +131,8 @@ export default async function CashClosingPrintPage({
               ["Contado", session.closing_cash_counted],
               ["Diferença", session.difference],
             ].map(([label, value]) => (
-              <div key={String(label)} className="rounded-xl border border-[#EEE6DF] p-3">
-                <p className="text-[10px] font-bold uppercase text-[#756A66]">
+              <div key={String(label)} className="rounded-xl border border-brand-border p-3">
+                <p className="text-[10px] font-bold uppercase text-brand-muted-foreground">
                   {label}
                 </p>
                 <p className="mt-1 text-sm font-bold">
@@ -144,7 +144,7 @@ export default async function CashClosingPrintPage({
 
           <section className="mt-6">
             <h2 className="text-sm font-bold uppercase">Vendas por pagamento</h2>
-            <div className="mt-2 divide-y divide-[#EEE6DF] border-y border-[#EEE6DF]">
+            <div className="mt-2 divide-y divide-brand-border border-y border-brand-border">
               {Object.entries(paymentTotals).map(([method, amount]) => (
                 <p key={method} className="flex justify-between gap-4 py-2 text-sm">
                   <span>
@@ -156,7 +156,7 @@ export default async function CashClosingPrintPage({
                 </p>
               ))}
               {Object.keys(paymentTotals).length === 0 && (
-                <p className="py-3 text-sm text-[#756A66]">Nenhuma venda.</p>
+                <p className="py-3 text-sm text-brand-muted-foreground">Nenhuma venda.</p>
               )}
             </div>
           </section>

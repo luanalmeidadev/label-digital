@@ -24,8 +24,8 @@ const whatsappUrl = `https://wa.me/${installation.contact.whatsapp}?text=${encod
 
 export default function PrivacyPage() {
   return (
-    <main className="min-h-screen bg-[#FFFDF9]">
-      <header className="bg-[#8B0000]">
+    <main className="min-h-screen bg-brand-background">
+      <header className="bg-brand-primary">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-5 px-5 py-5">
           <BrandLogo variant="header" eager />
           <Link
@@ -39,20 +39,20 @@ export default function PrivacyPage() {
       </header>
 
       <article className="mx-auto max-w-3xl px-5 py-12 sm:py-16">
-        <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+        <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
           Aviso de privacidade
         </p>
-        <h1 className="mt-3 text-3xl font-bold text-[#241B19] sm:text-4xl">
+        <h1 className="mt-3 text-3xl font-bold text-brand-foreground sm:text-4xl">
           Como cuidamos dos seus dados
         </h1>
-        <p className="mt-4 text-sm leading-7 text-[#756A66] sm:text-base">
+        <p className="mt-4 text-sm leading-7 text-brand-muted-foreground sm:text-base">
           Este aviso explica, de forma simples, como {legal.controllerName}
           utiliza os dados informados no cardápio digital. Última atualização: {privacyNoticeDate}.
         </p>
 
         <div className="mt-10 space-y-8 text-sm leading-7 text-[#493F3B] sm:text-base">
           <section>
-            <h2 className="text-xl font-bold text-[#241B19]">
+            <h2 className="text-xl font-bold text-brand-foreground">
               1. Quem é responsável
             </h2>
             <p className="mt-2">
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#241B19]">
+            <h2 className="text-xl font-bold text-brand-foreground">
               2. Dados utilizados
             </h2>
             <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -83,7 +83,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#241B19]">
+            <h2 className="text-xl font-bold text-brand-foreground">
               3. Para que usamos os dados
             </h2>
             <p className="mt-2">
@@ -96,7 +96,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#241B19]">
+            <h2 className="text-xl font-bold text-brand-foreground">
               4. Serviços utilizados
             </h2>
             <p className="mt-2">
@@ -109,7 +109,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#241B19]">
+            <h2 className="text-xl font-bold text-brand-foreground">
               5. Armazenamento e eliminação
             </h2>
             <p className="mt-2">
@@ -121,7 +121,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#241B19]">
+            <h2 className="text-xl font-bold text-brand-foreground">
               6. Carrinho e cookies técnicos
             </h2>
             <p className="mt-2">
@@ -133,7 +133,7 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-[#241B19]">
+            <h2 className="text-xl font-bold text-brand-foreground">
               7. Seus direitos
             </h2>
             <p className="mt-2">
@@ -146,7 +146,7 @@ export default function PrivacyPage() {
           </section>
         </div>
 
-        <section className="mt-10 rounded-3xl bg-[#8B0000] p-6 text-white sm:p-8">
+        <section className="mt-10 rounded-3xl bg-brand-primary p-6 text-brand-primary-foreground sm:p-8">
           <h2 className="text-xl font-bold">
             Fale com a {installation.identity.shortName}
           </h2>
@@ -158,7 +158,7 @@ export default function PrivacyPage() {
             href={whatsappUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#D2B48C] px-5 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-[#E1C8A8]"
+            className="mt-5 inline-flex items-center gap-2 rounded-xl bg-brand-secondary px-5 py-3 text-sm font-bold text-brand-primary transition hover:bg-[#E1C8A8]"
           >
             <MessageCircle size={18} />
             Solicitar atendimento

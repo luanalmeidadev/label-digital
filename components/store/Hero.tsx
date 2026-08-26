@@ -116,10 +116,10 @@ export default function Hero({
   );
 
   return (
-    <section className="bg-[#8B0000] pb-10">
+    <section className="bg-brand-primary pb-10">
       <div className="mx-auto max-w-6xl px-5">
         <div className="max-w-xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-[#D2B48C]">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-brand-secondary">
             {storeName}
           </p>
 
@@ -138,7 +138,7 @@ export default function Hero({
 
         <div className="mt-3 grid gap-3 sm:grid-cols-2">
           <div className="flex items-start gap-3 rounded-2xl bg-white/10 p-4 text-white">
-            <Clock3 size={20} className="mt-0.5 shrink-0 text-[#D2B48C]" />
+            <Clock3 size={20} className="mt-0.5 shrink-0 text-brand-secondary" />
 
             <div>
               <p className="text-sm font-bold">Horário de atendimento</p>
@@ -154,7 +154,7 @@ export default function Hero({
           </div>
 
           <div className="flex items-start gap-3 rounded-2xl bg-white/10 p-4 text-white">
-            <MapPin size={20} className="mt-0.5 shrink-0 text-[#D2B48C]" />
+            <MapPin size={20} className="mt-0.5 shrink-0 text-brand-secondary" />
 
             <div>
               <p className="text-sm font-bold">{fulfillmentCopy.title}</p>

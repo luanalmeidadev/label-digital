@@ -64,7 +64,7 @@ export default function SetPasswordForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="rounded-3xl border border-[#EEE6DF] bg-white p-7 shadow-sm"
+      className="rounded-3xl border border-brand-border bg-white p-7 shadow-sm"
     >
       {error && (
         <div
@@ -76,7 +76,7 @@ export default function SetPasswordForm() {
       )}
 
       <label className="block">
-        <span className="text-sm font-bold text-[#241B19]">
+        <span className="text-sm font-bold text-brand-foreground">
           Nova senha
         </span>
         <input
@@ -87,12 +87,12 @@ export default function SetPasswordForm() {
           autoComplete="new-password"
           disabled={pending}
           placeholder="Pelo menos 8 caracteres"
-          className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+          className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-brand-primary disabled:opacity-60"
         />
       </label>
 
       <label className="mt-5 block">
-        <span className="text-sm font-bold text-[#241B19]">
+        <span className="text-sm font-bold text-brand-foreground">
           Confirmar nova senha
         </span>
         <input
@@ -103,14 +103,14 @@ export default function SetPasswordForm() {
           autoComplete="new-password"
           disabled={pending}
           placeholder="Repita a senha"
-          className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+          className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-brand-primary disabled:opacity-60"
         />
       </label>
 
       <button
         type="submit"
         disabled={pending}
-        className="mt-7 h-12 w-full rounded-xl bg-[#8B0000] font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+        className="mt-7 h-12 w-full rounded-xl bg-brand-primary font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:opacity-60"
       >
         {pending ? "Salvando..." : "Criar minha senha"}
       </button>

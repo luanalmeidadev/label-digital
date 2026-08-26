@@ -23,8 +23,8 @@ export default function ErrorPage({
   }, [error]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#FFFDF9] px-5 py-12">
-      <section className="w-full max-w-lg rounded-3xl border border-[#EEE6DF] bg-white p-7 text-center shadow-sm sm:p-10">
+    <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-12">
+      <section className="w-full max-w-lg rounded-3xl border border-brand-border bg-white p-7 text-center shadow-sm sm:p-10">
         <Image
           src={installation.identity.assets.monograms.default}
           alt={installation.identity.name}
@@ -35,13 +35,13 @@ export default function ErrorPage({
           priority
         />
 
-        <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+        <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
           Algo não saiu como esperado
         </p>
-        <h1 className="mt-2 text-2xl font-bold text-[#241B19]">
+        <h1 className="mt-2 text-2xl font-bold text-brand-foreground">
           Não foi possível carregar esta área
         </h1>
-        <p className="mt-3 text-sm leading-6 text-[#756A66]">
+        <p className="mt-3 text-sm leading-6 text-brand-muted-foreground">
           Seus dados foram preservados. Tente novamente ou
           volte para o início.
         </p>
@@ -56,14 +56,14 @@ export default function ErrorPage({
           <button
             type="button"
             onClick={retry}
-            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white transition hover:bg-[#700000]"
+            className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
           >
             <RefreshCw size={17} />
             Tentar novamente
           </button>
           <Link
             href="/"
-            className="inline-flex h-12 items-center justify-center rounded-xl border border-[#D2B48C] px-5 text-sm font-bold text-[#8B0000] transition hover:bg-[#FFF7F5]"
+            className="inline-flex h-12 items-center justify-center rounded-xl border border-brand-secondary px-5 text-sm font-bold text-brand-primary transition hover:bg-[#FFF7F5]"
           >
             Voltar ao cardápio
           </Link>

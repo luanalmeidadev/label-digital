@@ -46,7 +46,7 @@ function ProductCard({
 }) {
   return (
     <article
-      className={`overflow-hidden rounded-2xl border border-[#EEE6DF] bg-white shadow-sm transition ${
+      className={`overflow-hidden rounded-2xl border border-brand-border bg-white shadow-sm transition ${
         product.available
           ? "hover:-translate-y-0.5 hover:shadow-md"
           : "opacity-70"
@@ -56,13 +56,13 @@ function ProductCard({
         {/* INFORMAÇÕES */}
         <div className="flex min-w-0 flex-1 flex-col p-4">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-bold text-[#241B19]">
+            <h3 className="font-bold text-brand-foreground">
               {product.name}
             </h3>
 
             {product.featured &&
               product.available && (
-                <span className="rounded-full bg-[#D2B48C]/25 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-[#8B0000]">
+                <span className="rounded-full bg-brand-secondary/25 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-primary">
                   Destaque
                 </span>
               )}
@@ -75,13 +75,13 @@ function ProductCard({
           </div>
 
           {product.description && (
-            <p className="mt-2 line-clamp-2 text-xs leading-5 text-[#756A66] sm:text-sm">
+            <p className="mt-2 line-clamp-2 text-xs leading-5 text-brand-muted-foreground sm:text-sm">
               {product.description}
             </p>
           )}
 
           <div className="mt-auto pt-4">
-            <p className="font-bold text-[#8B0000]">
+            <p className="font-bold text-brand-primary">
               {formatCurrency(
                 Number(product.price)
               )}
@@ -100,7 +100,7 @@ function ProductCard({
                 }}
               />
             ) : (
-              <p className="mt-2 text-xs font-bold text-[#756A66]">
+              <p className="mt-2 text-xs font-bold text-brand-muted-foreground">
                 Indisponível no momento
               </p>
             )}
@@ -108,7 +108,7 @@ function ProductCard({
         </div>
 
         {/* FOTO */}
-        <div className="relative w-[120px] shrink-0 overflow-hidden bg-[#F7F0EA] sm:w-[160px]">
+        <div className="relative w-[120px] shrink-0 overflow-hidden bg-brand-surface-muted sm:w-[160px]">
           {product.image_url ? (
             <Image
               src={product.image_url}
@@ -166,15 +166,15 @@ export default function MenuSections({
       {featuredProducts.length > 0 && (
         <section className="mb-10">
           <div className="mb-5">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-primary">
               Seleção {installation.identity.shortName}
             </p>
 
-            <h2 className="mt-1 text-2xl font-bold text-[#241B19]">
+            <h2 className="mt-1 text-2xl font-bold text-brand-foreground">
               Destaques
             </h2>
 
-            <p className="mt-2 text-sm text-[#756A66]">
+            <p className="mt-2 text-sm text-brand-muted-foreground">
               Algumas das delícias que estão em destaque por aqui.
             </p>
           </div>
@@ -212,11 +212,11 @@ export default function MenuSections({
                   className="scroll-mt-24"
                 >
                   <div className="mb-5">
-                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8B0000]">
+                    <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-primary">
                       Cardápio
                     </p>
 
-                    <h2 className="mt-1 text-2xl font-bold text-[#241B19]">
+                    <h2 className="mt-1 text-2xl font-bold text-brand-foreground">
                       {category.name}
                     </h2>
                   </div>
@@ -240,16 +240,16 @@ export default function MenuSections({
 
       {/* CARDÁPIO VAZIO */}
       {products.length === 0 && (
-        <section className="rounded-3xl border border-[#EEE6DF] bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-[#8B0000]/10 text-3xl">
+        <section className="rounded-3xl border border-brand-border bg-white p-8 text-center shadow-sm">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-primary/10 text-3xl">
             🍰
           </div>
 
-          <h2 className="mt-5 text-xl font-bold text-[#241B19]">
+          <h2 className="mt-5 text-xl font-bold text-brand-foreground">
             Cardápio em preparação
           </h2>
 
-          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
             Os produtos da {installation.identity.shortName} estarão disponíveis por aqui em breve.
           </p>
         </section>
@@ -259,12 +259,12 @@ export default function MenuSections({
       {products.length > 0 &&
         categoriesWithProducts.length ===
           0 && (
-          <section className="rounded-3xl border border-[#EEE6DF] bg-white p-8 text-center shadow-sm">
-            <h2 className="text-xl font-bold text-[#241B19]">
+          <section className="rounded-3xl border border-brand-border bg-white p-8 text-center shadow-sm">
+            <h2 className="text-xl font-bold text-brand-foreground">
               Cardápio temporariamente indisponível
             </h2>
 
-            <p className="mt-2 text-sm leading-6 text-[#756A66]">
+            <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
               Não encontramos categorias disponíveis para os produtos neste momento.
             </p>
           </section>

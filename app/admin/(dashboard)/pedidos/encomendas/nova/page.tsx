@@ -30,24 +30,24 @@ export default async function NovaEncomendaPage() {
       <div className="mx-auto max-w-5xl">
         <Link
           href="/admin/pedidos/encomendas"
-          className="inline-flex items-center gap-2 text-sm font-bold text-[#8B0000] hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-bold text-brand-primary hover:underline"
         >
           <ArrowLeft size={16} />
           Voltar para encomendas
         </Link>
 
         <div className="mt-4 flex items-start gap-4">
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#8B0000]/10 text-[#8B0000]">
+          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
             <PlusCircle size={23} />
           </div>
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
               Cadastro interno
             </p>
-            <h1 className="mt-1 text-3xl font-bold text-[#241B19]">
+            <h1 className="mt-1 text-3xl font-bold text-brand-foreground">
               Nova encomenda
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#756A66]">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted-foreground">
               Registre encomendas recebidas por telefone, balcão ou conversa direta com o cliente.
             </p>
           </div>

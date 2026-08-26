@@ -19,7 +19,7 @@ export default async function SetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#FFFDF9] px-5 py-10">
+    <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Image
@@ -31,10 +31,10 @@ export default async function SetPasswordPage() {
             style={{ height: "auto" }}
             priority
           />
-          <h1 className="mt-5 text-2xl font-bold text-[#241B19]">
+          <h1 className="mt-5 text-2xl font-bold text-brand-foreground">
             Crie sua senha
           </h1>
-          <p className="mt-2 text-sm leading-6 text-[#756A66]">
+          <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
             Olá, {user.user_metadata.name ?? user.email}.
             Defina a senha que você usará para acessar o painel.
           </p>
@@ -42,7 +42,7 @@ export default async function SetPasswordPage() {
 
         <SetPasswordForm />
 
-        <p className="mt-6 text-center text-xs text-[#756A66]">
+        <p className="mt-6 text-center text-xs text-brand-muted-foreground">
           Área restrita • {installation.identity.name}
         </p>
       </div>

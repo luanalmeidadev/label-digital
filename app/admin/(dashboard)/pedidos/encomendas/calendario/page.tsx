@@ -117,20 +117,20 @@ export default async function CalendarioEncomendasPage({
       <div className="mx-auto max-w-7xl">
         <Link
           href="/admin/pedidos/encomendas"
-          className="inline-flex items-center gap-2 text-sm font-bold text-[#8B0000] hover:underline"
+          className="inline-flex items-center gap-2 text-sm font-bold text-brand-primary hover:underline"
         >
           <ArrowLeft size={16} />
           Voltar para encomendas
         </Link>
 
         <div className="mt-4">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
             Organização interna
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+          <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
             Calendário de produção
           </h1>
-          <p className="mt-2 text-sm leading-6 text-[#756A66]">
+          <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
             Encomendas em aberto distribuídas pela data combinada com o cliente.
           </p>
         </div>
@@ -146,33 +146,33 @@ export default async function CalendarioEncomendasPage({
           ].map((item) => {
             const Icon = item.icon;
             return (
-              <article key={item.label} className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
+              <article key={item.label} className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
                 <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.color}`}>
                   <Icon size={18} />
                 </div>
-                <p className="mt-3 text-xs text-[#756A66]">{item.label}</p>
-                <p className="mt-1 text-2xl font-bold text-[#241B19]">{item.value}</p>
+                <p className="mt-3 text-xs text-brand-muted-foreground">{item.label}</p>
+                <p className="mt-1 text-2xl font-bold text-brand-foreground">{item.value}</p>
               </article>
             );
           })}
         </section>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <header className="flex items-center justify-between gap-4 border-b border-[#EEE6DF] p-4 sm:p-5">
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <header className="flex items-center justify-between gap-4 border-b border-brand-border p-4 sm:p-5">
             <Link
               href={`/admin/pedidos/encomendas/calendario?month=${moveMonth(selectedMonth, -1)}`}
               aria-label="Mês anterior"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EEE6DF] text-[#8B0000] hover:border-[#D2B48C]"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-brand-border text-brand-primary hover:border-brand-secondary"
             >
               <ChevronLeft size={19} />
             </Link>
-            <h2 className="text-center text-lg font-bold text-[#241B19] sm:text-xl">
+            <h2 className="text-center text-lg font-bold text-brand-foreground sm:text-xl">
               {formatMonthTitle(selectedMonth)}
             </h2>
             <Link
               href={`/admin/pedidos/encomendas/calendario?month=${moveMonth(selectedMonth, 1)}`}
               aria-label="Próximo mês"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EEE6DF] text-[#8B0000] hover:border-[#D2B48C]"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-brand-border text-brand-primary hover:border-brand-secondary"
             >
               <ChevronRight size={19} />
             </Link>
@@ -180,15 +180,15 @@ export default async function CalendarioEncomendasPage({
 
           <div className="overflow-x-auto">
             <div className="min-w-[920px]">
-              <div className="grid grid-cols-7 border-b border-[#EEE6DF] bg-[#FFF9F3]">
+              <div className="grid grid-cols-7 border-b border-brand-border bg-[#FFF9F3]">
                 {weekDays.map((day) => (
-                  <div key={day} className="px-3 py-2 text-center text-xs font-bold uppercase text-[#756A66]">
+                  <div key={day} className="px-3 py-2 text-center text-xs font-bold uppercase text-brand-muted-foreground">
                     {day}
                   </div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-7 bg-[#EEE6DF] gap-px">
+              <div className="grid grid-cols-7 bg-brand-border gap-px">
                 {calendarCells.map((day, index) => {
                   if (day === null) {
                     return <div key={`empty-${index}`} className="min-h-40 bg-[#FAF8F5]" />;
@@ -199,13 +199,13 @@ export default async function CalendarioEncomendasPage({
                   const isToday = date === today;
 
                   return (
-                    <div key={date} className={`min-h-40 bg-white p-2 ${isToday ? "ring-2 ring-inset ring-[#8B0000]" : ""}`}>
+                    <div key={date} className={`min-h-40 bg-white p-2 ${isToday ? "ring-2 ring-inset ring-brand-primary" : ""}`}>
                       <div className="flex items-center justify-between">
-                        <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-[#8B0000] text-white" : "text-[#756A66]"}`}>
+                        <span className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${isToday ? "bg-brand-primary text-brand-primary-foreground" : "text-brand-muted-foreground"}`}>
                           {day}
                         </span>
                         {dayRequests.length > 0 && (
-                          <span className="text-[10px] font-bold text-[#8B0000]">{dayRequests.length}</span>
+                          <span className="text-[10px] font-bold text-brand-primary">{dayRequests.length}</span>
                         )}
                       </div>
 
@@ -216,10 +216,10 @@ export default async function CalendarioEncomendasPage({
                             <Link
                               key={request.id}
                               href={`/admin/pedidos/encomendas/${request.id}`}
-                              className="block rounded-xl border border-[#EEE6DF] p-2 transition hover:border-[#D2B48C] hover:bg-[#FFFDF9]"
+                              className="block rounded-xl border border-brand-border p-2 transition hover:border-brand-secondary hover:bg-brand-background"
                             >
-                              <p className="truncate text-[11px] font-bold text-[#241B19]">{request.productName}</p>
-                              <p className="mt-0.5 truncate text-[10px] text-[#756A66]">{request.customerName}</p>
+                              <p className="truncate text-[11px] font-bold text-brand-foreground">{request.productName}</p>
+                              <p className="mt-0.5 truncate text-[10px] text-brand-muted-foreground">{request.customerName}</p>
                               <div className="mt-1.5 flex flex-wrap gap-1">
                                 <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold ${preorderRequestStatusClasses[request.status]}`}>
                                   {preorderRequestStatusLabels[request.status]}

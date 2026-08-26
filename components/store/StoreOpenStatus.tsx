@@ -51,7 +51,7 @@ export default function StoreOpenStatus({
       className={`flex min-h-20 flex-col gap-3 rounded-2xl px-5 py-4 shadow-lg ring-1 ring-inset sm:flex-row sm:items-center sm:justify-between ${
         status.isOpen
           ? "bg-emerald-50 text-emerald-900 ring-emerald-200"
-          : "bg-[#FFF7F5] text-[#8B0000] ring-[#E8D2C1]"
+          : "bg-[#FFF7F5] text-brand-primary ring-[#E8D2C1]"
       }`}
     >
       <div className="flex items-center gap-4">
@@ -59,14 +59,14 @@ export default function StoreOpenStatus({
           className={`h-3.5 w-3.5 shrink-0 rounded-full ring-4 ${
             status.isOpen
               ? "animate-pulse bg-emerald-500 ring-emerald-200"
-              : "bg-[#8B0000] ring-[#F0DAD5]"
+              : "bg-brand-primary ring-[#F0DAD5]"
           }`}
         />
 
         <div>
           <p
             className={`text-[11px] font-bold uppercase tracking-[0.16em] ${
-              status.isOpen ? "text-emerald-700" : "text-[#8B0000]/65"
+              status.isOpen ? "text-emerald-700" : "text-brand-primary/65"
             }`}
           >
             Atendimento agora
@@ -81,7 +81,7 @@ export default function StoreOpenStatus({
         className={`rounded-full px-3 py-1.5 text-xs font-bold sm:text-sm ${
           status.isOpen
             ? "bg-emerald-100 text-emerald-800"
-            : "bg-[#F0DAD5] text-[#8B0000]"
+            : "bg-[#F0DAD5] text-brand-primary"
         }`}
       >
         {status.detail}

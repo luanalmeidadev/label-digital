@@ -101,7 +101,7 @@ export default async function ImprimirEncomendaPage({
         `}
       </style>
 
-      <main className="min-h-screen bg-[#FFFDF9] p-4 sm:p-8 print:min-h-0 print:bg-white print:p-0">
+      <main className="min-h-screen bg-brand-background p-4 sm:p-8 print:min-h-0 print:bg-white print:p-0">
         <div className="mx-auto max-w-[420px]">
           <div className="mb-5 flex justify-end print:hidden">
             <PrintOrderButton autoPrint />

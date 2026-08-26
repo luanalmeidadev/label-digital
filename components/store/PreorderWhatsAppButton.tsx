@@ -594,15 +594,15 @@ export default function PreorderWhatsAppButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className={`inline-flex items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#700000] ${className}`}
+        className={`inline-flex items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 py-3 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover ${className}`}
       >
         <MessageCircle size={18} />
         {label}
       </button>
 
       <DialogContent className="max-h-[92vh] overflow-y-auto p-0 sm:max-w-2xl">
-        <DialogHeader className="border-b border-[#EEE6DF] px-5 py-5 pr-14 sm:px-6">
-          <DialogTitle className="text-xl font-bold text-[#241B19]">
+        <DialogHeader className="border-b border-brand-border px-5 py-5 pr-14 sm:px-6">
+          <DialogTitle className="text-xl font-bold text-brand-foreground">
             {product?.name ??
               "Encomenda personalizada"}
           </DialogTitle>
@@ -615,9 +615,9 @@ export default function PreorderWhatsAppButton({
           onSubmit={handleSubmit}
           className="space-y-6 px-5 pb-6 sm:px-6"
         >
-          <div className="rounded-2xl border border-[#E8D2C1] bg-[#FFF9F3] p-4 text-xs leading-5 text-[#756A66]">
+          <div className="rounded-2xl border border-[#E8D2C1] bg-[#FFF9F3] p-4 text-xs leading-5 text-brand-muted-foreground">
             Solicite com pelo menos{" "}
-            <strong className="text-[#8B0000]">
+            <strong className="text-brand-primary">
               {leadTimeDays} dias de antecedência
             </strong>
             . A reserva é confirmada após o pagamento de 50% do pedido.
@@ -625,7 +625,7 @@ export default function PreorderWhatsAppButton({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Seu nome
               </span>
               <input
@@ -639,12 +639,12 @@ export default function PreorderWhatsAppButton({
                 placeholder="Como podemos chamar você?"
                 autoComplete="name"
                 disabled={saving}
-                className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CC] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10 disabled:opacity-60"
+                className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CC] bg-white px-4 text-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 disabled:opacity-60"
               />
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Seu WhatsApp
               </span>
               <input
@@ -659,14 +659,14 @@ export default function PreorderWhatsAppButton({
                 placeholder="(48) 99999-9999"
                 autoComplete="tel"
                 disabled={saving}
-                className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CC] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10 disabled:opacity-60"
+                className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CC] bg-white px-4 text-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 disabled:opacity-60"
               />
             </label>
           </div>
 
           {product?.prices.length ? (
             <fieldset>
-              <legend className="text-sm font-bold text-[#241B19]">
+              <legend className="text-sm font-bold text-brand-foreground">
                 Tamanho ou opção
               </legend>
               <div className="mt-2 grid gap-2 sm:grid-cols-2">
@@ -679,8 +679,8 @@ export default function PreorderWhatsAppButton({
                       key={`${price.label}-${price.value}`}
                       className={`flex cursor-pointer items-center justify-between gap-3 rounded-xl border p-3 transition ${
                         selected
-                          ? "border-[#8B0000] bg-[#FFF7F5]"
-                          : "border-[#DDD3CC] bg-white hover:border-[#D2B48C]"
+                          ? "border-brand-primary bg-[#FFF7F5]"
+                          : "border-[#DDD3CC] bg-white hover:border-brand-secondary"
                       }`}
                     >
                       <input
@@ -696,17 +696,17 @@ export default function PreorderWhatsAppButton({
                         className="sr-only"
                       />
                       <span>
-                        <span className="block text-xs font-semibold text-[#756A66]">
+                        <span className="block text-xs font-semibold text-brand-muted-foreground">
                           {price.label}
                         </span>
-                        <span className="mt-0.5 block text-sm font-bold text-[#8B0000]">
+                        <span className="mt-0.5 block text-sm font-bold text-brand-primary">
                           {price.value}
                         </span>
                       </span>
                       <span
                         className={`flex h-5 w-5 items-center justify-center rounded-full ${
                           selected
-                            ? "bg-[#8B0000] text-white"
+                            ? "bg-brand-primary text-brand-primary-foreground"
                             : "border border-[#DDD3CC]"
                         }`}
                       >
@@ -721,10 +721,10 @@ export default function PreorderWhatsAppButton({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Quantidade
               </span>
-              <div className="mt-2 flex h-12 overflow-hidden rounded-xl border border-[#DDD3CC] bg-white focus-within:border-[#8B0000] focus-within:ring-2 focus-within:ring-[#8B0000]/10">
+              <div className="mt-2 flex h-12 overflow-hidden rounded-xl border border-[#DDD3CC] bg-white focus-within:border-brand-primary focus-within:ring-2 focus-within:ring-brand-primary/10">
                 {product?.allowedQuantities?.length ? (
                   <select
                     value={
@@ -777,20 +777,20 @@ export default function PreorderWhatsAppButton({
                     className="min-w-0 flex-1 px-4 text-sm outline-none"
                   />
                 )}
-                <span className="flex items-center border-l border-[#EEE6DF] bg-[#FFF9F3] px-3 text-xs font-semibold text-[#756A66]">
+                <span className="flex items-center border-l border-brand-border bg-[#FFF9F3] px-3 text-xs font-semibold text-brand-muted-foreground">
                   {quantityUnit}
                 </span>
               </div>
             </label>
 
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Data desejada
               </span>
               <div className="relative mt-2">
                 <CalendarDays
                   size={17}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8B0000]"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-brand-primary"
                 />
                 <input
                   type="date"
@@ -801,7 +801,7 @@ export default function PreorderWhatsAppButton({
                       event.target.value
                     )
                   }
-                  className="h-12 w-full rounded-xl border border-[#DDD3CC] bg-white pl-11 pr-4 text-sm outline-none transition focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10"
+                  className="h-12 w-full rounded-xl border border-[#DDD3CC] bg-white pl-11 pr-4 text-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10"
                 />
               </div>
             </label>
@@ -809,10 +809,10 @@ export default function PreorderWhatsAppButton({
 
           {isCustomQuantity && (
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Quantidade acima de {maximumPresetQuantity}
               </span>
-              <div className="mt-2 flex h-12 overflow-hidden rounded-xl border border-[#DDD3CC] bg-white focus-within:border-[#8B0000] focus-within:ring-2 focus-within:ring-[#8B0000]/10">
+              <div className="mt-2 flex h-12 overflow-hidden rounded-xl border border-[#DDD3CC] bg-white focus-within:border-brand-primary focus-within:ring-2 focus-within:ring-brand-primary/10">
                 <input
                   type="number"
                   min={
@@ -826,11 +826,11 @@ export default function PreorderWhatsAppButton({
                   }
                   className="min-w-0 flex-1 px-4 text-sm outline-none"
                 />
-                <span className="flex items-center border-l border-[#EEE6DF] bg-[#FFF9F3] px-3 text-xs font-semibold text-[#756A66]">
+                <span className="flex items-center border-l border-brand-border bg-[#FFF9F3] px-3 text-xs font-semibold text-brand-muted-foreground">
                   {quantityUnit}
                 </span>
               </div>
-              <span className="mt-1 block text-xs text-[#756A66]">
+              <span className="mt-1 block text-xs text-brand-muted-foreground">
                 Use múltiplos de {product?.quantityIncrement ?? 1}.
               </span>
             </label>
@@ -838,10 +838,10 @@ export default function PreorderWhatsAppButton({
 
           {estimatedTotal > 0 && (
             <div className="rounded-xl border border-[#E8D2C1] bg-[#FFF9F3] px-4 py-3">
-              <p className="text-xs font-semibold text-[#756A66]">
+              <p className="text-xs font-semibold text-brand-muted-foreground">
                 Valor estimado
               </p>
-              <p className="mt-1 text-lg font-bold text-[#8B0000]">
+              <p className="mt-1 text-lg font-bold text-brand-primary">
                 {formatPreorderCurrency(
                   estimatedTotal
                 )}
@@ -851,7 +851,7 @@ export default function PreorderWhatsAppButton({
 
           {product?.flavors?.length ? (
             <fieldset>
-              <legend className="text-sm font-bold text-[#241B19]">
+              <legend className="text-sm font-bold text-brand-foreground">
                 Sabores · escolha até {maxFlavors}{" "}
                 {maxFlavors === 1 ? "sabor" : "sabores"}
               </legend>
@@ -865,8 +865,8 @@ export default function PreorderWhatsAppButton({
                       key={flavor}
                       className={`cursor-pointer rounded-full border px-3 py-2 text-xs font-semibold transition ${
                         selected
-                          ? "border-[#8B0000] bg-[#8B0000] text-white"
-                          : "border-[#DDD3CC] bg-white text-[#756A66] hover:border-[#D2B48C]"
+                          ? "border-brand-primary bg-brand-primary text-brand-primary-foreground"
+                          : "border-[#DDD3CC] bg-white text-brand-muted-foreground hover:border-brand-secondary"
                       }`}
                     >
                       <input
@@ -886,7 +886,7 @@ export default function PreorderWhatsAppButton({
           ) : null}
 
           <fieldset>
-            <legend className="text-sm font-bold text-[#241B19]">
+            <legend className="text-sm font-bold text-brand-foreground">
               Como deseja receber?
             </legend>
             <div className="mt-2 grid grid-cols-2 gap-2">
@@ -911,8 +911,8 @@ export default function PreorderWhatsAppButton({
                     key={option.value}
                     className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border p-3 text-sm font-bold transition ${
                       selected
-                        ? "border-[#8B0000] bg-[#FFF7F5] text-[#8B0000]"
-                        : "border-[#DDD3CC] text-[#756A66]"
+                        ? "border-brand-primary bg-[#FFF7F5] text-brand-primary"
+                        : "border-[#DDD3CC] text-brand-muted-foreground"
                     }`}
                   >
                     <input
@@ -939,7 +939,7 @@ export default function PreorderWhatsAppButton({
 
           {fulfillmentType === "delivery" && (
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Endereço de entrega
               </span>
               <textarea
@@ -953,13 +953,13 @@ export default function PreorderWhatsAppButton({
                 maxLength={300}
                 disabled={saving}
                 placeholder="Rua, número, bairro, cidade, complemento e referência"
-                className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CC] bg-white px-4 py-3 text-sm leading-6 outline-none transition focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10 disabled:opacity-60"
+                className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CC] bg-white px-4 py-3 text-sm leading-6 outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 disabled:opacity-60"
               />
             </label>
           )}
 
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">
+            <span className="text-sm font-bold text-brand-foreground">
               Detalhes e observações
             </span>
             <textarea
@@ -969,7 +969,7 @@ export default function PreorderWhatsAppButton({
               }
               rows={4}
               placeholder="Tema, cores, massa, decoração, referência ou alguma restrição alimentar..."
-              className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CC] bg-white px-4 py-3 text-sm leading-6 outline-none transition focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10"
+              className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CC] bg-white px-4 py-3 text-sm leading-6 outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10"
             />
           </label>
 
@@ -992,13 +992,13 @@ export default function PreorderWhatsAppButton({
             </div>
           )}
 
-          <p className="text-center text-[11px] leading-4 text-[#756A66]">
+          <p className="text-center text-[11px] leading-4 text-brand-muted-foreground">
             Ao enviar, seus dados serão usados para atender e acompanhar a
             encomenda, conforme o{" "}
             <Link
               href="/privacidade"
               target="_blank"
-              className="font-bold text-[#8B0000] underline underline-offset-2"
+              className="font-bold text-brand-primary underline underline-offset-2"
             >
               Aviso de Privacidade
             </Link>

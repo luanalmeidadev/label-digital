@@ -76,9 +76,11 @@ const requiredStringPaths = [
 const themeColorKeys = [
   "primary",
   "onPrimary",
+  "primaryHover",
   "accent",
   "background",
   "surface",
+  "mutedSurface",
   "text",
   "mutedText",
   "border",

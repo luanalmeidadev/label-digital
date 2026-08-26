@@ -26,16 +26,16 @@ export default function ProductCategorySection({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center justify-between gap-4 bg-[#FFFDF9] px-5 py-4 text-left transition hover:bg-[#FFF8F4]"
+        className="flex w-full items-center justify-between gap-4 bg-brand-background px-5 py-4 text-left transition hover:bg-[#FFF8F4]"
       >
         <div className="flex min-w-0 items-center gap-3">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
             <Package size={18} />
           </div>
 
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate font-bold text-[#241B19]">
+              <h3 className="truncate font-bold text-brand-foreground">
                 {name}
               </h3>
 
@@ -46,7 +46,7 @@ export default function ProductCategorySection({
               )}
             </div>
 
-            <p className="mt-1 text-xs text-[#756A66]">
+            <p className="mt-1 text-xs text-brand-muted-foreground">
               {productCount}{" "}
               {productCount === 1 ? "produto" : "produtos"}
             </p>
@@ -56,14 +56,14 @@ export default function ProductCategorySection({
         <ChevronDown
           size={20}
           aria-hidden="true"
-          className={`shrink-0 text-[#8B0000] transition-transform duration-200 ${
+          className={`shrink-0 text-brand-primary transition-transform duration-200 ${
             open ? "rotate-180" : ""
           }`}
         />
       </button>
 
       {open && (
-        <div className="divide-y divide-[#EEE6DF] border-t border-[#EEE6DF]">
+        <div className="divide-y divide-brand-border border-t border-brand-border">
           {children}
         </div>
       )}

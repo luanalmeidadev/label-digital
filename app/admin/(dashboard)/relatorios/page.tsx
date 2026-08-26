@@ -244,14 +244,14 @@ export default async function ReportsPage({
       <div className="mx-auto max-w-7xl">
         <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
               Desempenho da loja
             </p>
-            <h1 className="mt-2 text-3xl font-bold text-[#241B19]">Relatórios</h1>
-            <p className="mt-2 text-sm text-[#756A66]">
+            <h1 className="mt-2 text-3xl font-bold text-brand-foreground">Relatórios</h1>
+            <p className="mt-2 text-sm text-brand-muted-foreground">
               Acompanhe vendas, produtos com maior e menor saída, estornos e perdas.
             </p>
-            <p className="mt-2 hidden text-xs font-bold text-[#756A66] print:block">
+            <p className="mt-2 hidden text-xs font-bold text-brand-muted-foreground print:block">
               Período: {period.label}
             </p>
           </div>
@@ -268,8 +268,8 @@ export default async function ReportsPage({
               href={`/admin/relatorios?period=${periodKey}`}
               className={`rounded-xl px-4 py-2.5 text-sm font-bold ${
                 period.selectedPeriod === periodKey
-                  ? "bg-[#8B0000] text-white"
-                  : "border border-[#EEE6DF] bg-white text-[#756A66]"
+                  ? "bg-brand-primary text-brand-primary-foreground"
+                  : "border border-brand-border bg-white text-brand-muted-foreground"
               }`}
             >
               {label}
@@ -279,36 +279,36 @@ export default async function ReportsPage({
 
         <form
           method="get"
-          className="mt-4 grid gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm print:hidden sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end"
+          className="mt-4 grid gap-3 rounded-2xl border border-brand-border bg-white p-4 shadow-sm print:hidden sm:grid-cols-[auto_1fr_1fr_auto] sm:items-end"
         >
-          <div className="flex items-center gap-2 self-center text-sm font-bold text-[#241B19]">
-            <CalendarDays size={18} className="text-[#8B0000]" />
+          <div className="flex items-center gap-2 self-center text-sm font-bold text-brand-foreground">
+            <CalendarDays size={18} className="text-brand-primary" />
             Período personalizado
           </div>
-          <label className="text-xs font-bold text-[#756A66]">
+          <label className="text-xs font-bold text-brand-muted-foreground">
             De
             <input
               type="date"
               name="from"
               required
               defaultValue={period.from}
-              className="mt-1 h-11 w-full rounded-xl border border-[#D9CDC4] bg-white px-3 text-sm text-[#241B19]"
+              className="mt-1 h-11 w-full rounded-xl border border-[#D9CDC4] bg-white px-3 text-sm text-brand-foreground"
             />
           </label>
-          <label className="text-xs font-bold text-[#756A66]">
+          <label className="text-xs font-bold text-brand-muted-foreground">
             Até
             <input
               type="date"
               name="to"
               required
               defaultValue={period.to}
-              className="mt-1 h-11 w-full rounded-xl border border-[#D9CDC4] bg-white px-3 text-sm text-[#241B19]"
+              className="mt-1 h-11 w-full rounded-xl border border-[#D9CDC4] bg-white px-3 text-sm text-brand-foreground"
             />
           </label>
           <input type="hidden" name="period" value="custom" />
           <button
             type="submit"
-            className="h-11 rounded-xl bg-[#241B19] px-5 text-sm font-bold text-white transition hover:bg-black"
+            className="h-11 rounded-xl bg-brand-foreground px-5 text-sm font-bold text-white transition hover:bg-black"
           >
             Aplicar
           </button>
@@ -328,10 +328,10 @@ export default async function ReportsPage({
           ].map(([label, value, Icon, color]) => {
             const CardIcon = Icon as typeof CircleDollarSign;
             return (
-              <article key={String(label)} className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+              <article key={String(label)} className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
                 <CardIcon size={20} className={String(color)} />
-                <p className="mt-4 text-xs text-[#756A66]">{String(label)}</p>
-                <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
+                <p className="mt-4 text-xs text-brand-muted-foreground">{String(label)}</p>
+                <p className="mt-1 text-xl font-bold text-brand-foreground sm:text-2xl">
                   {String(value)}
                 </p>
               </article>
@@ -340,44 +340,44 @@ export default async function ReportsPage({
         </section>
 
         <section className="mt-7 grid gap-5 lg:grid-cols-2">
-          <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-            <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-              <Trophy size={20} className="text-[#8B0000]" />
+          <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-brand-border p-5">
+              <Trophy size={20} className="text-brand-primary" />
               <div>
-                <h2 className="font-bold text-[#241B19]">Produtos que mais saem</h2>
-                <p className="text-xs text-[#756A66]">Quantidade vendida no período</p>
+                <h2 className="font-bold text-brand-foreground">Produtos que mais saem</h2>
+                <p className="text-xs text-brand-muted-foreground">Quantidade vendida no período</p>
               </div>
             </div>
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {bestSellers.map((product, index) => (
                 <div key={product.name} className="flex items-center justify-between gap-4 p-4">
-                  <p className="text-sm font-bold text-[#241B19]">
+                  <p className="text-sm font-bold text-brand-foreground">
                     {index + 1}. {product.name}
                   </p>
                   <div className="text-right">
-                    <p className="text-sm font-bold text-[#8B0000]">{product.quantity} un.</p>
-                    <p className="text-xs text-[#756A66]">{formatCurrency(product.revenue)}</p>
+                    <p className="text-sm font-bold text-brand-primary">{product.quantity} un.</p>
+                    <p className="text-xs text-brand-muted-foreground">{formatCurrency(product.revenue)}</p>
                   </div>
                 </div>
               ))}
               {bestSellers.length === 0 && (
-                <p className="p-8 text-center text-sm text-[#756A66]">Sem vendas no período.</p>
+                <p className="p-8 text-center text-sm text-brand-muted-foreground">Sem vendas no período.</p>
               )}
             </div>
           </article>
 
-          <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-            <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-              <PackageSearch size={20} className="text-[#8B0000]" />
+          <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-brand-border p-5">
+              <PackageSearch size={20} className="text-brand-primary" />
               <div>
-                <h2 className="font-bold text-[#241B19]">Produtos com menor saída</h2>
-                <p className="text-xs text-[#756A66]">Ajuda a revisar produção e cardápio</p>
+                <h2 className="font-bold text-brand-foreground">Produtos com menor saída</h2>
+                <p className="text-xs text-brand-muted-foreground">Ajuda a revisar produção e cardápio</p>
               </div>
             </div>
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {slowMovers.map((product) => (
                 <div key={product.name} className="flex items-center justify-between gap-4 p-4">
-                  <p className="text-sm font-bold text-[#241B19]">{product.name}</p>
+                  <p className="text-sm font-bold text-brand-foreground">{product.name}</p>
                   <p className="text-sm font-bold text-amber-700">{product.quantity} un.</p>
                 </div>
               ))}
@@ -386,21 +386,21 @@ export default async function ReportsPage({
         </section>
 
         <section className="mt-7 grid gap-5 lg:grid-cols-2">
-          <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-            <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-              <BarChart3 size={20} className="text-[#8B0000]" />
-              <h2 className="font-bold text-[#241B19]">Vendas por origem</h2>
+          <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-brand-border p-5">
+              <BarChart3 size={20} className="text-brand-primary" />
+              <h2 className="font-bold text-brand-foreground">Vendas por origem</h2>
             </div>
             <div className="grid gap-3 p-5 sm:grid-cols-2">
               {["Site", "Caixa"].map((channel) => {
                 const values = channelTotals[channel] ?? { count: 0, total: 0 };
                 return (
                   <div key={channel} className="rounded-2xl bg-[#FFF7F5] p-4">
-                    <p className="text-xs font-bold uppercase text-[#756A66]">{channel}</p>
-                    <p className="mt-2 text-xl font-bold text-[#8B0000]">
+                    <p className="text-xs font-bold uppercase text-brand-muted-foreground">{channel}</p>
+                    <p className="mt-2 text-xl font-bold text-brand-primary">
                       {formatCurrency(values.total)}
                     </p>
-                    <p className="mt-1 text-xs text-[#756A66]">
+                    <p className="mt-1 text-xs text-brand-muted-foreground">
                       {values.count} venda(s)
                     </p>
                   </div>
@@ -409,27 +409,27 @@ export default async function ReportsPage({
             </div>
           </article>
 
-          <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-            <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-              <ReceiptText size={20} className="text-[#8B0000]" />
-              <h2 className="font-bold text-[#241B19]">Formas de pagamento</h2>
+          <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+            <div className="flex items-center gap-3 border-b border-brand-border p-5">
+              <ReceiptText size={20} className="text-brand-primary" />
+              <h2 className="font-bold text-brand-foreground">Formas de pagamento</h2>
             </div>
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {Object.entries(paymentTotals)
                 .sort(([, a], [, b]) => b.total - a.total)
                 .map(([label, values]) => (
                   <div key={label} className="flex items-center justify-between gap-4 p-4">
                     <div>
-                      <p className="text-sm font-bold text-[#241B19]">{label}</p>
-                      <p className="text-xs text-[#756A66]">{values.count} venda(s)</p>
+                      <p className="text-sm font-bold text-brand-foreground">{label}</p>
+                      <p className="text-xs text-brand-muted-foreground">{values.count} venda(s)</p>
                     </div>
-                    <p className="text-sm font-bold text-[#8B0000]">
+                    <p className="text-sm font-bold text-brand-primary">
                       {formatCurrency(values.total)}
                     </p>
                   </div>
                 ))}
               {Object.keys(paymentTotals).length === 0 && (
-                <p className="p-8 text-center text-sm text-[#756A66]">
+                <p className="p-8 text-center text-sm text-brand-muted-foreground">
                   Sem vendas no período.
                 </p>
               )}

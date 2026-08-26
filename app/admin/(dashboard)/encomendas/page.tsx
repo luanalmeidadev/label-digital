@@ -32,26 +32,26 @@ export default async function AdminEncomendasPage() {
     <main className="p-5 sm:p-8">
       <div className="mx-auto max-w-7xl">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
             Catálogo especial
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+          <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
             Encomendas
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#756A66]">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted-foreground">
             Gerencie os tamanhos, preços, sabores, quantidades e prazos exibidos no cardápio de encomendas.
           </p>
         </div>
 
-        <section className="mt-8 grid items-center gap-5 rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm lg:grid-cols-[1fr_360px] lg:p-6">
+        <section className="mt-8 grid items-center gap-5 rounded-3xl border border-brand-border bg-white p-5 shadow-sm lg:grid-cols-[1fr_360px] lg:p-6">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
               Destaque da página
             </p>
-            <h2 className="mt-2 text-xl font-bold text-[#241B19]">
+            <h2 className="mt-2 text-xl font-bold text-brand-foreground">
               Imagem principal das encomendas
             </h2>
-            <p className="mt-2 max-w-xl text-sm leading-6 text-[#756A66]">
+            <p className="mt-2 max-w-xl text-sm leading-6 text-brand-muted-foreground">
               Clique na foto para trocar o arquivo, centralizar o bolo ou ajustar a distância com o zoom.
             </p>
           </div>
@@ -62,43 +62,43 @@ export default async function AdminEncomendasPage() {
         </section>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          <div className="flex items-center gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <div className="flex items-center gap-3 rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <CakeSlice size={19} />
             </div>
             <div>
-              <p className="text-xs text-[#756A66]">
+              <p className="text-xs text-brand-muted-foreground">
                 Produtos
               </p>
-              <p className="text-lg font-bold text-[#241B19]">
+              <p className="text-lg font-bold text-brand-foreground">
                 {productCount}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <div className="flex items-center gap-3 rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <ListChecks size={19} />
             </div>
             <div>
-              <p className="text-xs text-[#756A66]">
+              <p className="text-xs text-brand-muted-foreground">
                 Categorias
               </p>
-              <p className="text-lg font-bold text-[#241B19]">
+              <p className="text-lg font-bold text-brand-foreground">
                 {categories.length}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <div className="flex items-center gap-3 rounded-2xl border border-brand-border bg-white p-4 shadow-sm">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <CalendarDays size={19} />
             </div>
             <div>
-              <p className="text-xs text-[#756A66]">
+              <p className="text-xs text-brand-muted-foreground">
                 Atualização
               </p>
-              <p className="text-sm font-bold text-[#241B19]">
+              <p className="text-sm font-bold text-brand-foreground">
                 Publicação imediata
               </p>
             </div>
@@ -109,18 +109,18 @@ export default async function AdminEncomendasPage() {
           {categories.map((category) => (
             <section
               key={category.id}
-              className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm"
+              className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm"
             >
-              <div className="flex items-center justify-between gap-4 border-b border-[#EEE6DF] bg-[#FFF9F3] px-5 py-4">
+              <div className="flex items-center justify-between gap-4 border-b border-brand-border bg-[#FFF9F3] px-5 py-4">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-brand-primary">
                     {category.eyebrow}
                   </p>
-                  <h2 className="mt-1 text-lg font-bold text-[#241B19]">
+                  <h2 className="mt-1 text-lg font-bold text-brand-foreground">
                     {category.name}
                   </h2>
                 </div>
-                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-[#756A66]">
+                <span className="rounded-full bg-white px-3 py-1 text-xs font-bold text-brand-muted-foreground">
                   {category.products.length}{" "}
                   {category.products.length === 1
                     ? "produto"
@@ -128,7 +128,7 @@ export default async function AdminEncomendasPage() {
                 </span>
               </div>
 
-              <div className="divide-y divide-[#EEE6DF]">
+              <div className="divide-y divide-brand-border">
                 {category.products.map((product) => (
                   <article
                     key={product.name}
@@ -143,20 +143,20 @@ export default async function AdminEncomendasPage() {
                       />
 
                       <div className="min-w-0">
-                        <h3 className="font-bold text-[#241B19]">
+                        <h3 className="font-bold text-brand-foreground">
                           {product.name}
                         </h3>
                         <div className="mt-2 flex flex-wrap gap-2">
                           {product.prices.map((price) => (
                             <span
                               key={`${price.label}-${price.value}`}
-                              className="rounded-full bg-[#FFF7F5] px-2.5 py-1 text-xs font-semibold text-[#8B0000]"
+                              className="rounded-full bg-[#FFF7F5] px-2.5 py-1 text-xs font-semibold text-brand-primary"
                             >
                               {price.label}: {price.value}
                             </span>
                           ))}
                         </div>
-                        <p className="mt-2 text-xs text-[#756A66]">
+                        <p className="mt-2 text-xs text-brand-muted-foreground">
                           {product.allowedQuantities?.length
                             ? `Quantidades: ${product.allowedQuantities.join(
                                 ", "

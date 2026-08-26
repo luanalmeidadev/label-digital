@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Archivo, Geist } from "next/font/google";
 import "./globals.css";
 import { getPublicInstallationProfile } from "@/config/installation/public";
+import { getInstallationThemeStyle } from "@/config/installation/theme";
 import { isHomologation } from "@/lib/app-environment";
 import {
   buildInstallationMetadata,
@@ -18,6 +19,7 @@ const archivo = Archivo({
 });
 
 const installation = getPublicInstallationProfile();
+const installationThemeStyle = getInstallationThemeStyle(installation);
 
 export const metadata: Metadata = buildInstallationMetadata(
   installation,
@@ -36,6 +38,8 @@ export default function RootLayout({
   return (
     <html
       lang={installation.regionalization.locale}
+      data-installation-preset={installation.preset.id}
+      style={installationThemeStyle}
       className={cn("font-sans", geist.variable)}
     >
       <body className={archivo.variable}>

@@ -62,7 +62,7 @@ export default function DeleteCategoryDialog({
 
           <DialogDescription>
             Você está prestes a excluir a categoria{" "}
-            <strong className="text-[#241B19]">{name}</strong>. Essa ação não
+            <strong className="text-brand-foreground">{name}</strong>. Essa ação não
             poderá ser desfeita.
           </DialogDescription>
         </DialogHeader>
@@ -75,7 +75,7 @@ export default function DeleteCategoryDialog({
               type="button"
               onClick={() => setOpen(false)}
               disabled={deleting}
-              className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#756A66] disabled:opacity-50"
+              className="rounded-xl border border-brand-border px-4 py-2.5 text-sm font-bold text-brand-muted-foreground disabled:opacity-50"
             >
               Cancelar
             </button>

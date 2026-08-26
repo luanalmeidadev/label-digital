@@ -1,5 +1,7 @@
 import "server-only";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
+import type { PublicInstallationProfile } from "@/config/installation/types";
 import { storeConfig } from "@/config/store";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
@@ -37,6 +39,29 @@ const fallbackBusinessHours: PublicBusinessHour[] = [
   { weekday: 6, isOpen: true, opensAt: "09:00", closesAt: "17:00" },
 ];
 
+function buildPresetStoreSettings(
+  installation: PublicInstallationProfile
+): PublicStoreSettings {
+  const { address, contact, identity, modules } = installation;
+
+  return {
+    storeName: identity.name,
+    whatsapp: contact.whatsapp,
+    instagram: contact.instagram,
+    pickupEnabled: modules.pickup,
+    deliveryEnabled: modules.delivery,
+    pickupAddress: `${address.street}, ${address.number} — ${address.city}/${address.state}`,
+    address: {
+      street: address.street,
+      number: address.number,
+      city: address.city,
+      state: address.state,
+    },
+    deliveryCities: [address.city],
+    businessHours: fallbackBusinessHours,
+  };
+}
+
 function resolveAddress(settings?: {
   address_street: string | null;
   address_number: string | null;
@@ -56,6 +81,12 @@ function resolveAddress(settings?: {
 }
 
 export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
+  const installation = getPublicInstallationProfile();
+
+  if (installation.preset.id !== "label") {
+    return buildPresetStoreSettings(installation);
+  }
+
   const supabase = createSupabaseAdminClient();
 
   const [settingsResult, hoursResult, zonesResult] = await Promise.all([

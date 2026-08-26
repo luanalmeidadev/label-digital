@@ -9,9 +9,11 @@ export const brand = {
   colors: {
     wine: installation.theme.primary,
     cream: installation.theme.accent,
+    primaryHover: installation.theme.primaryHover,
 
     background: installation.theme.background,
     surface: installation.theme.surface,
+    mutedSurface: installation.theme.mutedSurface,
 
     text: installation.theme.text,
     mutedText: installation.theme.mutedText,

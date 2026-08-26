@@ -39,9 +39,9 @@ function PermissionFields({
       {adminPermissionOptions.map((permission) => (
         <label
           key={permission.key}
-          className={`flex gap-3 rounded-xl border border-[#EEE6DF] p-3 ${
+          className={`flex gap-3 rounded-xl border border-brand-border p-3 ${
             role === "admin"
-              ? "cursor-default bg-[#FFFDF9] opacity-60"
+              ? "cursor-default bg-brand-background opacity-60"
               : "cursor-pointer"
           }`}
         >
@@ -53,13 +53,13 @@ function PermissionFields({
               permission.key
             )}
             disabled={disabled || role === "admin"}
-            className="mt-0.5 h-4 w-4 shrink-0 accent-[#8B0000]"
+            className="mt-0.5 h-4 w-4 shrink-0 accent-brand-primary"
           />
           <span>
-            <span className="block text-xs font-bold text-[#241B19]">
+            <span className="block text-xs font-bold text-brand-foreground">
               {permission.label}
             </span>
-            <span className="mt-1 block text-[11px] leading-4 text-[#756A66]">
+            <span className="mt-1 block text-[11px] leading-4 text-brand-muted-foreground">
               {permission.description}
             </span>
           </span>
@@ -141,11 +141,11 @@ function NewAccountForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="border-b border-[#EEE6DF] bg-[#FFFDF9] p-5 sm:p-6"
+      className="border-b border-brand-border bg-brand-background p-5 sm:p-6"
     >
       <div className="flex items-center gap-2">
-        <UserPlus size={18} className="text-[#8B0000]" />
-        <h3 className="font-bold text-[#241B19]">
+        <UserPlus size={18} className="text-brand-primary" />
+        <h3 className="font-bold text-brand-foreground">
           Nova conta
         </h3>
       </div>
@@ -162,7 +162,7 @@ function NewAccountForm() {
             minLength={2}
             maxLength={80}
             disabled={pending}
-            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
           />
         </label>
         <label className="block">
@@ -174,7 +174,7 @@ function NewAccountForm() {
             type="email"
             required
             disabled={pending}
-            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
           />
         </label>
         <label className="block">
@@ -188,7 +188,7 @@ function NewAccountForm() {
               setRole(event.target.value as AdminRole)
             }
             disabled={pending}
-            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
           >
             <option value="attendant">Atendente</option>
             <option value="admin">Administrador</option>
@@ -205,7 +205,7 @@ function NewAccountForm() {
           Permissões
         </p>
         {role === "admin" && (
-          <p className="mb-3 rounded-xl bg-[#8B0000]/5 px-3 py-2 text-xs text-[#756A66]">
+          <p className="mb-3 rounded-xl bg-brand-primary/5 px-3 py-2 text-xs text-brand-muted-foreground">
             Administradores têm acesso completo ao sistema e ao gerenciamento de contas.
           </p>
         )}
@@ -221,7 +221,7 @@ function NewAccountForm() {
         <button
           type="submit"
           disabled={pending}
-          className="ml-auto rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+          className="ml-auto rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:opacity-60"
         >
           {pending ? "Enviando..." : "Enviar convite"}
         </button>
@@ -318,13 +318,13 @@ function ExistingAccountForm({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-bold text-[#241B19]">
+            <h3 className="font-bold text-brand-foreground">
               {account.name}
             </h3>
             <span
               className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${
                 account.role === "admin"
-                  ? "bg-[#8B0000]/10 text-[#8B0000]"
+                  ? "bg-brand-primary/10 text-brand-primary"
                   : "bg-blue-50 text-blue-700"
               }`}
             >
@@ -343,12 +343,12 @@ function ExistingAccountForm({
               </span>
             )}
           </div>
-          <p className="mt-1 text-xs text-[#756A66]">
+          <p className="mt-1 text-xs text-brand-muted-foreground">
             {account.email}
           </p>
         </div>
         {account.role === "admin" ? (
-          <ShieldCheck size={22} className="text-[#8B0000]" />
+          <ShieldCheck size={22} className="text-brand-primary" />
         ) : (
           <UserCog size={22} className="text-blue-700" />
         )}
@@ -365,7 +365,7 @@ function ExistingAccountForm({
             required
             defaultValue={account.name}
             disabled={pending}
-            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
           />
         </label>
         <label className="block">
@@ -379,7 +379,7 @@ function ExistingAccountForm({
               setRole(event.target.value as AdminRole)
             }
             disabled={pending || isCurrentUser}
-            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000] disabled:opacity-60"
+            className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary disabled:opacity-60"
           >
             <option value="attendant">Atendente</option>
             <option value="admin">Administrador</option>
@@ -412,7 +412,7 @@ function ExistingAccountForm({
           <button
             type="submit"
             disabled={pending}
-            className="rounded-xl border border-[#8B0000] px-4 py-2.5 text-sm font-bold text-[#8B0000] transition hover:bg-[#8B0000] hover:text-white disabled:opacity-60"
+            className="rounded-xl border border-brand-primary px-4 py-2.5 text-sm font-bold text-brand-primary transition hover:bg-brand-primary hover:text-brand-primary-foreground disabled:opacity-60"
           >
             {pending ? "Salvando..." : "Salvar acesso"}
           </button>
@@ -467,17 +467,17 @@ export default function AdminAccountsManager({
   currentUserId: string;
 }) {
   return (
-    <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-      <div className="border-b border-[#EEE6DF] p-5 sm:p-6">
+    <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+      <div className="border-b border-brand-border p-5 sm:p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
             <UserCog size={20} />
           </div>
           <div>
-            <h2 className="font-bold text-[#241B19]">
+            <h2 className="font-bold text-brand-foreground">
               Contas e permissões
             </h2>
-            <p className="text-xs text-[#756A66]">
+            <p className="text-xs text-brand-muted-foreground">
               Envie convites e defina acessos administrativos ou limitados para atendentes.
             </p>
           </div>
@@ -486,7 +486,7 @@ export default function AdminAccountsManager({
 
       <NewAccountForm />
 
-      <div className="divide-y divide-[#EEE6DF]">
+      <div className="divide-y divide-brand-border">
         {accounts.map((account) => (
           <ExistingAccountForm
             key={account.id}

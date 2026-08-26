@@ -28,22 +28,22 @@ export default function CategoryGrid({
   return (
     <section className="py-8">
       <div className="mb-5">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8B0000]">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-primary">
           Cardápio
         </p>
 
-        <h2 className="mt-1 text-2xl font-bold text-[#241B19]">
+        <h2 className="mt-1 text-2xl font-bold text-brand-foreground">
           O que você deseja?
         </h2>
 
-        <p className="mt-2 text-sm text-[#756A66]">
+        <p className="mt-2 text-sm text-brand-muted-foreground">
           Escolha uma categoria ou veja o cardápio completo abaixo.
         </p>
       </div>
 
       <Link
         href="/encomendas"
-        className="group mb-4 flex items-center justify-between gap-4 rounded-2xl border border-[#8B0000] bg-[#8B0000] p-4 text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-[#700000] sm:p-5"
+        className="group mb-4 flex items-center justify-between gap-4 rounded-2xl border border-brand-primary bg-brand-primary p-4 text-brand-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-primary-hover sm:p-5"
       >
         <span className="flex min-w-0 items-center gap-4">
           <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white/15 text-[#F3D9B6] transition group-hover:scale-105">
@@ -71,14 +71,14 @@ export default function CategoryGrid({
           <a
             key={category.id}
             href={`#${category.slug}`}
-            className="flex min-h-[105px] flex-col items-center justify-center rounded-2xl border border-[#EEE6DF] bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-[#D2B48C]"
+            className="flex min-h-[105px] flex-col items-center justify-center rounded-2xl border border-brand-border bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-brand-secondary"
           >
             <span className="text-3xl">
               {emojiBySlug[category.slug] ??
                 "🍽️"}
             </span>
 
-            <span className="mt-3 text-xs font-bold text-[#241B19] sm:text-sm">
+            <span className="mt-3 text-xs font-bold text-brand-foreground sm:text-sm">
               {category.name}
             </span>
           </a>

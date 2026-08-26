@@ -73,7 +73,7 @@ type OverviewMetric = {
 };
 
 const metricToneClasses: Record<MetricTone, string> = {
-  brand: "bg-[#8B0000]/10 text-[#8B0000]",
+  brand: "bg-brand-primary/10 text-brand-primary",
   amber: "bg-amber-100 text-amber-700",
   orange: "bg-orange-100 text-orange-700",
   blue: "bg-blue-100 text-blue-700",
@@ -84,7 +84,7 @@ const metricToneClasses: Record<MetricTone, string> = {
 function OverviewMetricCard({ metric }: { metric: OverviewMetric }) {
   const Icon = metric.icon;
   const cardClassName =
-    "flex min-h-40 flex-col rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:min-h-44 sm:p-5";
+    "flex min-h-40 flex-col rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:min-h-44 sm:p-5";
 
   const content = (
     <>
@@ -98,10 +98,10 @@ function OverviewMetricCard({ metric }: { metric: OverviewMetric }) {
       </div>
 
       <div className="mt-auto pt-4">
-        <p className="min-h-10 text-sm leading-5 text-[#756A66]">
+        <p className="min-h-10 text-sm leading-5 text-brand-muted-foreground">
           {metric.label}
         </p>
-        <p className="mt-1 text-xl font-bold leading-tight text-[#241B19] sm:text-2xl">
+        <p className="mt-1 text-xl font-bold leading-tight text-brand-foreground sm:text-2xl">
           {metric.value}
         </p>
       </div>
@@ -114,7 +114,7 @@ function OverviewMetricCard({ metric }: { metric: OverviewMetric }) {
         href={metric.href}
         className={cn(
           cardClassName,
-          "transition duration-200 hover:-translate-y-0.5 hover:border-[#D2B48C] hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#8B0000]"
+          "transition duration-200 hover:-translate-y-0.5 hover:border-brand-secondary hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-primary"
         )}
       >
         {content}
@@ -590,18 +590,18 @@ export default async function AdminPage({
         {/* CABEÇALHO */}
         <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
               Visão geral
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+            <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
               Olá,{" "}
               {admin?.name ??
                 "Administrador"}{" "}
               👋
             </h1>
 
-            <p className="mt-2 text-sm text-[#756A66]">
+            <p className="mt-2 text-sm text-brand-muted-foreground">
               Acompanhe aqui o movimento da {installation.identity.shortName}.
             </p>
           </div>
@@ -632,7 +632,7 @@ export default async function AdminPage({
 
         {/* CARDS PRINCIPAIS */}
         <section className="mt-8">
-          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-brand-primary">
             Indicadores principais
           </h2>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
@@ -645,7 +645,7 @@ export default async function AdminPage({
         {/* RESUMO OPERACIONAL */}
         {operationalStats.length > 0 && (
         <section className="mt-6">
-          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+          <h2 className="text-xs font-bold uppercase tracking-[0.15em] text-brand-primary">
             Operação e agenda
           </h2>
           <div className="mt-3 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-5">
@@ -657,46 +657,46 @@ export default async function AdminPage({
         )}
 
         {canAccessBilling && (
-        <section className="mt-6 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+        <section className="mt-6 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="border-b border-brand-border p-5">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-brand-primary">
               Resumo financeiro
             </p>
-            <h2 className="mt-1 text-xl font-bold text-[#241B19]">
+            <h2 className="mt-1 text-xl font-bold text-brand-foreground">
               Faturamento deste mês
             </h2>
           </div>
 
-          <div className="grid gap-px bg-[#EEE6DF] md:grid-cols-3">
+          <div className="grid gap-px bg-brand-border md:grid-cols-3">
             <Link
               href="/admin/faturamento?source=daily&period=month"
-              className="bg-white p-5 transition hover:bg-[#FFFDF9]"
+              className="bg-white p-5 transition hover:bg-brand-background"
             >
-              <p className="inline-flex items-center gap-2 text-sm font-bold text-[#756A66]">
-                <ShoppingBag size={17} className="text-[#8B0000]" />
+              <p className="inline-flex items-center gap-2 text-sm font-bold text-brand-muted-foreground">
+                <ShoppingBag size={17} className="text-brand-primary" />
                 Vendas diárias
               </p>
-              <p className="mt-2 text-2xl font-bold text-[#241B19]">
+              <p className="mt-2 text-2xl font-bold text-brand-foreground">
                 {formatCurrency(monthRevenue)}
               </p>
             </Link>
 
             <Link
               href="/admin/faturamento?source=preorders&period=month"
-              className="bg-white p-5 transition hover:bg-[#FFFDF9]"
+              className="bg-white p-5 transition hover:bg-brand-background"
             >
-              <p className="inline-flex items-center gap-2 text-sm font-bold text-[#756A66]">
-                <CakeSlice size={17} className="text-[#8B0000]" />
+              <p className="inline-flex items-center gap-2 text-sm font-bold text-brand-muted-foreground">
+                <CakeSlice size={17} className="text-brand-primary" />
                 Encomendas
               </p>
-              <p className="mt-2 text-2xl font-bold text-[#241B19]">
+              <p className="mt-2 text-2xl font-bold text-brand-foreground">
                 {formatCurrency(monthPreorderRevenue)}
               </p>
             </Link>
 
             <Link
               href="/admin/faturamento?source=daily&period=month"
-              className="bg-[#8B0000] p-5 text-white transition hover:bg-[#700000]"
+              className="bg-brand-primary p-5 text-brand-primary-foreground transition hover:bg-brand-primary-hover"
             >
               <p className="text-sm font-bold text-white/75">
                 Total consolidado
@@ -719,14 +719,14 @@ export default async function AdminPage({
         >
           {/* PEDIDOS RECENTES */}
           {canAccessOrders && (
-          <div className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-[#EEE6DF] p-6">
+          <div className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-brand-border p-6">
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+                <p className="text-xs font-bold uppercase tracking-[0.15em] text-brand-primary">
                   Pedidos
                 </p>
 
-                <h2 className="mt-1 text-xl font-bold text-[#241B19]">
+                <h2 className="mt-1 text-xl font-bold text-brand-foreground">
                   Pedidos recentes
                 </h2>
               </div>
@@ -734,7 +734,7 @@ export default async function AdminPage({
               {canAccessOrders && (
               <Link
                 href="/admin/pedidos"
-                className="text-sm font-bold text-[#8B0000] transition hover:underline"
+                className="text-sm font-bold text-brand-primary transition hover:underline"
               >
                 Ver todos
               </Link>
@@ -743,7 +743,7 @@ export default async function AdminPage({
 
             {recentOrders &&
             recentOrders.length > 0 ? (
-              <div className="divide-y divide-[#EEE6DF]">
+              <div className="divide-y divide-brand-border">
                 {recentOrders.map(
                   (order) => {
                     const customer =
@@ -761,7 +761,7 @@ export default async function AdminPage({
                       >
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="font-bold text-[#241B19]">
+                            <p className="font-bold text-brand-foreground">
                               Pedido #
                               {
                                 order.order_number
@@ -784,13 +784,13 @@ export default async function AdminPage({
                             </span>
                           </div>
 
-                          <p className="mt-2 text-sm text-[#756A66]">
+                          <p className="mt-2 text-sm text-brand-muted-foreground">
                             {customer
                               ? `${customer.first_name} ${customer.last_name}`
                               : "Cliente não identificado"}
                           </p>
 
-                          <p className="mt-1 text-xs text-[#756A66]">
+                          <p className="mt-1 text-xs text-brand-muted-foreground">
                             {order.order_type ===
                             "delivery"
                               ? "Entrega"
@@ -802,7 +802,7 @@ export default async function AdminPage({
                           </p>
                         </div>
 
-                        <p className="font-bold text-[#8B0000]">
+                        <p className="font-bold text-brand-primary">
                           {formatCurrency(
                             Number(
                               order.total
@@ -818,14 +818,14 @@ export default async function AdminPage({
               <div className="py-14 text-center">
                 <ShoppingBag
                   size={38}
-                  className="mx-auto text-[#D2B48C]"
+                  className="mx-auto text-brand-secondary"
                 />
 
-                <p className="mt-4 font-bold text-[#241B19]">
+                <p className="mt-4 font-bold text-brand-foreground">
                   Nenhum pedido ainda
                 </p>
 
-                <p className="mt-2 text-sm text-[#756A66]">
+                <p className="mt-2 text-sm text-brand-muted-foreground">
                   Quando os primeiros
                   pedidos forem enviados,
                   eles aparecerão aqui.
@@ -836,12 +836,12 @@ export default async function AdminPage({
           )}
 
           {/* ACESSOS RÁPIDOS */}
-          <div className="rounded-3xl bg-[#D2B48C] p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
+          <div className="rounded-3xl bg-brand-secondary p-6">
+            <p className="text-xs font-bold uppercase tracking-[0.15em] text-brand-primary">
               {installation.identity.shortName} Digital
             </p>
 
-            <h2 className="mt-2 text-2xl font-bold text-[#8B0000]">
+            <h2 className="mt-2 text-2xl font-bold text-brand-primary">
               Central da operação
             </h2>
 
@@ -854,7 +854,7 @@ export default async function AdminPage({
               {canAccessOrders && (
               <Link
                 href="/admin/pedidos"
-                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
               >
                 Pedidos
 
@@ -865,7 +865,7 @@ export default async function AdminPage({
               {canAccessCatalog && (
               <Link
                 href="/admin/produtos"
-                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
               >
                 Produtos
 
@@ -876,7 +876,7 @@ export default async function AdminPage({
               {canAccessOrders && (
               <Link
                 href="/admin/pedidos/encomendas"
-                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
               >
                 Agenda de encomendas
 
@@ -887,7 +887,7 @@ export default async function AdminPage({
               {canAccessCustomers && (
               <Link
                 href="/admin/clientes"
-                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
               >
                 Clientes
 
@@ -898,7 +898,7 @@ export default async function AdminPage({
               {canAccessDeliveries && (
               <Link
                 href="/admin/entregas"
-                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
               >
                 Entregas
 
@@ -909,7 +909,7 @@ export default async function AdminPage({
               {canAccessBilling && (
               <Link
                 href="/admin/faturamento"
-                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
               >
                 Faturamento
 
@@ -920,7 +920,7 @@ export default async function AdminPage({
               {canAccessSettings && (
               <Link
                 href="/admin/configuracoes"
-                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-white"
+                className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
               >
                 Configurações
 

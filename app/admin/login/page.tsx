@@ -46,7 +46,7 @@ export default async function AdminLoginPage({
     : null;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#FFFDF9] px-5">
+    <main className="flex min-h-screen items-center justify-center bg-brand-background px-5">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Image
@@ -59,18 +59,18 @@ export default async function AdminLoginPage({
             priority
           />
 
-          <h1 className="mt-5 text-2xl font-bold text-[#241B19]">
+          <h1 className="mt-5 text-2xl font-bold text-brand-foreground">
             Administração {installation.identity.shortName}
           </h1>
 
-          <p className="mt-2 text-sm text-[#756A66]">
+          <p className="mt-2 text-sm text-brand-muted-foreground">
             Entre para acessar o painel administrativo.
           </p>
         </div>
 
         <form
           action={loginAdmin}
-          className="rounded-3xl border border-[#EEE6DF] bg-white p-7 shadow-sm"
+          className="rounded-3xl border border-brand-border bg-white p-7 shadow-sm"
         >
           {errorMessage && (
             <div
@@ -93,7 +93,7 @@ export default async function AdminLoginPage({
           <div>
             <label
               htmlFor="email"
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               E-mail
             </label>
@@ -105,7 +105,7 @@ export default async function AdminLoginPage({
               required
               autoComplete="email"
               placeholder="seu@email.com"
-              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-[#8B0000]"
+              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-brand-primary"
             />
           </div>
 
@@ -113,13 +113,13 @@ export default async function AdminLoginPage({
             <div className="flex items-center justify-between gap-3">
               <label
                 htmlFor="password"
-                className="text-sm font-bold text-[#241B19]"
+                className="text-sm font-bold text-brand-foreground"
               >
                 Senha
               </label>
               <Link
                 href="/admin/recuperar-senha"
-                className="text-xs font-bold text-[#8B0000] hover:underline"
+                className="text-xs font-bold text-brand-primary hover:underline"
               >
                 Esqueci minha senha
               </Link>
@@ -132,19 +132,19 @@ export default async function AdminLoginPage({
               required
               autoComplete="current-password"
               placeholder="Sua senha"
-              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-[#8B0000]"
+              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-brand-primary"
             />
           </div>
 
           <button
             type="submit"
-            className="mt-7 h-12 w-full rounded-xl bg-[#8B0000] font-bold text-white transition hover:bg-[#700000]"
+            className="mt-7 h-12 w-full rounded-xl bg-brand-primary font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
           >
             Entrar
           </button>
         </form>
 
-        <p className="mt-6 text-center text-xs text-[#756A66]">
+        <p className="mt-6 text-center text-xs text-brand-muted-foreground">
           Área restrita • {installation.identity.name}
         </p>
       </div>

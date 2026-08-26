@@ -206,13 +206,13 @@ function MetadataDetails({ metadata }: { metadata: Record<string, unknown> }) {
   }
 
   return (
-    <details className="mt-4 rounded-2xl border border-[#EEE6DF] bg-[#FFFDF9] px-4 py-3">
-      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-[#8B0000]">
+    <details className="mt-4 rounded-2xl border border-brand-border bg-brand-background px-4 py-3">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-sm font-bold text-brand-primary">
         Ver detalhes
         <ChevronDown size={16} />
       </summary>
 
-      <dl className="mt-3 grid gap-3 border-t border-[#EEE6DF] pt-3 sm:grid-cols-2">
+      <dl className="mt-3 grid gap-3 border-t border-brand-border pt-3 sm:grid-cols-2">
         {entries.map(([key, value]) => {
           const change =
             value &&
@@ -224,10 +224,10 @@ function MetadataDetails({ metadata }: { metadata: Record<string, unknown> }) {
 
           return (
             <div key={key} className="min-w-0">
-              <dt className="text-xs font-bold uppercase tracking-wide text-[#756A66]">
+              <dt className="text-xs font-bold uppercase tracking-wide text-brand-muted-foreground">
                 {fieldLabels[key] ?? key.replaceAll("_", " ")}
               </dt>
-              <dd className="mt-1 break-words text-sm text-[#241B19]">
+              <dd className="mt-1 break-words text-sm text-brand-foreground">
                 {change ? (
                   <>
                     {formatValue(key, change.before)}
@@ -314,26 +314,26 @@ export default async function AtividadesPage({
     <main className="p-5 sm:p-8">
       <div className="mx-auto max-w-7xl">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
             Segurança e controle
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+          <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
             Histórico de atividades
           </h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#756A66]">
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted-foreground">
             Veja quem alterou produtos, pedidos, encomendas, configurações e
             contas administrativas.
           </p>
         </div>
 
-        <section className="mt-8 rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm sm:p-6">
+        <section className="mt-8 rounded-3xl border border-brand-border bg-white p-5 shadow-sm sm:p-6">
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <Filter size={20} />
             </div>
             <div>
-              <h2 className="font-bold text-[#241B19]">Filtrar atividades</h2>
-              <p className="text-xs text-[#756A66]">
+              <h2 className="font-bold text-brand-foreground">Filtrar atividades</h2>
+              <p className="text-xs text-brand-muted-foreground">
                 Consulte até 200 registros por vez.
               </p>
             </div>
@@ -343,7 +343,7 @@ export default async function AtividadesPage({
             <select
               name="area"
               defaultValue={area}
-              className="h-11 rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+              className="h-11 rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
             >
               <option value="">Todas as áreas</option>
               {entityOptions.map(([value, label]) => (
@@ -356,7 +356,7 @@ export default async function AtividadesPage({
             <select
               name="action"
               defaultValue={action}
-              className="h-11 rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+              className="h-11 rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
             >
               <option value="">Todas as ações</option>
               <option value="created">Criações</option>
@@ -367,7 +367,7 @@ export default async function AtividadesPage({
             <select
               name="period"
               defaultValue={period}
-              className="h-11 rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+              className="h-11 rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
             >
               <option value="7">Últimos 7 dias</option>
               <option value="30">Últimos 30 dias</option>
@@ -376,35 +376,35 @@ export default async function AtividadesPage({
 
             <button
               type="submit"
-              className="h-11 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white transition hover:bg-[#700000]"
+              className="h-11 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
             >
               Aplicar
             </button>
             <Link
               href="/admin/atividades"
-              className="flex h-11 items-center justify-center rounded-xl border border-[#DDD3CB] px-5 text-sm font-bold text-[#756A66]"
+              className="flex h-11 items-center justify-center rounded-xl border border-[#DDD3CB] px-5 text-sm font-bold text-brand-muted-foreground"
             >
               Limpar
             </Link>
           </form>
         </section>
 
-        <section className="mt-6 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="flex items-center justify-between gap-4 border-b border-[#EEE6DF] p-5">
+        <section className="mt-6 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="flex items-center justify-between gap-4 border-b border-brand-border p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
                 <History size={20} />
               </div>
               <div>
-                <h2 className="font-bold text-[#241B19]">Atividades registradas</h2>
-                <p className="text-xs text-[#756A66]">{logs.length} registro(s)</p>
+                <h2 className="font-bold text-brand-foreground">Atividades registradas</h2>
+                <p className="text-xs text-brand-muted-foreground">{logs.length} registro(s)</p>
               </div>
             </div>
             <ShieldCheck className="text-emerald-600" size={22} />
           </div>
 
           {logs.length > 0 ? (
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {logs.map((log) => (
                 <article key={log.id} className="p-5 sm:p-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -415,14 +415,14 @@ export default async function AtividadesPage({
                         >
                           {actionLabels[log.action]}
                         </span>
-                        <span className="rounded-full bg-[#F4EEEA] px-2.5 py-1 text-xs font-bold text-[#756A66]">
+                        <span className="rounded-full bg-[#F4EEEA] px-2.5 py-1 text-xs font-bold text-brand-muted-foreground">
                           {entityLabels[log.entity_type] ?? log.entity_type}
                         </span>
                       </div>
-                      <h3 className="mt-3 font-bold text-[#241B19]">
+                      <h3 className="mt-3 font-bold text-brand-foreground">
                         {log.summary}
                       </h3>
-                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#756A66]">
+                      <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-brand-muted-foreground">
                         <span className="inline-flex items-center gap-1.5">
                           <UserRound size={14} />
                           {log.actor_name}
@@ -433,7 +433,7 @@ export default async function AtividadesPage({
                         {log.actor_email && <span>{log.actor_email}</span>}
                       </div>
                     </div>
-                    <time className="shrink-0 text-xs font-semibold text-[#756A66]">
+                    <time className="shrink-0 text-xs font-semibold text-brand-muted-foreground">
                       {formatDate(log.created_at)}
                     </time>
                   </div>
@@ -444,13 +444,13 @@ export default async function AtividadesPage({
             </div>
           ) : (
             <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
                 <History size={28} />
               </div>
-              <h3 className="mt-5 text-xl font-bold text-[#241B19]">
+              <h3 className="mt-5 text-xl font-bold text-brand-foreground">
                 Nenhuma atividade encontrada
               </h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
                 Ajuste os filtros ou faça uma alteração administrativa para
                 iniciar o histórico.
               </p>

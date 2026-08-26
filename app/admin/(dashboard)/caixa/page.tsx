@@ -251,33 +251,33 @@ export default async function CaixaPage() {
     <main className="p-5 sm:p-8">
       <div className="mx-auto max-w-[1500px]">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
             Venda presencial
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">Caixa</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[#756A66]">
+          <h1 className="mt-2 text-3xl font-bold text-brand-foreground">Caixa</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted-foreground">
             Registre rapidamente os produtos vendidos no balcão e mantenha as
             vendas presenciais integradas aos pedidos e ao faturamento.
           </p>
         </div>
 
         <section className="mt-7 grid grid-cols-2 gap-3 sm:gap-4 lg:max-w-2xl">
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <article className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <ReceiptText size={19} />
             </div>
-            <p className="mt-4 text-xs text-[#756A66] sm:text-sm">Vendas no caixa hoje</p>
-            <p className="mt-1 text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-4 text-xs text-brand-muted-foreground sm:text-sm">Vendas no caixa hoje</p>
+            <p className="mt-1 text-xl font-bold text-brand-foreground sm:text-2xl">
               {todaySales.length}
             </p>
           </article>
 
-          <article className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+          <article className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
               <CircleDollarSign size={19} />
             </div>
-            <p className="mt-4 text-xs text-[#756A66] sm:text-sm">Vendido no caixa hoje</p>
-            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-4 text-xs text-brand-muted-foreground sm:text-sm">Vendido no caixa hoje</p>
+            <p className="mt-1 break-words text-xl font-bold text-brand-foreground sm:text-2xl">
               {formatCurrency(todayRevenue)}
             </p>
           </article>
@@ -373,33 +373,33 @@ export default async function CaixaPage() {
           />
         )}
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-            <History size={20} className="text-[#8B0000]" />
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-brand-border p-5">
+            <History size={20} className="text-brand-primary" />
             <div>
-              <h2 className="font-bold text-[#241B19]">Histórico de caixas</h2>
-              <p className="text-xs text-[#756A66]">
+              <h2 className="font-bold text-brand-foreground">Histórico de caixas</h2>
+              <p className="text-xs text-brand-muted-foreground">
                 Últimos {closedSessions.length} fechamento(s)
               </p>
             </div>
           </div>
 
           {closedSessions.length > 0 ? (
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {closedSessions.map((session) => (
                 <article
                   key={session.id}
                   className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="font-bold text-[#241B19]">
+                    <p className="font-bold text-brand-foreground">
                       Caixa de{" "}
                       {new Intl.DateTimeFormat("pt-BR", {
                         dateStyle: "short",
                         timeStyle: "short",
                       }).format(new Date(session.opened_at))}
                     </p>
-                    <p className="mt-1 text-xs text-[#756A66]">
+                    <p className="mt-1 text-xs text-brand-muted-foreground">
                       Esperado {formatCurrency(Number(session.expected_cash))}
                       {" · "}Contado{" "}
                       {formatCurrency(Number(session.closing_cash_counted))}
@@ -419,7 +419,7 @@ export default async function CaixaPage() {
                     href={`/admin/caixa/${session.id}/imprimir?session=started`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000]"
+                    className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-brand-primary px-4 text-sm font-bold text-brand-primary"
                   >
                     <Printer size={16} />
                     Imprimir fechamento
@@ -428,7 +428,7 @@ export default async function CaixaPage() {
               ))}
             </div>
           ) : (
-            <p className="p-8 text-center text-sm text-[#756A66]">
+            <p className="p-8 text-center text-sm text-brand-muted-foreground">
               Nenhum caixa fechado ainda.
             </p>
           )}

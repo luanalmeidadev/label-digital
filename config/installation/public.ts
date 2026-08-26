@@ -1,8 +1,10 @@
 import type { PublicInstallationProfile } from "@/config/installation/types";
-import { labelInstallationPreset } from "@/config/installation/presets/label";
+import { resolveInstallationPreset } from "@/config/installation/resolve";
 
 const effectivePublicInstallation: PublicInstallationProfile =
-  labelInstallationPreset;
+  resolveInstallationPreset({
+    requestedPreset: process.env.NEXT_PUBLIC_INSTALLATION_PRESET,
+  });
 
 export function getPublicInstallationProfile(): PublicInstallationProfile {
   return effectivePublicInstallation;

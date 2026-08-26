@@ -199,8 +199,8 @@ const [positionY, setPositionY] =
             }
             className={
               triggerMode === "image"
-                ? "group relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-[#EEE6DF] bg-[#FFF7F5]"
-                : "flex items-center gap-2 rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+                ? "group relative flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-brand-border bg-[#FFF7F5]"
+                : "flex items-center gap-2 rounded-lg border border-brand-border px-3 py-2 text-xs font-bold text-brand-primary transition hover:border-brand-secondary"
             }
           />
         }
@@ -222,7 +222,7 @@ const [positionY, setPositionY] =
             ) : (
               <ImagePlus
                 size={28}
-                className="text-[#D2B48C]"
+                className="text-brand-secondary"
               />
             )}
             <span className="absolute inset-0 flex items-center justify-center bg-black/0 text-white opacity-0 transition group-hover:bg-black/25 group-hover:opacity-100">
@@ -258,7 +258,7 @@ const [positionY, setPositionY] =
 
           {/* FOTO */}
           <div>
-            <label className="text-sm font-bold text-[#241B19]">
+            <label className="text-sm font-bold text-brand-foreground">
               Foto do produto
             </label>
 
@@ -271,10 +271,10 @@ const [positionY, setPositionY] =
                   accept="image/jpeg,image/png,image/webp"
                   disabled={saving}
                   onChange={handleImageChange}
-                  className="block w-full text-sm text-[#756A66] file:mr-4 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-[#8B0000]"
+                  className="block w-full text-sm text-brand-muted-foreground file:mr-4 file:rounded-xl file:border-0 file:bg-brand-primary/10 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-brand-primary"
                 />
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   JPG, PNG ou WebP. Máximo de 5 MB.
                 </p>
 
@@ -344,7 +344,7 @@ const [positionY, setPositionY] =
           <div>
             <label
               htmlFor={`product-name-${id}`}
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Nome do produto
             </label>
@@ -358,7 +358,7 @@ const [positionY, setPositionY] =
               maxLength={100}
               defaultValue={name}
               disabled={saving}
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </div>
 
@@ -366,7 +366,7 @@ const [positionY, setPositionY] =
           <div>
             <label
               htmlFor={`product-category-${id}`}
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Categoria
             </label>
@@ -377,7 +377,7 @@ const [positionY, setPositionY] =
               required
               defaultValue={categoryId ?? ""}
               disabled={saving}
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             >
               <option
                 value=""
@@ -401,7 +401,7 @@ const [positionY, setPositionY] =
           <div>
             <label
               htmlFor={`product-description-${id}`}
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Descrição
             </label>
@@ -413,7 +413,7 @@ const [positionY, setPositionY] =
               maxLength={500}
               defaultValue={description ?? ""}
               disabled={saving}
-              className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </div>
 
@@ -421,7 +421,7 @@ const [positionY, setPositionY] =
           <div>
             <label
               htmlFor={`product-price-${id}`}
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Preço
             </label>
@@ -435,67 +435,67 @@ const [positionY, setPositionY] =
               required
               defaultValue={price}
               disabled={saving}
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </div>
 
           {/* STATUS */}
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#EEE6DF] p-4">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-border p-4">
               <input
                 type="checkbox"
                 name="available"
                 defaultChecked={available}
                 disabled={saving}
-                className="h-4 w-4 accent-[#8B0000]"
+                className="h-4 w-4 accent-brand-primary"
               />
 
               <div>
-                <p className="text-sm font-bold text-[#241B19]">
+                <p className="text-sm font-bold text-brand-foreground">
                   Disponível
                 </p>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   Pode ser pedido hoje
                 </p>
               </div>
             </label>
 
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#EEE6DF] p-4">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-border p-4">
               <input
                 type="checkbox"
                 name="featured"
                 defaultChecked={featured}
                 disabled={saving}
-                className="h-4 w-4 accent-[#8B0000]"
+                className="h-4 w-4 accent-brand-primary"
               />
 
               <div>
-                <p className="text-sm font-bold text-[#241B19]">
+                <p className="text-sm font-bold text-brand-foreground">
                   Destaque
                 </p>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   Aparece em evidência
                 </p>
               </div>
             </label>
 
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#EEE6DF] p-4">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-border p-4">
               <input
                 type="checkbox"
                 name="active"
                 defaultChecked={active}
                 disabled={saving}
-                className="h-4 w-4 accent-[#8B0000]"
+                className="h-4 w-4 accent-brand-primary"
               />
 
               <div>
-                <p className="text-sm font-bold text-[#241B19]">
+                <p className="text-sm font-bold text-brand-foreground">
                   Ativo
                 </p>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   Exibido no sistema
                 </p>
               </div>
@@ -510,7 +510,7 @@ const [positionY, setPositionY] =
                 setOpen(false);
               }}
               disabled={saving}
-              className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#756A66] disabled:opacity-50"
+              className="rounded-xl border border-brand-border px-4 py-2.5 text-sm font-bold text-brand-muted-foreground disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -518,7 +518,7 @@ const [positionY, setPositionY] =
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#8B0000] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving
                 ? "Salvando..."

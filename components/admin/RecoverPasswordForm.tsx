@@ -176,7 +176,7 @@ export default function RecoverPasswordForm() {
   }
 
   return (
-    <div className="rounded-3xl border border-[#EEE6DF] bg-white p-7 shadow-sm">
+    <div className="rounded-3xl border border-brand-border bg-white p-7 shadow-sm">
       {error && (
         <div
           role="alert"
@@ -198,7 +198,7 @@ export default function RecoverPasswordForm() {
       {step === "email" && (
         <form onSubmit={handleEmailSubmit}>
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">
+            <span className="text-sm font-bold text-brand-foreground">
               E-mail da conta
             </span>
             <input
@@ -208,14 +208,14 @@ export default function RecoverPasswordForm() {
               autoComplete="email"
               disabled={pending}
               placeholder="seu@email.com"
-              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </label>
 
           <button
             type="submit"
             disabled={pending}
-            className="mt-7 h-12 w-full rounded-xl bg-[#8B0000] font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+            className="mt-7 h-12 w-full rounded-xl bg-brand-primary font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:opacity-60"
           >
             {pending
               ? "Enviando..."
@@ -226,16 +226,16 @@ export default function RecoverPasswordForm() {
 
       {step === "code" && (
         <form onSubmit={handleCodeSubmit}>
-          <p className="mb-5 text-sm leading-6 text-[#756A66]">
+          <p className="mb-5 text-sm leading-6 text-brand-muted-foreground">
             Digite o código enviado para{" "}
-            <strong className="text-[#241B19]">
+            <strong className="text-brand-foreground">
               {email}
             </strong>
             .
           </p>
 
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">
+            <span className="text-sm font-bold text-brand-foreground">
               Código de verificação
             </span>
             <input
@@ -248,14 +248,14 @@ export default function RecoverPasswordForm() {
               autoComplete="one-time-code"
               disabled={pending}
               placeholder="000000"
-              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 text-center text-lg font-bold tracking-[0.35em] outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 text-center text-lg font-bold tracking-[0.35em] outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </label>
 
           <button
             type="submit"
             disabled={pending}
-            className="mt-7 h-12 w-full rounded-xl bg-[#8B0000] font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+            className="mt-7 h-12 w-full rounded-xl bg-brand-primary font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:opacity-60"
           >
             {pending
               ? "Verificando..."
@@ -266,7 +266,7 @@ export default function RecoverPasswordForm() {
             type="button"
             onClick={handleResend}
             disabled={pending}
-            className="mt-3 h-11 w-full rounded-xl font-bold text-[#8B0000] transition hover:bg-[#8B0000]/5 disabled:opacity-60"
+            className="mt-3 h-11 w-full rounded-xl font-bold text-brand-primary transition hover:bg-brand-primary/5 disabled:opacity-60"
           >
             Enviar novo código
           </button>
@@ -276,7 +276,7 @@ export default function RecoverPasswordForm() {
       {step === "password" && (
         <form onSubmit={handlePasswordSubmit}>
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">
+            <span className="text-sm font-bold text-brand-foreground">
               Nova senha
             </span>
             <input
@@ -287,12 +287,12 @@ export default function RecoverPasswordForm() {
               autoComplete="new-password"
               disabled={pending}
               placeholder="Pelo menos 8 caracteres"
-              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </label>
 
           <label className="mt-5 block">
-            <span className="text-sm font-bold text-[#241B19]">
+            <span className="text-sm font-bold text-brand-foreground">
               Confirmar nova senha
             </span>
             <input
@@ -303,14 +303,14 @@ export default function RecoverPasswordForm() {
               autoComplete="new-password"
               disabled={pending}
               placeholder="Repita a senha"
-              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#E5DDD6] bg-white px-4 outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </label>
 
           <button
             type="submit"
             disabled={pending}
-            className="mt-7 h-12 w-full rounded-xl bg-[#8B0000] font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+            className="mt-7 h-12 w-full rounded-xl bg-brand-primary font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:opacity-60"
           >
             {pending
               ? "Salvando..."

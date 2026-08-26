@@ -1,10 +1,10 @@
 import { defineInstallationProfile } from "@/config/installation/validate";
 
 export const labelInstallationPreset = defineInstallationProfile({
-  schemaVersion: 2,
+  schemaVersion: 3,
   preset: {
     id: "label",
-    version: 2,
+    version: 3,
   },
   identity: {
     name: "La'Bel Confeitaria",
@@ -31,9 +31,11 @@ export const labelInstallationPreset = defineInstallationProfile({
   theme: {
     primary: "#8B0000",
     onPrimary: "#FFFFFF",
+    primaryHover: "#700000",
     accent: "#D2B48C",
     background: "#FFFDF9",
     surface: "#FFFFFF",
+    mutedSurface: "#F7F0EA",
     text: "#241B19",
     mutedText: "#756A66",
     border: "#EEE6DF",

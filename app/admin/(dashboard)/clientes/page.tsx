@@ -118,15 +118,15 @@ export default async function ClientesPage() {
       <div className="mx-auto max-w-7xl">
         {/* CABEÇALHO */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
             Relacionamento
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+          <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
             Clientes
           </h1>
 
-          <p className="mt-2 text-sm text-[#756A66]">
+          <p className="mt-2 text-sm text-brand-muted-foreground">
             Consulte os clientes, pedidos e endereços
             cadastrados na {installation.identity.shortName}.
           </p>
@@ -135,72 +135,72 @@ export default async function ClientesPage() {
         {/* CARDS */}
        <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-3">
           {/* CLIENTES CADASTRADOS */}
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <UserRound size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-5 text-sm text-brand-muted-foreground">
               Clientes cadastrados
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 text-2xl font-bold text-brand-foreground">
               {totalCustomers}
             </p>
           </article>
 
           {/* CLIENTES COM PEDIDOS */}
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100 text-blue-700">
               <ShoppingBag size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-5 text-sm text-brand-muted-foreground">
               Clientes com pedidos
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 text-2xl font-bold text-brand-foreground">
               {customersWithOrders}
             </p>
           </article>
 
           {/* FATURAMENTO */}
-          <article className="col-span-2 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5 xl:col-span-1">
+          <article className="col-span-2 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5 xl:col-span-1">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <ShoppingBag size={20} />
             </div>
 
-            <p className="mt-5 text-sm text-[#756A66]">
+            <p className="mt-5 text-sm text-brand-muted-foreground">
               Faturamento dos clientes
             </p>
 
-            <p className="mt-1 text-2xl font-bold text-[#241B19]">
+            <p className="mt-1 text-2xl font-bold text-brand-foreground">
               {formatCurrency(
                 completedRevenueFromCustomers
               )}
             </p>
 
-            <p className="mt-2 text-xs text-[#756A66]">
+            <p className="mt-2 text-xs text-brand-muted-foreground">
               Apenas pedidos finalizados.
             </p>
           </article>
         </section>
 
         {/* LISTA DE CLIENTES */}
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
           {/* CABEÇALHO DA LISTA */}
-          <div className="border-b border-[#EEE6DF] p-5">
+          <div className="border-b border-brand-border p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
                 <UserRound size={20} />
               </div>
 
               <div>
-                <h2 className="font-bold text-[#241B19]">
+                <h2 className="font-bold text-brand-foreground">
                   Clientes cadastrados
                 </h2>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   {totalCustomers} cliente(s)
                 </p>
               </div>
@@ -209,7 +209,7 @@ export default async function ClientesPage() {
 
           {/* CLIENTES */}
           {customerStats.length > 0 ? (
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {customerStats.map((customer) => {
                 const addresses =
                   customer.addresses ?? [];
@@ -227,17 +227,17 @@ export default async function ClientesPage() {
                     {/* DADOS DO CLIENTE */}
                     <div className="min-w-0">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[#8B0000]/10 text-[#8B0000]">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-primary/10 text-brand-primary">
                           <UserRound size={19} />
                         </div>
 
                         <div className="min-w-0">
-                          <h3 className="truncate font-bold text-[#241B19]">
+                          <h3 className="truncate font-bold text-brand-foreground">
                             {customer.first_name}{" "}
                             {customer.last_name}
                           </h3>
 
-                          <div className="mt-1 flex items-center gap-2 text-sm text-[#756A66]">
+                          <div className="mt-1 flex items-center gap-2 text-sm text-brand-muted-foreground">
                             <Phone size={14} />
 
                             {customer.phone}
@@ -247,7 +247,7 @@ export default async function ClientesPage() {
 
                       {/* ENDEREÇO PRINCIPAL */}
                       {defaultAddress && (
-                        <div className="mt-4 flex items-start gap-2 text-sm text-[#756A66]">
+                        <div className="mt-4 flex items-start gap-2 text-sm text-brand-muted-foreground">
                           <MapPin
                             size={15}
                             className="mt-0.5 shrink-0"
@@ -275,22 +275,22 @@ export default async function ClientesPage() {
                       <div className="grid grid-cols-2 gap-3 xl:min-w-[520px] xl:grid-cols-3">
                         {/* PEDIDOS */}
                         <div className="rounded-xl bg-[#FFF7F5] p-4">
-                          <p className="text-xs text-[#756A66]">
+                          <p className="text-xs text-brand-muted-foreground">
                             Pedidos
                           </p>
 
-                          <p className="mt-1 font-bold text-[#241B19]">
+                          <p className="mt-1 font-bold text-brand-foreground">
                             {customer.ordersCount}
                           </p>
                         </div>
 
                         {/* TOTAL GASTO */}
                         <div className="rounded-xl bg-[#FFF7F5] p-4">
-                          <p className="text-xs text-[#756A66]">
+                          <p className="text-xs text-brand-muted-foreground">
                             Total gasto
                           </p>
 
-                          <p className="mt-1 font-bold text-[#8B0000]">
+                          <p className="mt-1 font-bold text-brand-primary">
                             {formatCurrency(
                               customer.totalSpent
                             )}
@@ -299,11 +299,11 @@ export default async function ClientesPage() {
 
                         {/* ÚLTIMO PEDIDO */}
                         <div className="col-span-2 rounded-xl bg-[#FFF7F5] p-4 xl:col-span-1">
-                          <p className="text-xs text-[#756A66]">
+                          <p className="text-xs text-brand-muted-foreground">
                             Último pedido
                           </p>
 
-                          <p className="mt-1 text-sm font-bold text-[#241B19]">
+                          <p className="mt-1 text-sm font-bold text-brand-foreground">
                             {formatDate(
                               customer.lastOrderAt
                             )}
@@ -369,15 +369,15 @@ export default async function ClientesPage() {
           ) : (
             /* ESTADO VAZIO */
             <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
                 <UserRound size={28} />
               </div>
 
-              <h3 className="mt-5 text-xl font-bold text-[#241B19]">
+              <h3 className="mt-5 text-xl font-bold text-brand-foreground">
                 Nenhum cliente ainda
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
                 Quando os primeiros clientes
                 realizarem pedidos, eles aparecerão
                 aqui.

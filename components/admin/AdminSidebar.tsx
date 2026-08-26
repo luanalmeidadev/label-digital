@@ -186,7 +186,7 @@ export default function AdminSidebar({
         return (
           <div key={section.label}>
             <div className="mb-2 flex items-center gap-2 px-3">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#D2B48C]">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-brand-secondary">
                 {section.label}
               </span>
               <span className="h-px flex-1 bg-white/10" />
@@ -205,14 +205,14 @@ export default function AdminSidebar({
                     aria-current={active ? "page" : undefined}
                     className={`group flex items-center gap-3 rounded-xl px-2.5 py-2 text-sm font-semibold transition ${
                       active
-                        ? "bg-[#F7E8D2] text-[#8B0000] shadow-sm"
+                        ? "bg-[#F7E8D2] text-brand-primary shadow-sm"
                         : "text-white/80 hover:bg-white/10 hover:text-white"
                     }`}
                   >
                     <span
                       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${
                         active
-                          ? "bg-[#8B0000] text-white"
+                          ? "bg-brand-primary text-brand-primary-foreground"
                           : "bg-white/10 text-[#E8C79C] group-hover:bg-white/15 group-hover:text-white"
                       }`}
                     >
@@ -234,7 +234,7 @@ export default function AdminSidebar({
     <form action={logoutAdmin}>
       <button
         type="submit"
-        className="flex w-full items-center gap-3 rounded-xl border border-white/20 px-3 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-[#8B0000]"
+        className="flex w-full items-center gap-3 rounded-xl border border-white/20 px-3 py-3 text-sm font-bold text-white transition hover:bg-white hover:text-brand-primary"
       >
         <LogOut size={19} />
         Sair
@@ -248,12 +248,12 @@ export default function AdminSidebar({
           DESKTOP
       ===================================== */}
 
-      <aside className="hidden h-screen w-64 shrink-0 border-r border-white/10 bg-[#8B0000] print:hidden lg:sticky lg:top-0 lg:block">
+      <aside className="hidden h-screen w-64 shrink-0 border-r border-white/10 bg-brand-primary print:hidden lg:sticky lg:top-0 lg:block">
         <div className="flex h-full flex-col px-4 py-6">
           <div className="mb-8 px-3">
             <BrandLogo variant="sidebar" eager />
 
-            <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#D2B48C]">
+            <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-brand-secondary">
               {role === "admin"
                 ? "Administração"
                 : "Atendimento"}
@@ -277,7 +277,7 @@ export default function AdminSidebar({
           MOBILE - BARRA SUPERIOR
       ===================================== */}
 
-      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-[#EEE6DF] bg-[#8B0000] px-4 print:hidden lg:hidden">
+      <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-brand-border bg-brand-primary px-4 print:hidden lg:hidden">
         <BrandLogo variant="mobile" eager />
 
         <button
@@ -307,12 +307,12 @@ export default function AdminSidebar({
               MENU LATERAL MOBILE
           ================================= */}
 
-          <aside className="relative z-10 flex h-full w-[84%] max-w-xs flex-col bg-[#8B0000] px-4 py-5 shadow-2xl">
+          <aside className="relative z-10 flex h-full w-[84%] max-w-xs flex-col bg-brand-primary px-4 py-5 shadow-2xl">
             <div className="mb-7 flex items-start justify-between gap-4 px-2">
               <div>
                 <BrandLogo variant="drawer" eager />
 
-                <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-[#D2B48C]">
+                <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-brand-secondary">
                   {role === "admin"
                     ? "Administração"
                     : "Atendimento"}

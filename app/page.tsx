@@ -126,7 +126,7 @@ export default async function Home() {
         }}
       />
       <StoreRealtimeRefresh />
-      <main className="min-h-screen bg-[#FFFDF9]">
+      <main className="min-h-screen bg-brand-background">
         <Header />
         <Hero
           storeName={storeSettings.storeName}
@@ -161,7 +161,7 @@ export default async function Home() {
           <PreorderBanner />
         </div>
 
-        <footer className="mt-16 bg-[#241B19] text-white">
+        <footer className="mt-16 bg-brand-foreground text-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-9 sm:flex-row sm:items-center sm:justify-between">
             <BrandLogo variant="footer" />
             <div className="flex flex-col gap-3 text-sm text-white/75 sm:flex-row sm:items-center sm:gap-6">
@@ -170,14 +170,14 @@ export default async function Home() {
                   href={instagramUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="transition hover:text-[#D2B48C]"
+                  className="transition hover:text-brand-secondary"
                 >
                   {instagramHandle}
                 </a>
               )}
               <Link
                 href={installation.legal.privacyNoticePath}
-                className="transition hover:text-[#D2B48C]"
+                className="transition hover:text-brand-secondary"
               >
                 Privacidade
               </Link>

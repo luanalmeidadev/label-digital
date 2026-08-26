@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { demoBurgerInstallationPreset } from "@/config/installation/presets/demo-burger";
 import { labelInstallationPreset } from "@/config/installation/presets/label";
 import {
   buildInstallationMetadata,
@@ -54,6 +55,29 @@ describe("apresentação da instalação", () => {
     expect(
       buildInstallationMetadata(installation, siteUrl, true).robots
     ).toMatchObject({ index: false, follow: false, noarchive: true });
+  });
+
+  it("troca metadata e segmento sem alterar os builders", () => {
+    const metadata = buildInstallationMetadata(
+      demoBurgerInstallationPreset,
+      siteUrl,
+      false
+    );
+
+    expect(metadata).toMatchObject({
+      applicationName: "Brasa Burger Demo",
+      title: {
+        default: "Brasa Burger Demo | Burgers artesanais",
+      },
+      openGraph: {
+        siteName: "Brasa Burger Demo",
+      },
+    });
+    expect(
+      getBusinessSegmentLabel(
+        demoBurgerInstallationPreset.identity.businessSegment
+      )
+    ).toBe("Hamburgueria");
   });
 
   it("monta Schema.org com o tipo e os dados efetivos da loja", () => {

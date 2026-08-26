@@ -26,7 +26,7 @@ export default function ReportsActions({
       <button
         type="button"
         onClick={downloadCsv}
-        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#D9CDC4] bg-white px-4 text-sm font-bold text-[#8B0000] transition hover:bg-[#FFF7F5]"
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#D9CDC4] bg-white px-4 text-sm font-bold text-brand-primary transition hover:bg-[#FFF7F5]"
       >
         <Download size={17} />
         Exportar planilha
@@ -34,7 +34,7 @@ export default function ReportsActions({
       <button
         type="button"
         onClick={() => window.print()}
-        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-4 text-sm font-bold text-white transition hover:bg-[#700000]"
+        className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-primary px-4 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
       >
         <Printer size={17} />
         Imprimir relatório

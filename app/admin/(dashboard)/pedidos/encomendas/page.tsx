@@ -104,7 +104,7 @@ function RequestList({
   requests: PreorderRequest[];
 }) {
   return (
-    <div className="divide-y divide-[#EEE6DF]">
+    <div className="divide-y divide-brand-border">
       {requests.map((request) => {
         const paymentStatus =
           getPreorderPaymentStatus(request);
@@ -116,7 +116,7 @@ function RequestList({
         >
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-bold text-[#241B19]">
+              <h3 className="font-bold text-brand-foreground">
                 {request.requestNumber}
               </h3>
               <span
@@ -133,23 +133,23 @@ function RequestList({
               </span>
             </div>
 
-            <p className="mt-2 font-semibold text-[#241B19]">
+            <p className="mt-2 font-semibold text-brand-foreground">
               {request.productName}
             </p>
-            <p className="mt-1 text-sm text-[#756A66]">
+            <p className="mt-1 text-sm text-brand-muted-foreground">
               {request.customerName} ·{" "}
               {request.quantity}{" "}
               {request.quantityUnit}
             </p>
-            <p className="mt-2 text-sm font-bold text-[#8B0000]">
+            <p className="mt-2 text-sm font-bold text-brand-primary">
               {request.total > 0
                 ? formatPreorderCurrency(request.total)
                 : "Valor a definir"}
               {request.source === "manual" ? " · Cadastro manual" : ""}
             </p>
 
-            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-[#756A66]">
-              <span className="inline-flex items-center gap-1.5 text-[#8B0000]">
+            <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-brand-muted-foreground">
+              <span className="inline-flex items-center gap-1.5 text-brand-primary">
                 <CalendarClock size={14} />
                 {formatDesiredDate(
                   request.desiredDate
@@ -174,7 +174,7 @@ function RequestList({
           <div className="flex shrink-0 flex-wrap gap-2">
             <Link
               href={`/admin/pedidos/encomendas/${request.id}`}
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#EEE6DF] px-4 text-sm font-bold text-[#8B0000] transition hover:border-[#D2B48C]"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-brand-border px-4 text-sm font-bold text-brand-primary transition hover:border-brand-secondary"
             >
               <Eye size={16} />
               Ver detalhes
@@ -182,7 +182,7 @@ function RequestList({
             <Link
               href={`/admin/pedidos/encomendas/${request.id}/imprimir?session=started`}
               target="_blank"
-              className="inline-flex h-10 items-center gap-2 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000] transition hover:bg-[#8B0000] hover:text-white"
+              className="inline-flex h-10 items-center gap-2 rounded-xl border border-brand-primary px-4 text-sm font-bold text-brand-primary transition hover:bg-brand-primary hover:text-brand-primary-foreground"
             >
               <Printer size={16} />
               Imprimir
@@ -336,27 +336,27 @@ export default async function EncomendasPedidosPage({
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
               Operação
             </p>
-            <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+            <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
               Encomendas
             </h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-[#756A66]">
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted-foreground">
               Organizadas pela data solicitada, sem misturar com os pedidos do cardápio diário.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
               href="/admin/pedidos/encomendas/calendario"
-              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-[#8B0000] px-5 text-sm font-bold text-[#8B0000] transition hover:bg-[#FFF7F5]"
+              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-brand-primary px-5 text-sm font-bold text-brand-primary transition hover:bg-[#FFF7F5]"
             >
               <CalendarRange size={17} />
               Calendário
             </Link>
             <Link
               href="/admin/pedidos/encomendas/nova"
-              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white transition hover:bg-[#700000]"
+              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
             >
               <Plus size={17} />
               Nova encomenda
@@ -409,17 +409,17 @@ export default async function EncomendasPedidosPage({
             return (
               <article
                 key={item.label}
-                className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5"
+                className="rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5"
               >
                 <div
                   className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.color}`}
                 >
                   <Icon size={20} />
                 </div>
-                <p className="mt-4 text-xs text-[#756A66] sm:text-sm">
+                <p className="mt-4 text-xs text-brand-muted-foreground sm:text-sm">
                   {item.label}
                 </p>
-                <p className="mt-1 text-2xl font-bold text-[#241B19]">
+                <p className="mt-1 text-2xl font-bold text-brand-foreground">
                   {item.value}
                 </p>
               </article>
@@ -427,17 +427,17 @@ export default async function EncomendasPedidosPage({
           })}
         </section>
 
-        <section className="mt-8 rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm sm:p-6">
+        <section className="mt-8 rounded-3xl border border-brand-border bg-white p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
                 <SlidersHorizontal size={18} />
               </div>
               <div>
-                <h2 className="font-bold text-[#241B19]">
+                <h2 className="font-bold text-brand-foreground">
                   Buscar e filtrar
                 </h2>
-                <p className="mt-0.5 text-xs text-[#756A66]">
+                <p className="mt-0.5 text-xs text-brand-muted-foreground">
                   Combine quantos filtros precisar.
                 </p>
               </div>
@@ -447,7 +447,7 @@ export default async function EncomendasPedidosPage({
               <Link
                 href="/admin/pedidos/encomendas"
                 scroll={false}
-                className="inline-flex h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold text-[#8B0000] hover:bg-[#FFF7F5]"
+                className="inline-flex h-9 items-center gap-2 rounded-xl px-3 text-xs font-bold text-brand-primary hover:bg-[#FFF7F5]"
               >
                 <X size={15} />
                 Limpar filtros
@@ -461,13 +461,13 @@ export default async function EncomendasPedidosPage({
             className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-6"
           >
             <label className="block md:col-span-2 xl:col-span-2">
-              <span className="text-xs font-bold text-[#756A66]">
+              <span className="text-xs font-bold text-brand-muted-foreground">
                 Cliente, código ou produto
               </span>
               <div className="relative mt-2">
                 <Search
                   size={16}
-                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8B0000]"
+                  className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-brand-primary"
                 />
                 <input
                   name="q"
@@ -475,19 +475,19 @@ export default async function EncomendasPedidosPage({
                   defaultValue={query}
                   maxLength={100}
                   placeholder="Ex.: TESTE-ENC-003 ou Carla"
-                  className="h-11 w-full rounded-xl border border-[#DDD3CC] bg-white pl-11 pr-4 text-sm outline-none focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10"
+                  className="h-11 w-full rounded-xl border border-[#DDD3CC] bg-white pl-11 pr-4 text-sm outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10"
                 />
               </div>
             </label>
 
             <label className="block">
-              <span className="text-xs font-bold text-[#756A66]">
+              <span className="text-xs font-bold text-brand-muted-foreground">
                 Situação
               </span>
               <select
                 name="status"
                 defaultValue={selectedStatus}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] bg-white px-3 text-sm outline-none focus:border-brand-primary"
               >
                 <option value="">Todas</option>
                 {requestStatuses.map((status) => (
@@ -499,13 +499,13 @@ export default async function EncomendasPedidosPage({
             </label>
 
             <label className="block">
-              <span className="text-xs font-bold text-[#756A66]">
+              <span className="text-xs font-bold text-brand-muted-foreground">
                 Pagamento
               </span>
               <select
                 name="payment"
                 defaultValue={selectedPayment}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] bg-white px-3 text-sm outline-none focus:border-brand-primary"
               >
                 <option value="">Todos</option>
                 {paymentStatuses.map((status) => (
@@ -517,33 +517,33 @@ export default async function EncomendasPedidosPage({
             </label>
 
             <label className="block">
-              <span className="text-xs font-bold text-[#756A66]">
+              <span className="text-xs font-bold text-brand-muted-foreground">
                 Data inicial
               </span>
               <input
                 name="from"
                 type="date"
                 defaultValue={fromDate}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] bg-white px-3 text-sm outline-none focus:border-brand-primary"
               />
             </label>
 
             <label className="block">
-              <span className="text-xs font-bold text-[#756A66]">
+              <span className="text-xs font-bold text-brand-muted-foreground">
                 Data final
               </span>
               <input
                 name="to"
                 type="date"
                 defaultValue={toDate}
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CC] bg-white px-3 text-sm outline-none focus:border-brand-primary"
               />
             </label>
 
             <div className="flex items-end md:col-span-2 xl:col-span-6 xl:justify-end">
               <button
                 type="submit"
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-6 text-sm font-bold text-white transition hover:bg-[#700000] sm:w-auto"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-6 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover sm:w-auto"
               >
                 <Search size={16} />
                 Aplicar filtros
@@ -558,18 +558,18 @@ export default async function EncomendasPedidosPage({
           )}
 
           {hasFilters && !invalidDateRange && (
-            <p className="mt-4 text-xs font-semibold text-[#756A66]">
+            <p className="mt-4 text-xs font-semibold text-brand-muted-foreground">
               {filteredRequests.length} resultado(s) encontrado(s).
             </p>
           )}
         </section>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
-            <h2 className="font-bold text-[#241B19]">
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="border-b border-brand-border p-5">
+            <h2 className="font-bold text-brand-foreground">
               Agenda de encomendas
             </h2>
-            <p className="mt-1 text-xs text-[#756A66]">
+            <p className="mt-1 text-xs text-brand-muted-foreground">
               {activeRequests.length} encomenda(s) em aberto
               {hasFilters ? " nos filtros selecionados" : ""}, ordenadas pela data solicitada.
             </p>
@@ -579,15 +579,15 @@ export default async function EncomendasPedidosPage({
             <RequestList requests={activeRequests} />
           ) : (
             <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
                 <CakeSlice size={28} />
               </div>
-              <h3 className="mt-5 text-xl font-bold text-[#241B19]">
+              <h3 className="mt-5 text-xl font-bold text-brand-foreground">
                 {hasFilters
                   ? "Nenhuma encomenda encontrada"
                   : "Nenhuma encomenda em aberto"}
               </h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
                 {hasFilters
                   ? "Tente alterar ou limpar os filtros aplicados."
                   : "As solicitações enviadas pelo cardápio de encomendas aparecerão aqui."}
@@ -597,12 +597,12 @@ export default async function EncomendasPedidosPage({
         </section>
 
         {historyRequests.length > 0 && (
-          <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-            <div className="border-b border-[#EEE6DF] p-5">
-              <h2 className="font-bold text-[#241B19]">
+          <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+            <div className="border-b border-brand-border p-5">
+              <h2 className="font-bold text-brand-foreground">
                 Histórico
               </h2>
-              <p className="mt-1 text-xs text-[#756A66]">
+              <p className="mt-1 text-xs text-brand-muted-foreground">
                 {historyRequests.length} encomenda(s) finalizada(s) ou cancelada(s)
                 {hasFilters ? " nos filtros selecionados" : ""}.
               </p>

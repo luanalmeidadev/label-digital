@@ -170,9 +170,9 @@ export default async function OrderTrackingPage({
     order.status === "cancelled";
 
   return (
-    <main className="min-h-screen bg-[#FFFDF9] px-4 py-6 sm:px-6 sm:py-10">
+    <main className="min-h-screen bg-brand-background px-4 py-6 sm:px-6 sm:py-10">
       <div className="mx-auto max-w-2xl">
-        <header className="rounded-3xl bg-[#8B0000] px-6 py-7 text-center shadow-sm sm:px-10">
+        <header className="rounded-3xl bg-brand-primary px-6 py-7 text-center shadow-sm sm:px-10">
           <Link
             href="/"
             className="inline-flex"
@@ -194,7 +194,7 @@ export default async function OrderTrackingPage({
           </p>
         </header>
 
-        <section className="mt-5 rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm sm:p-8">
+        <section className="mt-5 rounded-3xl border border-brand-border bg-white p-5 shadow-sm sm:p-8">
           {cancelled ? (
             <div className="rounded-2xl border border-red-100 bg-red-50 p-5">
               <div className="flex items-start gap-3">
@@ -219,15 +219,15 @@ export default async function OrderTrackingPage({
               <div className="flex items-center gap-3 rounded-2xl bg-[#FFF7F5] p-4">
                 <Clock3
                   size={21}
-                  className="shrink-0 text-[#8B0000]"
+                  className="shrink-0 text-brand-primary"
                 />
 
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                     Status atual
                   </p>
 
-                  <p className="mt-1 font-bold text-[#241B19]">
+                  <p className="mt-1 font-bold text-brand-foreground">
                     {
                       stages[currentStageIndex]
                         .label
@@ -255,8 +255,8 @@ export default async function OrderTrackingPage({
                         <div
                           className={`absolute left-[19px] top-10 h-[calc(100%-2rem)] w-0.5 ${
                             completed
-                              ? "bg-[#8B0000]"
-                              : "bg-[#EEE6DF]"
+                              ? "bg-brand-primary"
+                              : "bg-brand-border"
                           }`}
                         />
                       )}
@@ -264,8 +264,8 @@ export default async function OrderTrackingPage({
                       <div
                         className={`relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 ${
                           completed || active
-                            ? "border-[#8B0000] bg-[#8B0000] text-white"
-                            : "border-[#EEE6DF] bg-white text-[#A99E99]"
+                            ? "border-brand-primary bg-brand-primary text-brand-primary-foreground"
+                            : "border-brand-border bg-white text-[#A99E99]"
                         }`}
                       >
                         {completed ? (
@@ -279,7 +279,7 @@ export default async function OrderTrackingPage({
                         <p
                           className={`font-bold ${
                             completed || active
-                              ? "text-[#241B19]"
+                              ? "text-brand-foreground"
                               : "text-[#A99E99]"
                           }`}
                         >
@@ -289,7 +289,7 @@ export default async function OrderTrackingPage({
                         <p
                           className={`mt-1 text-sm leading-5 ${
                             completed || active
-                              ? "text-[#756A66]"
+                              ? "text-brand-muted-foreground"
                               : "text-[#B8AEAA]"
                           }`}
                         >
@@ -304,17 +304,17 @@ export default async function OrderTrackingPage({
           )}
 
           {order.payment_method && (
-            <div className="mt-6 rounded-2xl border border-[#EEE6DF] bg-[#FFFDF9] p-4">
-              <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+            <div className="mt-6 rounded-2xl border border-brand-border bg-brand-background p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                 Pagamento
               </p>
-              <p className="mt-1 font-bold text-[#241B19]">
+              <p className="mt-1 font-bold text-brand-foreground">
                 {paymentMethodLabels[
                   order.payment_method as keyof typeof paymentMethodLabels
                 ] ?? order.payment_method}
               </p>
               {order.payment_method === "cash" && (
-                <p className="mt-1 text-sm text-[#756A66]">
+                <p className="mt-1 text-sm text-brand-muted-foreground">
                   {order.cash_change_for
                     ? `Troco para ${new Intl.NumberFormat("pt-BR", {
                         style: "currency",
@@ -326,7 +326,7 @@ export default async function OrderTrackingPage({
             </div>
           )}
 
-          <div className="mt-8 border-t border-[#EEE6DF] pt-5">
+          <div className="mt-8 border-t border-brand-border pt-5">
             <OrderTrackingRefresh />
           </div>
         </section>
@@ -334,7 +334,7 @@ export default async function OrderTrackingPage({
         <div className="mt-5 text-center">
           <Link
             href="/"
-            className="inline-flex items-center justify-center rounded-xl border border-[#D2B48C] px-5 py-3 text-sm font-bold text-[#8B0000] transition hover:bg-[#FFF7F5]"
+            className="inline-flex items-center justify-center rounded-xl border border-brand-secondary px-5 py-3 text-sm font-bold text-brand-primary transition hover:bg-[#FFF7F5]"
           >
             Voltar ao cardápio
           </Link>

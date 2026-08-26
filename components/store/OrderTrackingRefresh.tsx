@@ -44,7 +44,7 @@ export default function OrderTrackingRefresh() {
 
   return (
     <div
-      className="flex items-center justify-center gap-2 text-xs font-semibold text-[#756A66]"
+      className="flex items-center justify-center gap-2 text-xs font-semibold text-brand-muted-foreground"
       aria-live="polite"
     >
       <RefreshCw

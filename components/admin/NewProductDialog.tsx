@@ -98,7 +98,7 @@ const [imagePositionY, setImagePositionY] =
         render={
           <button
             type="button"
-            className="flex items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000]"
+            className="flex items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
           />
         }
       >
@@ -117,7 +117,7 @@ const [imagePositionY, setImagePositionY] =
 
         <form action={handleSubmit} className="mt-4 space-y-5">
           <div>
-            <label className="text-sm font-bold text-[#241B19]">
+            <label className="text-sm font-bold text-brand-foreground">
               Foto do produto
             </label>
 
@@ -127,16 +127,16 @@ const [imagePositionY, setImagePositionY] =
               accept="image/jpeg,image/png,image/webp"
               disabled={saving}
               onChange={handleImageChange}
-              className="mt-2 block w-full text-sm text-[#756A66] file:mr-4 file:rounded-xl file:border-0 file:bg-[#8B0000]/10 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-[#8B0000]"
+              className="mt-2 block w-full text-sm text-brand-muted-foreground file:mr-4 file:rounded-xl file:border-0 file:bg-brand-primary/10 file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-brand-primary"
             />
 
-            <p className="mt-2 text-xs text-[#756A66]">
+            <p className="mt-2 text-xs text-brand-muted-foreground">
               JPG, PNG ou WebP. Máximo de 5 MB.
             </p>
 
             {preview && (
               <div className="mt-4">
-                <p className="mb-3 text-xs leading-5 text-[#756A66]">
+                <p className="mb-3 text-xs leading-5 text-brand-muted-foreground">
                   Prévia no formato vertical usado no cardápio. Arraste a foto para posicionar.
                 </p>
 
@@ -177,7 +177,7 @@ const [imagePositionY, setImagePositionY] =
           <div>
             <label
               htmlFor="product-name"
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Nome do produto
             </label>
@@ -191,14 +191,14 @@ const [imagePositionY, setImagePositionY] =
               maxLength={100}
               disabled={saving}
               placeholder="Ex: Banoffee"
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </div>
 
           <div>
             <label
               htmlFor="product-category"
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Categoria
             </label>
@@ -209,7 +209,7 @@ const [imagePositionY, setImagePositionY] =
               required
               disabled={saving}
               defaultValue=""
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             >
               <option value="" disabled>
                 Selecione uma categoria
@@ -226,7 +226,7 @@ const [imagePositionY, setImagePositionY] =
           <div>
             <label
               htmlFor="product-description"
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Descrição
             </label>
@@ -238,14 +238,14 @@ const [imagePositionY, setImagePositionY] =
               maxLength={500}
               disabled={saving}
               placeholder="Descreva o produto..."
-              className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-4 py-3 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </div>
 
           <div>
             <label
               htmlFor="product-price"
-              className="text-sm font-bold text-[#241B19]"
+              className="text-sm font-bold text-brand-foreground"
             >
               Preço
             </label>
@@ -259,65 +259,65 @@ const [imagePositionY, setImagePositionY] =
               required
               disabled={saving}
               placeholder="0,00"
-              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] disabled:opacity-60"
+              className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
           </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#EEE6DF] p-4">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-border p-4">
               <input
                 type="checkbox"
                 name="available"
                 defaultChecked
                 disabled={saving}
-                className="h-4 w-4 accent-[#8B0000]"
+                className="h-4 w-4 accent-brand-primary"
               />
 
               <div>
-                <p className="text-sm font-bold text-[#241B19]">
+                <p className="text-sm font-bold text-brand-foreground">
                   Disponível
                 </p>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   Pode ser pedido hoje
                 </p>
               </div>
             </label>
 
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#EEE6DF] p-4">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-border p-4">
               <input
                 type="checkbox"
                 name="featured"
                 disabled={saving}
-                className="h-4 w-4 accent-[#8B0000]"
+                className="h-4 w-4 accent-brand-primary"
               />
 
               <div>
-                <p className="text-sm font-bold text-[#241B19]">
+                <p className="text-sm font-bold text-brand-foreground">
                   Destaque
                 </p>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   Aparece em evidência
                 </p>
               </div>
             </label>
 
-            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#EEE6DF] p-4">
+            <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-brand-border p-4">
               <input
                 type="checkbox"
                 name="active"
                 defaultChecked
                 disabled={saving}
-                className="h-4 w-4 accent-[#8B0000]"
+                className="h-4 w-4 accent-brand-primary"
               />
 
               <div>
-                <p className="text-sm font-bold text-[#241B19]">
+                <p className="text-sm font-bold text-brand-foreground">
                   Ativo
                 </p>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   Exibido no sistema
                 </p>
               </div>
@@ -332,7 +332,7 @@ const [imagePositionY, setImagePositionY] =
                 setOpen(false);
               }}
               disabled={saving}
-              className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#756A66] disabled:opacity-50"
+              className="rounded-xl border border-brand-border px-4 py-2.5 text-sm font-bold text-brand-muted-foreground disabled:opacity-50"
             >
               Cancelar
             </button>
@@ -340,7 +340,7 @@ const [imagePositionY, setImagePositionY] =
             <button
               type="submit"
               disabled={saving}
-              className="rounded-xl bg-[#8B0000] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-xl bg-brand-primary px-4 py-2.5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
             >
               {saving ? "Salvando..." : "Cadastrar produto"}
             </button>

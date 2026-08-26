@@ -97,15 +97,15 @@ export default async function ProdutosPage() {
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
               Catálogo
             </p>
 
-            <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+            <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
               Produtos
             </h1>
 
-            <p className="mt-2 text-sm text-[#756A66]">
+            <p className="mt-2 text-sm text-brand-muted-foreground">
               Cadastre e gerencie os produtos disponíveis no cardápio da{" "}
               {installation.identity.shortName}.
             </p>
@@ -120,41 +120,41 @@ export default async function ProdutosPage() {
         <section className="mt-8 rounded-3xl border border-[#E7D8CC] bg-gradient-to-r from-white via-white to-[#FFF1EA] p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#8B0000] text-white shadow-sm">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-brand-primary text-brand-primary-foreground shadow-sm">
                 <Package size={22} />
               </div>
 
               <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#8B0000]">
+                <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-brand-primary">
                   Visão do catálogo
                 </p>
 
-                <h2 className="mt-1 text-lg font-bold text-[#241B19]">
+                <h2 className="mt-1 text-lg font-bold text-brand-foreground">
                   Produtos cadastrados
                 </h2>
 
-                <p className="mt-1 text-xs text-[#756A66]">
+                <p className="mt-1 text-xs text-brand-muted-foreground">
                   Organize a exibição dos itens no administrativo e no cardápio.
                 </p>
               </div>
             </div>
 
             <div className="flex gap-2 sm:justify-end">
-              <span className="rounded-full border border-[#E7D8CC] bg-white px-4 py-2 text-xs font-bold text-[#8B0000] shadow-sm">
+              <span className="rounded-full border border-[#E7D8CC] bg-white px-4 py-2 text-xs font-bold text-brand-primary shadow-sm">
                 {products?.length ?? 0} produto(s)
               </span>
 
-              <span className="rounded-full border border-[#E7D8CC] bg-white px-4 py-2 text-xs font-bold text-[#756A66] shadow-sm">
+              <span className="rounded-full border border-[#E7D8CC] bg-white px-4 py-2 text-xs font-bold text-brand-muted-foreground shadow-sm">
                 {productGroups.length} categoria(s)
               </span>
             </div>
           </div>
         </section>
 
-        <section className="mt-4 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
+        <section className="mt-4 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
 
           {products && products.length > 0 ? (
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {productGroups.map((group, groupIndex) => (
                 <ProductCategorySection
                   key={group.id}
@@ -207,22 +207,22 @@ export default async function ProdutosPage() {
 
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="font-bold text-[#241B19]">
+                          <h3 className="font-bold text-brand-foreground">
                             {product.name}
                           </h3>
 
                           {product.featured && (
-                            <span className="rounded-full bg-[#D2B48C]/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-[#8B0000]">
+                            <span className="rounded-full bg-brand-secondary/30 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-primary">
                               Destaque
                             </span>
                           )}
                         </div>
 
-                        <p className="mt-1 text-sm text-[#756A66]">
+                        <p className="mt-1 text-sm text-brand-muted-foreground">
                           {productCategory?.name ?? "Sem categoria"}
                         </p>
 
-                        <p className="mt-2 text-sm font-bold text-[#8B0000]">
+                        <p className="mt-2 text-sm font-bold text-brand-primary">
                           {new Intl.NumberFormat("pt-BR", {
                             style: "currency",
                             currency: "BRL",
@@ -255,7 +255,7 @@ export default async function ProdutosPage() {
 
                         <button
                           type="submit"
-                          className="rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000]"
+                          className="rounded-lg border border-brand-border px-3 py-2 text-xs font-bold text-brand-primary"
                         >
                           {product.available
                             ? "Marcar esgotado"
@@ -283,13 +283,13 @@ export default async function ProdutosPage() {
 
                         <button
                           type="submit"
-                          className="rounded-lg border border-[#EEE6DF] px-3 py-2 text-xs font-bold text-[#8B0000]"
+                          className="rounded-lg border border-brand-border px-3 py-2 text-xs font-bold text-brand-primary"
                         >
                           {product.active ? "Desativar" : "Ativar"}
                         </button>
                       </form>
 
-                      <div className="mx-1 hidden h-6 w-px bg-[#EEE6DF] sm:block" />
+                      <div className="mx-1 hidden h-6 w-px bg-brand-border sm:block" />
 
                       <form action={moveProduct}>
                         <input
@@ -308,7 +308,7 @@ export default async function ProdutosPage() {
                           title="Mover produto para cima"
                           aria-label={`Mover ${product.name} para cima`}
                           disabled={firstProduct}
-                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#EEE6DF] text-[#8B0000] transition hover:border-[#D2B48C] disabled:cursor-not-allowed disabled:opacity-30"
+                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-border text-brand-primary transition hover:border-brand-secondary disabled:cursor-not-allowed disabled:opacity-30"
                         >
                           <ArrowUp size={15} />
                         </button>
@@ -331,7 +331,7 @@ export default async function ProdutosPage() {
                           title="Mover produto para baixo"
                           aria-label={`Mover ${product.name} para baixo`}
                           disabled={lastProduct}
-                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#EEE6DF] text-[#8B0000] transition hover:border-[#D2B48C] disabled:cursor-not-allowed disabled:opacity-30"
+                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-border text-brand-primary transition hover:border-brand-secondary disabled:cursor-not-allowed disabled:opacity-30"
                         >
                           <ArrowDown size={15} />
                         </button>
@@ -351,15 +351,15 @@ export default async function ProdutosPage() {
             </div>
           ) : (
             <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
                 <Package size={28} />
               </div>
 
-              <h3 className="mt-5 text-xl font-bold text-[#241B19]">
+              <h3 className="mt-5 text-xl font-bold text-brand-foreground">
                 Nenhum produto cadastrado
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
                 Quando os produtos da {installation.identity.shortName} forem cadastrados, eles
                 aparecerão aqui para edição e controle de disponibilidade.
               </p>

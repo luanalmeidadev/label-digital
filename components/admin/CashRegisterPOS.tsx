@@ -94,15 +94,15 @@ function OpenCashForm() {
   }
 
   return (
-    <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-      <div className="border-b border-[#EEE6DF] p-5 sm:p-6">
+    <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+      <div className="border-b border-brand-border p-5 sm:p-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
             <Banknote size={21} />
           </div>
           <div>
-            <h2 className="font-bold text-[#241B19]">Abrir caixa</h2>
-            <p className="text-xs text-[#756A66]">
+            <h2 className="font-bold text-brand-foreground">Abrir caixa</h2>
+            <p className="text-xs text-brand-muted-foreground">
               Informe quanto há em dinheiro no caixa antes da primeira venda.
             </p>
           </div>
@@ -112,8 +112,8 @@ function OpenCashForm() {
       <form onSubmit={handleSubmit} className="p-5 sm:p-6">
         <label className="block max-w-sm">
           <span className="text-sm font-bold text-[#49352C]">Saldo inicial</span>
-          <div className="mt-2 flex h-12 items-center rounded-xl border border-[#DDD3CB] px-4 focus-within:border-[#8B0000]">
-            <span className="mr-3 text-sm font-bold text-[#756A66]">R$</span>
+          <div className="mt-2 flex h-12 items-center rounded-xl border border-[#DDD3CB] px-4 focus-within:border-brand-primary">
+            <span className="mr-3 text-sm font-bold text-brand-muted-foreground">R$</span>
             <input
               name="opening_balance"
               type="number"
@@ -137,7 +137,7 @@ function OpenCashForm() {
         <button
           type="submit"
           disabled={pending}
-          className="mt-5 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-6 text-sm font-bold text-white transition hover:bg-[#700000] disabled:opacity-60"
+          className="mt-5 inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-primary px-6 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:opacity-60"
         >
           {pending && <Loader2 size={17} className="animate-spin" />}
           {pending ? "Abrindo..." : "Abrir caixa do dia"}
@@ -326,10 +326,10 @@ export default function CashRegisterPOS({
             <div className="flex items-start gap-3">
               <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={22} />
               <div>
-                <p className="font-bold text-[#241B19]">
+                <p className="font-bold text-brand-foreground">
                   Venda #{lastSale.orderNumber} concluída
                 </p>
-                <p className="mt-1 text-sm text-[#756A66]">
+                <p className="mt-1 text-sm text-brand-muted-foreground">
                   Total {formatCurrency(lastSale.total)}
                   {lastSale.change > 0
                     ? ` · Troco ${formatCurrency(lastSale.change)}`
@@ -340,7 +340,7 @@ export default function CashRegisterPOS({
             <Link
               href={`/admin/pedidos/${lastSale.orderId}/imprimir?session=started`}
               target="_blank"
-              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000]"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-brand-primary px-4 text-sm font-bold text-brand-primary"
             >
               <Printer size={17} />
               Imprimir comanda
@@ -350,20 +350,20 @@ export default function CashRegisterPOS({
       )}
 
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <section className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
-            <h2 className="font-bold text-[#241B19]">Produtos disponíveis</h2>
+        <section className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="border-b border-brand-border p-5">
+            <h2 className="font-bold text-brand-foreground">Produtos disponíveis</h2>
             <div className="relative mt-4">
               <Search
                 size={18}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8B0000]"
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-primary"
               />
               <input
                 type="search"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Buscar produto ou categoria"
-                className="h-12 w-full rounded-xl border border-[#DDD3CB] pl-11 pr-4 text-sm outline-none focus:border-[#8B0000]"
+                className="h-12 w-full rounded-xl border border-[#DDD3CB] pl-11 pr-4 text-sm outline-none focus:border-brand-primary"
               />
             </div>
           </div>
@@ -373,7 +373,7 @@ export default function CashRegisterPOS({
               <div className="space-y-7">
                 {groupedProducts.map(([category, categoryProducts]) => (
                   <div key={category}>
-                    <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-[#8B0000]">
+                    <h3 className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
                       {category}
                     </h3>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -382,14 +382,14 @@ export default function CashRegisterPOS({
                           key={product.id}
                           type="button"
                           onClick={() => changeQuantity(product.id, 1)}
-                          className="rounded-2xl border border-[#EEE6DF] p-4 text-left transition hover:border-[#D2B48C] hover:bg-[#FFFDF9]"
+                          className="rounded-2xl border border-brand-border p-4 text-left transition hover:border-brand-secondary hover:bg-brand-background"
                         >
-                          <p className="font-bold text-[#241B19]">{product.name}</p>
+                          <p className="font-bold text-brand-foreground">{product.name}</p>
                           <div className="mt-3 flex items-center justify-between gap-3">
-                            <span className="text-sm font-bold text-[#8B0000]">
+                            <span className="text-sm font-bold text-brand-primary">
                               {formatCurrency(product.price)}
                             </span>
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#8B0000] text-white">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary text-brand-primary-foreground">
                               <Plus size={16} />
                             </span>
                           </div>
@@ -400,34 +400,34 @@ export default function CashRegisterPOS({
                 ))}
               </div>
             ) : (
-              <p className="py-14 text-center text-sm text-[#756A66]">
+              <p className="py-14 text-center text-sm text-brand-muted-foreground">
                 Nenhum produto encontrado.
               </p>
             )}
           </div>
         </section>
 
-        <section className="self-start overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm xl:sticky xl:top-6">
-          <div className="flex items-center gap-3 border-b border-[#EEE6DF] p-5">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+        <section className="self-start overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm xl:sticky xl:top-6">
+          <div className="flex items-center gap-3 border-b border-brand-border p-5">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <ShoppingCart size={19} />
             </div>
             <div>
-              <h2 className="font-bold text-[#241B19]">Venda atual</h2>
-              <p className="text-xs text-[#756A66]">
+              <h2 className="font-bold text-brand-foreground">Venda atual</h2>
+              <p className="text-xs text-brand-muted-foreground">
                 {cartProducts.reduce((sum, product) => sum + cart[product.id], 0)} item(ns)
               </p>
             </div>
           </div>
 
           {cartProducts.length > 0 ? (
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {cartProducts.map((product) => (
                 <div key={product.id} className="p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="text-sm font-bold text-[#241B19]">{product.name}</p>
-                      <p className="mt-1 text-xs text-[#756A66]">
+                      <p className="text-sm font-bold text-brand-foreground">{product.name}</p>
+                      <p className="mt-1 text-xs text-brand-muted-foreground">
                         {formatCurrency(product.price)} cada
                       </p>
                     </div>
@@ -447,11 +447,11 @@ export default function CashRegisterPOS({
                     </button>
                   </div>
                   <div className="mt-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center rounded-xl border border-[#EEE6DF]">
+                    <div className="flex items-center rounded-xl border border-brand-border">
                       <button
                         type="button"
                         onClick={() => changeQuantity(product.id, -1)}
-                        className="flex h-9 w-9 items-center justify-center text-[#8B0000]"
+                        className="flex h-9 w-9 items-center justify-center text-brand-primary"
                       >
                         <Minus size={15} />
                       </button>
@@ -461,12 +461,12 @@ export default function CashRegisterPOS({
                       <button
                         type="button"
                         onClick={() => changeQuantity(product.id, 1)}
-                        className="flex h-9 w-9 items-center justify-center text-[#8B0000]"
+                        className="flex h-9 w-9 items-center justify-center text-brand-primary"
                       >
                         <Plus size={15} />
                       </button>
                     </div>
-                    <p className="font-bold text-[#241B19]">
+                    <p className="font-bold text-brand-foreground">
                       {formatCurrency(product.price * cart[product.id])}
                     </p>
                   </div>
@@ -474,12 +474,12 @@ export default function CashRegisterPOS({
               ))}
             </div>
           ) : (
-            <div className="px-5 py-10 text-center text-sm text-[#756A66]">
+            <div className="px-5 py-10 text-center text-sm text-brand-muted-foreground">
               Toque nos produtos para adicioná-los.
             </div>
           )}
 
-          <div className="border-t border-[#EEE6DF] bg-[#FFFDF9] p-5">
+          <div className="border-t border-brand-border bg-brand-background p-5">
             <label className="block">
               <span className="text-xs font-bold text-[#49352C]">Cliente (opcional)</span>
               <input
@@ -488,7 +488,7 @@ export default function CashRegisterPOS({
                 value={customerName}
                 onChange={(event) => setCustomerName(event.target.value)}
                 placeholder="Nome para identificar a venda"
-                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
               />
             </label>
 
@@ -499,7 +499,7 @@ export default function CashRegisterPOS({
                 rows={2}
                 value={notes}
                 onChange={(event) => setNotes(event.target.value)}
-                className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-3 py-2 text-sm outline-none focus:border-[#8B0000]"
+                className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CB] bg-white px-3 py-2 text-sm outline-none focus:border-brand-primary"
               />
             </label>
 
@@ -522,7 +522,7 @@ export default function CashRegisterPOS({
                     setPaymentMethod("pix");
                     setCashReceived("");
                   }}
-                  className="text-xs font-bold text-[#8B0000]"
+                  className="text-xs font-bold text-brand-primary"
                 >
                   {splitPayment ? "Usar uma forma" : "Dividir pagamento"}
                 </button>
@@ -546,7 +546,7 @@ export default function CashRegisterPOS({
                         }}
                         className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-xs font-bold ${
                           active
-                            ? "border-[#8B0000] bg-[#8B0000] text-white"
+                            ? "border-brand-primary bg-brand-primary text-brand-primary-foreground"
                             : "border-[#DDD3CB] bg-white text-[#49352C]"
                         }`}
                       >
@@ -557,14 +557,14 @@ export default function CashRegisterPOS({
                   })}
                 </div>
               ) : (
-                <div className="mt-3 grid gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-3 sm:grid-cols-2">
+                <div className="mt-3 grid gap-3 rounded-2xl border border-brand-border bg-white p-3 sm:grid-cols-2">
                   {paymentOptions.map((method) => (
                     <label key={method.id}>
                       <span className="text-[11px] font-bold text-[#49352C]">
                         {method.label}
                       </span>
-                      <div className="mt-1 flex h-10 items-center rounded-xl border border-[#DDD3CB] px-3 focus-within:border-[#8B0000]">
-                        <span className="mr-2 text-xs font-bold text-[#756A66]">
+                      <div className="mt-1 flex h-10 items-center rounded-xl border border-[#DDD3CB] px-3 focus-within:border-brand-primary">
+                        <span className="mr-2 text-xs font-bold text-brand-muted-foreground">
                           R$
                         </span>
                         <input
@@ -629,8 +629,8 @@ export default function CashRegisterPOS({
                 <span className="text-xs font-bold text-[#49352C]">
                   Valor entregue pelo cliente
                 </span>
-                <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] bg-white px-3 focus-within:border-[#8B0000]">
-                  <span className="mr-2 text-xs font-bold text-[#756A66]">R$</span>
+                <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] bg-white px-3 focus-within:border-brand-primary">
+                  <span className="mr-2 text-xs font-bold text-brand-muted-foreground">R$</span>
                   <input
                     type="number"
                     min={cashAmount}
@@ -640,12 +640,12 @@ export default function CashRegisterPOS({
                     className="min-w-0 flex-1 bg-transparent text-sm outline-none"
                   />
                 </div>
-                <p className="mt-2 text-xs font-semibold text-[#756A66]">
+                <p className="mt-2 text-xs font-semibold text-brand-muted-foreground">
                   Já preenchemos com a parcela em dinheiro. Altere somente se
                   precisar calcular troco.
                   <span className="mt-1 block">
                     Troco:{" "}
-                    <strong className="text-[#8B0000]">
+                    <strong className="text-brand-primary">
                       {formatCurrency(change)}
                     </strong>
                   </span>
@@ -655,8 +655,8 @@ export default function CashRegisterPOS({
 
             <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#E5DAD3] pt-4">
               <div>
-                <p className="text-xs text-[#756A66]">Total da venda</p>
-                <p className="mt-1 text-2xl font-bold text-[#8B0000]">
+                <p className="text-xs text-brand-muted-foreground">Total da venda</p>
+                <p className="mt-1 text-2xl font-bold text-brand-primary">
                   {formatCurrency(total)}
                 </p>
               </div>
@@ -672,7 +672,7 @@ export default function CashRegisterPOS({
               type="button"
               onClick={finishSale}
               disabled={!paymentValid || pending}
-              className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#8B0000] text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-4 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
             >
               {pending && <Loader2 size={17} className="animate-spin" />}
               {pending ? "Finalizando..." : "Finalizar venda"}

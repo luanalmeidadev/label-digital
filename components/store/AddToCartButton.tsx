@@ -22,7 +22,7 @@ export default function AddToCartButton({
     <button
       type="button"
       onClick={() => addItem(product)}
-      className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-xl bg-[#8B0000] px-3 py-2 text-xs font-bold text-white transition hover:bg-[#6F0000]"
+      className="mt-3 inline-flex items-center justify-center gap-1.5 rounded-xl bg-brand-primary px-3 py-2 text-xs font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
     >
       <Plus size={15} />
       Adicionar

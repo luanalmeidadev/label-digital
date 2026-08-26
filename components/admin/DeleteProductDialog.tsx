@@ -62,7 +62,7 @@ export default function DeleteProductDialog({
 
           <DialogDescription>
             Você está prestes a excluir o produto{" "}
-            <strong className="text-[#241B19]">{name}</strong>. Essa ação não
+            <strong className="text-brand-foreground">{name}</strong>. Essa ação não
             poderá ser desfeita.
           </DialogDescription>
         </DialogHeader>
@@ -75,7 +75,7 @@ export default function DeleteProductDialog({
               type="button"
               onClick={() => setOpen(false)}
               disabled={deleting}
-              className="rounded-xl border border-[#EEE6DF] px-4 py-2.5 text-sm font-bold text-[#756A66]"
+              className="rounded-xl border border-brand-border px-4 py-2.5 text-sm font-bold text-brand-muted-foreground"
             >
               Cancelar
             </button>

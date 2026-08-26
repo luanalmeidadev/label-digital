@@ -26,7 +26,7 @@ export default function PrintOrderButton({
     <button
       type="button"
       onClick={() => window.print()}
-      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white transition hover:bg-[#700000] print:hidden"
+      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover print:hidden"
     >
       <Printer size={17} />
       Imprimir pedido

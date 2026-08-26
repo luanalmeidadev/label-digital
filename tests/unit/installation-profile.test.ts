@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest";
 import manifest from "@/app/manifest";
 import { brand } from "@/config/brand";
 import { getPublicInstallationProfile } from "@/config/installation/public";
+import { demoBurgerInstallationPreset } from "@/config/installation/presets/demo-burger";
 import { labelInstallationPreset } from "@/config/installation/presets/label";
 import { validateInstallationProfile } from "@/config/installation/validate";
 import { storeConfig } from "@/config/store";
@@ -31,16 +32,35 @@ describe("Installation Profile", () => {
     const validation = validateInstallationProfile(labelInstallationPreset);
 
     expect(validation).toEqual({ valid: true, errors: [] });
-    expect(labelInstallationPreset.schemaVersion).toBe(2);
+    expect(labelInstallationPreset.schemaVersion).toBe(3);
     expect(labelInstallationPreset.preset).toEqual({
       id: "label",
-      version: 2,
+      version: 3,
     });
     expect(labelInstallationPreset.regionalization).toEqual({
       locale: "pt-BR",
       currency: "BRL",
       timeZone: "America/Sao_Paulo",
     });
+  });
+
+  it("valida o preset fictício de hamburgueria", () => {
+    expect(validateInstallationProfile(demoBurgerInstallationPreset)).toEqual({
+      valid: true,
+      errors: [],
+    });
+    expect(demoBurgerInstallationPreset).toMatchObject({
+      schemaVersion: 3,
+      preset: { id: "demo-burger", version: 1 },
+      identity: {
+        name: "Brasa Burger Demo",
+        businessSegment: "hamburger",
+      },
+      seo: { schemaOrgType: "FastFoodRestaurant" },
+    });
+    expect(demoBurgerInstallationPreset.theme.primary).not.toBe(
+      labelInstallationPreset.theme.primary
+    );
   });
 
   it("valida Schema.org e o conteúdo institucional versionado", () => {
@@ -182,15 +202,18 @@ describe("Installation Profile", () => {
   });
 
   it("referencia assets locais existentes", async () => {
-    const assets = labelInstallationPreset.identity.assets;
     const publicAssets = [
+      labelInstallationPreset.identity.assets,
+      demoBurgerInstallationPreset.identity.assets,
+    ].flatMap((assets) => [
       assets.logos.default,
       assets.logos.onPrimary,
       assets.brandIcons.default,
       assets.brandIcons.onPrimary,
       assets.monograms.default,
       assets.monograms.onPrimary,
-    ];
+      ...(assets.icon.startsWith("/demo-burger") ? [assets.icon] : []),
+    ]);
 
     await Promise.all(
       publicAssets.map((asset) =>
@@ -198,7 +221,13 @@ describe("Installation Profile", () => {
       )
     );
     await expect(
-      access(path.resolve(process.cwd(), "app", assets.icon.slice(1)))
+      access(
+        path.resolve(
+          process.cwd(),
+          "app",
+          labelInstallationPreset.identity.assets.icon.slice(1)
+        )
+      )
     ).resolves.toBeUndefined();
   });
 });

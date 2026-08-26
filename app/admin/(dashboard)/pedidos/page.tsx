@@ -163,15 +163,15 @@ export default async function PedidosPage() {
       <div className="mx-auto max-w-7xl">
         {/* CABEÇALHO */}
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
             Operação
           </p>
 
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">
+          <h1 className="mt-2 text-3xl font-bold text-brand-foreground">
             Pedidos
           </h1>
 
-          <p className="mt-2 text-sm text-[#756A66]">
+          <p className="mt-2 text-sm text-brand-muted-foreground">
             Acompanhe os pedidos enviados
             pelo cardápio e gerencie cada
             etapa do atendimento.
@@ -182,83 +182,83 @@ export default async function PedidosPage() {
 
         {/* INDICADORES */}
         <section className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
               <ShoppingBag size={20} />
             </div>
 
-            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
+            <p className="mt-4 text-xs leading-4 text-brand-muted-foreground sm:mt-5 sm:text-sm">
               Total de pedidos
             </p>
 
-            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-1 break-words text-xl font-bold text-brand-foreground sm:text-2xl">
               {orders?.length ?? 0}
             </p>
           </article>
 
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
               <Clock3 size={20} />
             </div>
 
-            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
+            <p className="mt-4 text-xs leading-4 text-brand-muted-foreground sm:mt-5 sm:text-sm">
               Em andamento
             </p>
 
-            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-1 break-words text-xl font-bold text-brand-foreground sm:text-2xl">
               {openOrders.length}
             </p>
           </article>
 
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <CheckCircle2 size={20} />
             </div>
 
-            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
+            <p className="mt-4 text-xs leading-4 text-brand-muted-foreground sm:mt-5 sm:text-sm">
               Finalizados
             </p>
 
-            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-1 break-words text-xl font-bold text-brand-foreground sm:text-2xl">
               {completedOrders.length}
             </p>
           </article>
 
-          <article className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+          <article className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-green-100 text-green-700">
               <PackageCheck size={20} />
             </div>
 
-            <p className="mt-4 text-xs leading-4 text-[#756A66] sm:mt-5 sm:text-sm">
+            <p className="mt-4 text-xs leading-4 text-brand-muted-foreground sm:mt-5 sm:text-sm">
               Faturamento realizado
             </p>
 
-            <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
+            <p className="mt-1 break-words text-xl font-bold text-brand-foreground sm:text-2xl">
               {formatCurrency(
                 completedRevenue
               )}
             </p>
 
-            <p className="mt-2 text-xs text-[#756A66]">
+            <p className="mt-2 text-xs text-brand-muted-foreground">
               Somente pedidos finalizados.
             </p>
           </article>
         </section>
 
         {/* PEDIDOS */}
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="border-b border-[#EEE6DF] p-5">
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="border-b border-brand-border p-5">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary/10 text-brand-primary">
                 <ShoppingBag size={20} />
               </div>
 
               <div>
-                <h2 className="font-bold text-[#241B19]">
+                <h2 className="font-bold text-brand-foreground">
                   Pedidos cadastrados
                 </h2>
 
-                <p className="text-xs text-[#756A66]">
+                <p className="text-xs text-brand-muted-foreground">
                   {orders?.length ?? 0}{" "}
                   pedido(s)
                 </p>
@@ -268,7 +268,7 @@ export default async function PedidosPage() {
 
           {orders &&
           orders.length > 0 ? (
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {orders.map((order) => {
                 const customer =
                   Array.isArray(
@@ -302,7 +302,7 @@ export default async function PedidosPage() {
                     {/* DADOS */}
                     <div>
                       <div className="flex flex-wrap items-center gap-3">
-                        <h3 className="font-bold text-[#241B19]">
+                        <h3 className="font-bold text-brand-foreground">
                           Pedido #
                           {
                             order.order_number
@@ -338,14 +338,14 @@ export default async function PedidosPage() {
                         )}
                       </div>
 
-                      <p className="mt-2 text-sm text-[#756A66]">
+                      <p className="mt-2 text-sm text-brand-muted-foreground">
                         {customer
                           ? `${customer.first_name} ${customer.last_name}`
                           : order.cashier_customer_name ||
                             "Cliente não identificado"}
                       </p>
 
-                      <p className="mt-1 text-xs text-[#756A66]">
+                      <p className="mt-1 text-xs text-brand-muted-foreground">
                         {order.order_type ===
                         "delivery"
                           ? "Entrega"
@@ -360,11 +360,11 @@ export default async function PedidosPage() {
                     {/* TOTAL + AÇÕES */}
                     <div className="flex flex-col gap-3 xl:items-end">
                       <div className="text-left xl:text-right">
-                        <p className="text-xs text-[#756A66]">
+                        <p className="text-xs text-brand-muted-foreground">
                           Total
                         </p>
 
-                        <p className="text-lg font-bold text-[#8B0000]">
+                        <p className="text-lg font-bold text-brand-primary">
                           {formatCurrency(
                             Number(
                               order.total
@@ -495,7 +495,7 @@ export default async function PedidosPage() {
                           <Link
                             href={`/admin/pedidos/${order.id}/imprimir?session=started`}
                             target="_blank"
-                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#8B0000] px-4 text-sm font-bold text-[#8B0000] transition hover:bg-[#8B0000] hover:text-white"
+                            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-brand-primary px-4 text-sm font-bold text-brand-primary transition hover:bg-brand-primary hover:text-brand-primary-foreground"
                           >
                             <Printer size={16} />
                             Imprimir
@@ -509,15 +509,15 @@ export default async function PedidosPage() {
             </div>
           ) : (
             <div className="px-6 py-16 text-center">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#8B0000]/10 text-[#8B0000]">
+              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-primary/10 text-brand-primary">
                 <ShoppingBag size={28} />
               </div>
 
-              <h3 className="mt-5 text-xl font-bold text-[#241B19]">
+              <h3 className="mt-5 text-xl font-bold text-brand-foreground">
                 Nenhum pedido ainda
               </h3>
 
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
                 Quando os clientes começarem
                 a enviar pedidos pelo
                 cardápio digital, eles

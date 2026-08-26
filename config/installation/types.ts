@@ -1,4 +1,4 @@
-export const INSTALLATION_PROFILE_SCHEMA_VERSION = 2 as const;
+export const INSTALLATION_PROFILE_SCHEMA_VERSION = 3 as const;
 
 export const installationModuleKeys = [
   "preorders",
@@ -77,9 +77,11 @@ export type InstallationProfile = {
   readonly theme: {
     readonly primary: string;
     readonly onPrimary: string;
+    readonly primaryHover: string;
     readonly accent: string;
     readonly background: string;
     readonly surface: string;
+    readonly mutedSurface: string;
     readonly text: string;
     readonly mutedText: string;
     readonly border: string;

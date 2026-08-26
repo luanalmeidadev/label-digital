@@ -12,7 +12,7 @@ export default async function AdminLayout({
 
   return (
     <AdminTabSessionBoundary>
-      <div className="min-h-screen bg-[#FFFDF9] lg:flex">
+      <div className="min-h-screen bg-brand-background lg:flex">
         <AdminRealtimeRefresh />
         <AdminSidebar
           permissions={access.permissions}

@@ -60,15 +60,15 @@ export default function AdminTabSessionBoundary({
 
   if (!ready) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#FFFDF9] px-5">
+      <main className="flex min-h-screen items-center justify-center bg-brand-background px-5">
         <div
           role="status"
-          className="rounded-2xl border border-[#EEE6DF] bg-white px-6 py-5 text-center shadow-sm"
+          className="rounded-2xl border border-brand-border bg-white px-6 py-5 text-center shadow-sm"
         >
-          <p className="font-bold text-[#241B19]">
+          <p className="font-bold text-brand-foreground">
             Verificando sua sessão...
           </p>
-          <p className="mt-1 text-xs text-[#756A66]">
+          <p className="mt-1 text-xs text-brand-muted-foreground">
             Aguarde um instante.
           </p>
         </div>

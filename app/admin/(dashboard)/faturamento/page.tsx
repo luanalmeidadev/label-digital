@@ -222,11 +222,11 @@ export default async function FaturamentoPage({
     <main className="p-5 sm:p-8">
       <div className="mx-auto max-w-7xl">
         <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#8B0000]">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
             Financeiro
           </p>
-          <h1 className="mt-2 text-3xl font-bold text-[#241B19]">Faturamento</h1>
-          <p className="mt-2 text-sm text-[#756A66]">
+          <h1 className="mt-2 text-3xl font-bold text-brand-foreground">Faturamento</h1>
+          <p className="mt-2 text-sm text-brand-muted-foreground">
             Vendas diárias e encomendas ficam separadas e entram no faturamento somente após a finalização.
           </p>
         </div>
@@ -256,20 +256,20 @@ export default async function FaturamentoPage({
                 aria-current={active ? "page" : undefined}
                 className={`flex items-center gap-3 rounded-2xl border p-4 transition ${
                   active
-                    ? "border-[#8B0000] bg-[#8B0000] text-white shadow-sm"
-                    : "border-[#EEE6DF] bg-white text-[#241B19] hover:border-[#D2B48C]"
+                    ? "border-brand-primary bg-brand-primary text-brand-primary-foreground shadow-sm"
+                    : "border-brand-border bg-white text-brand-foreground hover:border-brand-secondary"
                 }`}
               >
                 <span
                   className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                    active ? "bg-white/15 text-[#D2B48C]" : "bg-[#8B0000]/10 text-[#8B0000]"
+                    active ? "bg-white/15 text-brand-secondary" : "bg-brand-primary/10 text-brand-primary"
                   }`}
                 >
                   <Icon size={19} />
                 </span>
                 <span>
                   <span className="block text-sm font-bold">{source.label}</span>
-                  <span className={`mt-0.5 block text-xs ${active ? "text-white/70" : "text-[#756A66]"}`}>
+                  <span className={`mt-0.5 block text-xs ${active ? "text-white/70" : "text-brand-muted-foreground"}`}>
                     {source.description}
                   </span>
                 </span>
@@ -279,7 +279,7 @@ export default async function FaturamentoPage({
         </nav>
 
         <section className="mt-7">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-[#756A66]">Período</p>
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.16em] text-brand-muted-foreground">Período</p>
           <div className="flex flex-wrap gap-2">
             {Object.entries(periodLabels).map(([period, label]) => {
               const active = selectedPeriod === period;
@@ -289,8 +289,8 @@ export default async function FaturamentoPage({
                   href={revenueLink(selectedSource, period)}
                   className={`rounded-xl px-4 py-2.5 text-sm font-bold transition ${
                     active
-                      ? "bg-[#8B0000] text-white"
-                      : "border border-[#EEE6DF] bg-white text-[#756A66] hover:border-[#D2B48C] hover:text-[#8B0000]"
+                      ? "bg-brand-primary text-brand-primary-foreground"
+                      : "border border-brand-border bg-white text-brand-muted-foreground hover:border-brand-secondary hover:text-brand-primary"
                   }`}
                 >
                   {label}
@@ -300,7 +300,7 @@ export default async function FaturamentoPage({
           </div>
 
           {selectedPeriod === "custom" && (
-            <form method="GET" className="mt-4 flex flex-col gap-3 rounded-2xl border border-[#EEE6DF] bg-white p-4 sm:flex-row sm:items-end">
+            <form method="GET" className="mt-4 flex flex-col gap-3 rounded-2xl border border-brand-border bg-white p-4 sm:flex-row sm:items-end">
               <input type="hidden" name="source" value={selectedSource} />
               <input type="hidden" name="period" value="custom" />
               {[
@@ -308,7 +308,7 @@ export default async function FaturamentoPage({
                 { id: "to", label: "Data final", value: params.to },
               ].map((field) => (
                 <div key={field.id} className="flex-1">
-                  <label htmlFor={field.id} className="text-xs font-bold uppercase tracking-[0.12em] text-[#756A66]">
+                  <label htmlFor={field.id} className="text-xs font-bold uppercase tracking-[0.12em] text-brand-muted-foreground">
                     {field.label}
                   </label>
                   <input
@@ -317,11 +317,11 @@ export default async function FaturamentoPage({
                     type="date"
                     defaultValue={field.value ?? ""}
                     required
-                    className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                    className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
                   />
                 </div>
               ))}
-              <button type="submit" className="h-11 rounded-xl bg-[#8B0000] px-5 text-sm font-bold text-white hover:bg-[#700000]">
+              <button type="submit" className="h-11 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground hover:bg-brand-primary-hover">
                 Aplicar período
               </button>
             </form>
@@ -355,7 +355,7 @@ export default async function FaturamentoPage({
               value: totalRevenue,
               note: `Acumulado de ${sourceLabel}`,
               icon: BadgeDollarSign,
-              color: "bg-[#8B0000]/10 text-[#8B0000]",
+              color: "bg-brand-primary/10 text-brand-primary",
             },
             {
               label: "Ticket médio",
@@ -367,47 +367,47 @@ export default async function FaturamentoPage({
           ].map((item) => {
             const Icon = item.icon;
             return (
-              <article key={item.label} className="min-w-0 rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm sm:p-5">
+              <article key={item.label} className="min-w-0 rounded-2xl border border-brand-border bg-white p-4 shadow-sm sm:p-5">
                 <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${item.color}`}>
                   <Icon size={20} />
                 </div>
-                <p className="mt-4 text-xs text-[#756A66] sm:mt-5 sm:text-sm">{item.label}</p>
-                <p className="mt-1 break-words text-xl font-bold text-[#241B19] sm:text-2xl">
+                <p className="mt-4 text-xs text-brand-muted-foreground sm:mt-5 sm:text-sm">{item.label}</p>
+                <p className="mt-1 break-words text-xl font-bold text-brand-foreground sm:text-2xl">
                   {formatCurrency(item.value)}
                 </p>
-                <p className="mt-2 text-xs text-[#756A66]">{item.note}</p>
+                <p className="mt-2 text-xs text-brand-muted-foreground">{item.note}</p>
               </article>
             );
           })}
         </section>
 
-        <section className="mt-8 overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
-          <div className="flex items-center justify-between gap-3 border-b border-[#EEE6DF] p-5">
+        <section className="mt-8 overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+          <div className="flex items-center justify-between gap-3 border-b border-brand-border p-5">
             <div>
-              <h2 className="font-bold text-[#241B19]">{selectedSource === "preorders" ? "Encomendas finalizadas" : "Vendas diárias finalizadas"}</h2>
-              <p className="mt-1 text-xs text-[#756A66]">{filteredSales.length} venda(s)</p>
+              <h2 className="font-bold text-brand-foreground">{selectedSource === "preorders" ? "Encomendas finalizadas" : "Vendas diárias finalizadas"}</h2>
+              <p className="mt-1 text-xs text-brand-muted-foreground">{filteredSales.length} venda(s)</p>
             </div>
-            <span className="rounded-full bg-[#FFF7F5] px-3 py-1.5 text-xs font-bold text-[#8B0000]">{periodDescription}</span>
+            <span className="rounded-full bg-[#FFF7F5] px-3 py-1.5 text-xs font-bold text-brand-primary">{periodDescription}</span>
           </div>
 
           {filteredSales.length > 0 ? (
-            <div className="divide-y divide-[#EEE6DF]">
+            <div className="divide-y divide-brand-border">
               {filteredSales.map((sale) => (
                 <article key={sale.id} className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
                   <div>
-                    <p className="font-bold text-[#241B19]">{sale.number}</p>
-                    <p className="mt-1 text-sm text-[#756A66]">{sale.customerName}</p>
-                    <p className="mt-1 text-xs text-[#756A66]">Finalizada em {formatDate(sale.completedAt)}</p>
+                    <p className="font-bold text-brand-foreground">{sale.number}</p>
+                    <p className="mt-1 text-sm text-brand-muted-foreground">{sale.customerName}</p>
+                    <p className="mt-1 text-xs text-brand-muted-foreground">Finalizada em {formatDate(sale.completedAt)}</p>
                   </div>
-                  <p className="text-lg font-bold text-[#8B0000]">{formatCurrency(sale.total)}</p>
+                  <p className="text-lg font-bold text-brand-primary">{formatCurrency(sale.total)}</p>
                 </article>
               ))}
             </div>
           ) : (
             <div className="px-6 py-16 text-center">
-              <ReceiptText size={32} className="mx-auto text-[#D2B48C]" />
-              <h3 className="mt-4 text-xl font-bold text-[#241B19]">Nenhuma venda neste período</h3>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
+              <ReceiptText size={32} className="mx-auto text-brand-secondary" />
+              <h3 className="mt-4 text-xl font-bold text-brand-foreground">Nenhuma venda neste período</h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-brand-muted-foreground">
                 Não existem {sourceLabel} finalizadas dentro do período selecionado.
               </p>
             </div>

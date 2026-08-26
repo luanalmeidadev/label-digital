@@ -9,12 +9,12 @@ const content =
 export default function PreorderBanner() {
   return (
     <section className="pb-8">
-      <div className="rounded-3xl bg-[#D2B48C] p-6 sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8B0000]">
+      <div className="rounded-3xl bg-brand-secondary p-6 sm:p-8">
+        <p className="text-xs font-bold uppercase tracking-[0.16em] text-brand-primary">
           {content.eyebrow}
         </p>
 
-        <h2 className="mt-2 max-w-lg text-2xl font-bold text-[#8B0000] sm:text-3xl">
+        <h2 className="mt-2 max-w-lg text-2xl font-bold text-brand-primary sm:text-3xl">
           {content.title}
         </h2>
 
@@ -24,7 +24,7 @@ export default function PreorderBanner() {
 
         <Link
           href="/encomendas"
-          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#8B0000] px-5 py-3 text-sm font-bold text-white transition hover:bg-[#700000]"
+          className="mt-6 inline-flex items-center gap-2 rounded-xl bg-brand-primary px-5 py-3 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"
         >
           {content.ctaLabel}
           <ChevronRight size={18} />

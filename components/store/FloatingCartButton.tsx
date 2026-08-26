@@ -22,12 +22,12 @@ export default function FloatingCartButton({
       type="button"
       onClick={onClick}
       aria-label="Abrir sacola"
-      className="fixed bottom-5 right-5 z-40 flex items-center gap-3 rounded-full bg-[#8B0000] px-4 py-3 text-white shadow-xl transition hover:bg-[#700000]"
+      className="fixed bottom-5 right-5 z-40 flex items-center gap-3 rounded-full bg-brand-primary px-4 py-3 text-brand-primary-foreground shadow-xl transition hover:bg-brand-primary-hover"
     >
       <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
         <ShoppingBag size={19} />
 
-        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D2B48C] px-1 text-[10px] font-bold text-[#8B0000]">
+        <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand-secondary px-1 text-[10px] font-bold text-brand-primary">
           {totalItems}
         </span>
       </span>

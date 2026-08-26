@@ -261,7 +261,7 @@ export default function ManualPreorderForm({
   }
 
   const fieldClass =
-    "mt-2 h-12 w-full rounded-xl border border-[#DDD3CC] bg-white px-4 text-sm outline-none transition focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10 disabled:opacity-60";
+    "mt-2 h-12 w-full rounded-xl border border-[#DDD3CC] bg-white px-4 text-sm outline-none transition focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10 disabled:opacity-60";
 
   return (
     <form action={formAction} className="space-y-6">
@@ -276,15 +276,15 @@ export default function ManualPreorderForm({
         </div>
       )}
 
-      <section className="rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-bold text-[#241B19]">Cliente</h2>
+      <section className="rounded-3xl border border-brand-border bg-white p-5 shadow-sm sm:p-6">
+        <h2 className="text-lg font-bold text-brand-foreground">Cliente</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">Nome do cliente</span>
+            <span className="text-sm font-bold text-brand-foreground">Nome do cliente</span>
             <input name="customer_name" defaultValue={request?.customerName ?? ""} required maxLength={100} disabled={pending} className={fieldClass} />
           </label>
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">WhatsApp</span>
+            <span className="text-sm font-bold text-brand-foreground">WhatsApp</span>
             <input
               name="customer_phone"
               type="tel"
@@ -301,11 +301,11 @@ export default function ManualPreorderForm({
         </div>
       </section>
 
-      <section className="rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-bold text-[#241B19]">Produto e valor</h2>
+      <section className="rounded-3xl border border-brand-border bg-white p-5 shadow-sm sm:p-6">
+        <h2 className="text-lg font-bold text-brand-foreground">Produto e valor</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="block sm:col-span-2">
-            <span className="text-sm font-bold text-[#241B19]">Produto</span>
+            <span className="text-sm font-bold text-brand-foreground">Produto</span>
             <select
               name="product_name"
               value={productName}
@@ -324,7 +324,7 @@ export default function ManualPreorderForm({
 
           {selectedProduct ? (
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">Tamanho ou opção</span>
+              <span className="text-sm font-bold text-brand-foreground">Tamanho ou opção</span>
               <select
                 name="option_label"
                 value={optionLabel}
@@ -346,15 +346,15 @@ export default function ManualPreorderForm({
           ) : (
             <>
               <label className="block sm:col-span-2">
-                <span className="text-sm font-bold text-[#241B19]">Nome do produto personalizado</span>
+                <span className="text-sm font-bold text-brand-foreground">Nome do produto personalizado</span>
                 <input name="custom_product_name" defaultValue={request && !initialProduct ? request.productName : ""} required disabled={pending} maxLength={120} className={fieldClass} />
               </label>
               <label className="block">
-                <span className="text-sm font-bold text-[#241B19]">Tamanho ou descrição</span>
+                <span className="text-sm font-bold text-brand-foreground">Tamanho ou descrição</span>
                 <input name="custom_option_label" defaultValue={request && !initialProduct ? request.optionLabel : ""} disabled={pending} maxLength={120} className={fieldClass} />
               </label>
               <label className="block">
-                <span className="text-sm font-bold text-[#241B19]">Valor unitário</span>
+                <span className="text-sm font-bold text-brand-foreground">Valor unitário</span>
                 <input
                   name="custom_unit_price"
                   type="number"
@@ -374,7 +374,7 @@ export default function ManualPreorderForm({
           )}
 
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">Quantidade</span>
+            <span className="text-sm font-bold text-brand-foreground">Quantidade</span>
             {selectedProduct?.allowedQuantities?.length ? (
               <select
                 name={
@@ -437,13 +437,13 @@ export default function ManualPreorderForm({
                 className={fieldClass}
               />
             )}
-            <span className="mt-1 block text-xs text-[#756A66]">
+            <span className="mt-1 block text-xs text-brand-muted-foreground">
               {selectedProduct?.quantityUnit ?? "item(ns)"}
             </span>
           </label>
           {isCustomQuantity && (
             <label className="block">
-              <span className="text-sm font-bold text-[#241B19]">
+              <span className="text-sm font-bold text-brand-foreground">
                 Quantidade acima de {maximumPresetQuantity}
               </span>
               <input
@@ -462,13 +462,13 @@ export default function ManualPreorderForm({
                 }
                 className={fieldClass}
               />
-              <span className="mt-1 block text-xs text-[#756A66]">
+              <span className="mt-1 block text-xs text-brand-muted-foreground">
                 Use múltiplos de {selectedProduct?.quantityIncrement ?? 1}.
               </span>
             </label>
           )}
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">Valor total da encomenda</span>
+            <span className="text-sm font-bold text-brand-foreground">Valor total da encomenda</span>
             <input
               name="total"
               type="number"
@@ -480,10 +480,10 @@ export default function ManualPreorderForm({
               onChange={(event) => setTotal(event.target.value)}
               className={fieldClass}
             />
-            <span className="mt-1 block text-xs text-[#756A66]">Pode ser ajustado manualmente.</span>
+            <span className="mt-1 block text-xs text-brand-muted-foreground">Pode ser ajustado manualmente.</span>
           </label>
           {!request && <label className="block sm:col-span-2">
-            <span className="text-sm font-bold text-[#241B19]">Valor já recebido</span>
+            <span className="text-sm font-bold text-brand-foreground">Valor já recebido</span>
             <input
               name="amount_paid"
               type="number"
@@ -494,7 +494,7 @@ export default function ManualPreorderForm({
               disabled={pending}
               className={fieldClass}
             />
-            <span className="mt-1 block text-xs text-[#756A66]">
+            <span className="mt-1 block text-xs text-brand-muted-foreground">
               Informe o sinal recebido. O sistema considera 50% como sinal completo.
             </span>
           </label>}
@@ -502,7 +502,7 @@ export default function ManualPreorderForm({
 
         {selectedProduct?.flavors?.length ? (
           <fieldset className="mt-5">
-            <legend className="text-sm font-bold text-[#241B19]">
+            <legend className="text-sm font-bold text-brand-foreground">
               Sabores · até {maxFlavors}{" "}
               {maxFlavors === 1 ? "sabor" : "sabores"}
             </legend>
@@ -517,8 +517,8 @@ export default function ManualPreorderForm({
                     onClick={() => toggleFlavor(flavor)}
                     className={`rounded-full border px-3 py-2 text-xs font-bold transition ${
                       selected
-                        ? "border-[#8B0000] bg-[#8B0000] text-white"
-                        : "border-[#DDD3CC] bg-white text-[#756A66] hover:border-[#D2B48C]"
+                        ? "border-brand-primary bg-brand-primary text-brand-primary-foreground"
+                        : "border-[#DDD3CC] bg-white text-brand-muted-foreground hover:border-brand-secondary"
                     }`}
                   >
                     {flavor}
@@ -529,7 +529,7 @@ export default function ManualPreorderForm({
           </fieldset>
         ) : !selectedProduct ? (
           <label className="mt-5 block">
-            <span className="text-sm font-bold text-[#241B19]">Sabores</span>
+            <span className="text-sm font-bold text-brand-foreground">Sabores</span>
             <input
               type="text"
               disabled={pending}
@@ -545,13 +545,13 @@ export default function ManualPreorderForm({
         ) : null}
       </section>
 
-      <section className="rounded-3xl border border-[#EEE6DF] bg-white p-5 shadow-sm sm:p-6">
-        <h2 className="text-lg font-bold text-[#241B19]">Data e recebimento</h2>
+      <section className="rounded-3xl border border-brand-border bg-white p-5 shadow-sm sm:p-6">
+        <h2 className="text-lg font-bold text-brand-foreground">Data e recebimento</h2>
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">Data desejada</span>
+            <span className="text-sm font-bold text-brand-foreground">Data desejada</span>
             <div className="relative mt-2">
-              <CalendarDays size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8B0000]" />
+              <CalendarDays size={17} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-brand-primary" />
               <input
                 name="desired_date"
                 type="date"
@@ -564,7 +564,7 @@ export default function ManualPreorderForm({
             </div>
           </label>
           {!request && <label className="block">
-            <span className="text-sm font-bold text-[#241B19]">Situação inicial</span>
+            <span className="text-sm font-bold text-brand-foreground">Situação inicial</span>
             <select name="status" defaultValue="confirmed" disabled={pending} className={fieldClass}>
               <option value="confirmed">Confirmada</option>
               <option value="new">Nova solicitação</option>
@@ -573,7 +573,7 @@ export default function ManualPreorderForm({
         </div>
 
         <fieldset className="mt-5">
-          <legend className="text-sm font-bold text-[#241B19]">Como será entregue?</legend>
+          <legend className="text-sm font-bold text-brand-foreground">Como será entregue?</legend>
           <div className="mt-3 grid grid-cols-2 gap-3">
             {[
               { value: "pickup" as const, label: "Retirada", icon: ShoppingBag },
@@ -586,8 +586,8 @@ export default function ManualPreorderForm({
                   key={item.value}
                   className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border p-3 text-sm font-bold ${
                     selected
-                      ? "border-[#8B0000] bg-[#FFF7F5] text-[#8B0000]"
-                      : "border-[#DDD3CC] text-[#756A66]"
+                      ? "border-brand-primary bg-[#FFF7F5] text-brand-primary"
+                      : "border-[#DDD3CC] text-brand-muted-foreground"
                   }`}
                 >
                   <input
@@ -608,14 +608,14 @@ export default function ManualPreorderForm({
 
         {fulfillmentType === "delivery" && (
           <label className="mt-5 block">
-            <span className="text-sm font-bold text-[#241B19]">Endereço de entrega</span>
-            <textarea name="delivery_address" defaultValue={request?.deliveryAddress ?? ""} required rows={3} maxLength={300} disabled={pending} className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CC] bg-white px-4 py-3 text-sm outline-none focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10" />
+            <span className="text-sm font-bold text-brand-foreground">Endereço de entrega</span>
+            <textarea name="delivery_address" defaultValue={request?.deliveryAddress ?? ""} required rows={3} maxLength={300} disabled={pending} className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CC] bg-white px-4 py-3 text-sm outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10" />
           </label>
         )}
 
         <label className="mt-5 block">
-          <span className="text-sm font-bold text-[#241B19]">Observações</span>
-          <textarea name="notes" defaultValue={request?.notes ?? ""} rows={4} maxLength={1000} disabled={pending} className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CC] bg-white px-4 py-3 text-sm outline-none focus:border-[#8B0000] focus:ring-2 focus:ring-[#8B0000]/10" />
+          <span className="text-sm font-bold text-brand-foreground">Observações</span>
+          <textarea name="notes" defaultValue={request?.notes ?? ""} rows={4} maxLength={1000} disabled={pending} className="mt-2 w-full resize-none rounded-xl border border-[#DDD3CC] bg-white px-4 py-3 text-sm outline-none focus:border-brand-primary focus:ring-2 focus:ring-brand-primary/10" />
         </label>
       </section>
 
@@ -629,7 +629,7 @@ export default function ManualPreorderForm({
         <button
           type="submit"
           disabled={pending}
-          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#8B0000] px-6 text-sm font-bold text-white transition hover:bg-[#700000] disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-brand-primary px-6 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
           <Save size={18} />
           {pending
