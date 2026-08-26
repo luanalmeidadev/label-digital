@@ -17,6 +17,8 @@ export default defineConfig({
       include: [
         "lib/admin-permissions.ts",
         "lib/cash-register.ts",
+        "lib/food-catalog/pricing.ts",
+        "lib/food-catalog/snapshot.ts",
         "lib/order-status.ts",
         "lib/payment-method.ts",
         "lib/preorder-request.ts",

@@ -100,6 +100,17 @@ describe("inventário do backup operacional", () => {
     );
   });
 
+  it("inclui o catálogo configurável e seus snapshots", () => {
+    expect(applicationTables).toEqual(
+      expect.arrayContaining([
+        "product_variants",
+        "product_option_groups",
+        "product_options",
+        "order_item_options",
+      ])
+    );
+  });
+
   it("não possui fontes duplicadas e cobre os Storages atuais", () => {
     const storageBuckets = getStorageBuckets(labelInstallationModules);
     expect(new Set(applicationTables).size).toBe(

@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:backup": "vitest run tests/unit/backup-inventory.test.ts",
+    "test:catalog": "vitest run tests/unit/food-catalog-pricing.test.ts tests/unit/food-catalog-snapshot.test.ts tests/unit/food-catalog-migration.test.ts tests/unit/backup-inventory.test.ts",
     "test:installation": "vitest run tests/unit/installation-profile.test.ts tests/unit/installation-presentation.test.ts tests/unit/installation-hardcodes.test.ts tests/unit/installation-resolution.test.ts tests/unit/installation-theme.test.ts tests/unit/site-url.test.ts tests/unit/whatsapp.test.ts tests/unit/order-status.test.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
