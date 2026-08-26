@@ -5,6 +5,7 @@ import {
   preorderCategories,
   type PreorderCategory,
 } from "@/lib/preorder-menu";
+import { assertInstallationModuleEnabled } from "@/config/installation/modules";
 
 export const preorderStorageBucket =
   "preorder-catalog";
@@ -49,6 +50,7 @@ function isValidCatalog(
 }
 
 async function ensureBucket() {
+  assertInstallationModuleEnabled("preorders");
   const supabase =
     createSupabaseAdminClient();
   const { data: buckets, error } =

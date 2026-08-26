@@ -1,11 +1,13 @@
 import type { PublicInstallationProfile } from "@/config/installation/types";
 import { demoBurgerInstallationPreset } from "@/config/installation/presets/demo-burger";
 import { labelInstallationPreset } from "@/config/installation/presets/label";
-
-export const installationPresetIds = ["label", "demo-burger"] as const;
+import {
+  installationPresetIds,
+  resolveInstallationModuleFlags,
+} from "@/config/installation/module-presets.mjs";
 
 export type InstallationPresetId =
-  (typeof installationPresetIds)[number];
+  "label" | "demo-burger";
 
 const installationPresets: Record<
   InstallationPresetId,
@@ -25,16 +27,9 @@ export function resolveInstallationPreset({
   nodeEnv = process.env.NODE_ENV,
 }: ResolveInstallationPresetOptions = {}) {
   const presetId = requestedPreset?.trim() || "label";
-
-  if (!installationPresetIds.includes(presetId as InstallationPresetId)) {
-    throw new Error(`Installation preset desconhecido: ${presetId}.`);
-  }
-
-  if (nodeEnv === "production" && presetId !== "label") {
-    throw new Error(
-      "Presets de demonstração não podem ser selecionados em produção."
-    );
-  }
+  resolveInstallationModuleFlags({ requestedPreset: presetId, nodeEnv });
 
   return installationPresets[presetId as InstallationPresetId];
 }
+
+export { installationPresetIds };

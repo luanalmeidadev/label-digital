@@ -61,6 +61,10 @@ describe("Installation Profile", () => {
     expect(demoBurgerInstallationPreset.theme.primary).not.toBe(
       labelInstallationPreset.theme.primary
     );
+    expect(demoBurgerInstallationPreset.modules).toMatchObject({
+      preorders: false,
+      preorderSchedule: false,
+    });
   });
 
   it("valida Schema.org e o conteúdo institucional versionado", () => {

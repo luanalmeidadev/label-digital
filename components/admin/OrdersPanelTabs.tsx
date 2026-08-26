@@ -3,6 +3,7 @@ import {
   CakeSlice,
   ShoppingBag,
 } from "lucide-react";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
 
 type OrdersPanelTabsProps = {
   active: "daily" | "preorders";
@@ -26,12 +27,14 @@ export default function OrdersPanelTabs({
       href: "/admin/pedidos/encomendas",
       icon: CakeSlice,
     },
-  ];
+  ].filter(
+    (tab) => tab.id !== "preorders" || isInstallationModuleEnabled("preorders")
+  );
 
   return (
     <nav
       aria-label="Tipo de pedido"
-      className="mt-7 grid gap-3 sm:max-w-2xl sm:grid-cols-2"
+      className={`mt-7 grid gap-3 sm:max-w-2xl ${tabs.length > 1 ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}
     >
       {tabs.map((tab) => {
         const Icon = tab.icon;

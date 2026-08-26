@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 
 import { preorderStorageBucket } from "@/lib/preorder-catalog-store";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
 
 export type PublicActionScope =
   | "daily-order"
@@ -31,6 +32,13 @@ const ipLimit = 20;
 const pendingTimeoutMs = 5 * 60 * 1000;
 const developmentTurnstileToken =
   "development-bypass";
+const productImagesBucket = "product-images";
+
+function getSecurityStorageBucket(scope: PublicActionScope) {
+  return scope === "preorder" || isInstallationModuleEnabled("preorders")
+    ? preorderStorageBucket
+    : productImagesBucket;
+}
 
 function getSecuritySecret() {
   const secret =
@@ -113,6 +121,7 @@ function getIdempotencyPath(
 }
 
 async function uploadJson(
+  scope: PublicActionScope,
   path: string,
   value: unknown,
   upsert: boolean
@@ -125,7 +134,7 @@ async function uploadJson(
   );
 
   return supabase.storage
-    .from(preorderStorageBucket)
+    .from(getSecurityStorageBucket(scope))
     .upload(path, body, {
       contentType: "application/json",
       cacheControl: "0",
@@ -157,7 +166,7 @@ export async function inspectIdempotentRequest<T>(
   const supabase =
     createSupabaseAdminClient();
   const { data, error } = await supabase.storage
-    .from(preorderStorageBucket)
+    .from(getSecurityStorageBucket(scope))
     .download(getIdempotencyPath(scope, key));
 
   if (error) {
@@ -224,6 +233,7 @@ export async function beginIdempotentRequest<T>(
     startedAt: new Date().toISOString(),
   };
   const { error } = await uploadJson(
+    scope,
     getIdempotencyPath(scope, key),
     record,
     false
@@ -260,6 +270,7 @@ export async function completeIdempotentRequest<T>(
     result,
   };
   const { error } = await uploadJson(
+    scope,
     getIdempotencyPath(scope, key),
     record,
     true
@@ -280,7 +291,7 @@ export async function releaseIdempotentRequest(
   const supabase =
     createSupabaseAdminClient();
   const { error } = await supabase.storage
-    .from(preorderStorageBucket)
+    .from(getSecurityStorageBucket(scope))
     .remove([getIdempotencyPath(scope, key)]);
 
   if (error && !isStorageNotFound(error)) {
@@ -292,6 +303,7 @@ export async function releaseIdempotentRequest(
 }
 
 async function reserveRateLimitSlot(
+  scope: PublicActionScope,
   dimension: "phone" | "ip",
   identifier: string,
   limit: number
@@ -306,6 +318,7 @@ async function reserveRateLimitSlot(
 
   for (let slot = 1; slot <= limit; slot += 1) {
     const { error } = await uploadJson(
+      scope,
       `${basePath}/${slot}.json`,
       { reservedAt: new Date().toISOString() },
       false
@@ -326,12 +339,14 @@ async function reserveRateLimitSlot(
 }
 
 export async function enforcePublicOrderRateLimit(
+  scope: PublicActionScope,
   phone: string,
   requestIp?: string
 ) {
   const ip = requestIp ?? (await getPublicRequestIp());
   const phoneAllowed =
     await reserveRateLimitSlot(
+      scope,
       "phone",
       phone,
       phoneLimit
@@ -347,6 +362,7 @@ export async function enforcePublicOrderRateLimit(
 
   const ipAllowed =
     await reserveRateLimitSlot(
+      scope,
       "ip",
       ip,
       ipLimit

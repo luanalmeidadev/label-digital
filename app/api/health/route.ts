@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 
 import { preorderStorageBucket } from "@/lib/preorder-catalog-store";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getHealthCheckKeys } from "@/config/installation/modules";
 
 const responseHeaders = {
   "Cache-Control": "no-store, max-age=0",
@@ -10,25 +11,37 @@ const responseHeaders = {
 export async function GET() {
   try {
     const supabase = createSupabaseAdminClient();
-    const [database, preorderStorage, productStorage] =
-      await Promise.all([
-        supabase
+    const healthCheckKeys = getHealthCheckKeys();
+    const checks = healthCheckKeys.map((name) => {
+      if (name === "database") {
+        return {
+          name,
+          promise: supabase
           .from("store_settings")
           .select("id")
           .limit(1),
-        supabase.storage
-          .from(preorderStorageBucket)
-          .list("", { limit: 1 }),
-        supabase.storage
-          .from("product-images")
-          .list("", { limit: 1 }),
-      ]);
+        };
+      }
 
-    const failures = [
-      database.error,
-      preorderStorage.error,
-      productStorage.error,
-    ].filter(Boolean);
+      return {
+        name,
+        promise: supabase.storage
+          .from(
+            name === "preorderStorage"
+              ? preorderStorageBucket
+              : "product-images"
+          )
+          .list("", { limit: 1 }),
+      };
+    });
+    const results = await Promise.all(
+      checks.map(async (check) => ({
+        name: check.name,
+        result: await check.promise,
+      }))
+    );
+
+    const failures = results.filter(({ result }) => result.error);
 
     if (failures.length > 0) {
       console.error(
@@ -46,15 +59,12 @@ export async function GET() {
           fingerprint: ["health-check-degraded"],
           contexts: {
             checks: {
-              database: database.error
-                ? "failed"
-                : "ok",
-              preorderStorage: preorderStorage.error
-                ? "failed"
-                : "ok",
-              productStorage: productStorage.error
-                ? "failed"
-                : "ok",
+              ...Object.fromEntries(
+                results.map(({ name, result }) => [
+                  name,
+                  result.error ? "failed" : "ok",
+                ])
+              ),
             },
           },
         }

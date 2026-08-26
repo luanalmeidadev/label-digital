@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
 import * as Sentry from "@sentry/nextjs";
 
 import { getPublicInstallationProfile } from "@/config/installation/public";
@@ -64,7 +65,9 @@ async function ensureAdmin() {
 
 function revalidateSettings() {
   revalidatePath("/");
-  revalidatePath("/encomendas");
+  if (isInstallationModuleEnabled("preorders")) {
+    revalidatePath("/encomendas");
+  }
   revalidatePath("/admin");
   revalidatePath("/admin/configuracoes");
 }

@@ -14,6 +14,10 @@ import {
 import type { LucideIcon } from "lucide-react";
 
 import { getPublicInstallationProfile } from "@/config/installation/public";
+import {
+  isInstallationModuleEnabled,
+  shouldLoadInstallationModuleData,
+} from "@/config/installation/modules";
 import { getAdminAccess } from "@/lib/admin-auth";
 import { hasAdminPermission } from "@/lib/admin-permissions";
 import { listPreorderRequests } from "@/lib/preorder-request-store";
@@ -161,6 +165,14 @@ export default async function AdminPage({
   const canAccessSettings = hasAdminPermission(
     access.permissions,
     "settings"
+  );
+  const preordersEnabled = isInstallationModuleEnabled(
+    "preorders",
+    installation
+  );
+  const preorderScheduleEnabled = isInstallationModuleEnabled(
+    "preorderSchedule",
+    installation
   );
 
   /*
@@ -376,7 +388,11 @@ export default async function AdminPage({
    */
 
   const preorderRequests =
-    canAccessOrders || canAccessBilling
+    shouldLoadInstallationModuleData(
+      "preorders",
+      canAccessOrders || canAccessBilling,
+      installation
+    )
       ? await listPreorderRequests()
       : [];
   const openPreorders = preorderRequests.filter(
@@ -515,11 +531,11 @@ export default async function AdminPage({
         todayOrdersCount ?? 0
       ),
       icon: ShoppingBag,
-      }, {
+      }, ...(preordersEnabled ? [{
       label: "Encomendas hoje",
       value: String(todayPreordersCount),
       icon: CakeSlice,
-      }]
+      }] : [])]
       : []),
     ...(canAccessCustomers
       ? [{
@@ -550,26 +566,24 @@ export default async function AdminPage({
             icon: ShoppingBag,
             tone: "amber" as const,
           },
-          {
+          ...(preordersEnabled ? [{
             label: "Encomendas em andamento",
             value: String(openPreorders.length),
             icon: CakeSlice,
             tone: "orange" as const,
-          },
-          {
+          }, ...(preorderScheduleEnabled ? [{
             label: "Próximos 7 dias",
             value: String(upcomingPreordersCount),
             icon: CalendarRange,
             href: "/admin/pedidos/encomendas/calendario",
             tone: "blue" as const,
-          },
-          {
+          }] : []), {
             label: "Sinais pendentes",
             value: String(pendingDepositCount),
             icon: WalletCards,
             href: "/admin/pedidos/encomendas",
             tone: "red" as const,
-          },
+          }] : []),
         ]
       : []),
     ...(canAccessBilling
@@ -667,7 +681,7 @@ export default async function AdminPage({
             </h2>
           </div>
 
-          <div className="grid gap-px bg-brand-border md:grid-cols-3">
+          <div className={`grid gap-px bg-brand-border ${preordersEnabled ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
             <Link
               href="/admin/faturamento?source=daily&period=month"
               className="bg-white p-5 transition hover:bg-brand-background"
@@ -681,7 +695,7 @@ export default async function AdminPage({
               </p>
             </Link>
 
-            <Link
+            {preordersEnabled && <Link
               href="/admin/faturamento?source=preorders&period=month"
               className="bg-white p-5 transition hover:bg-brand-background"
             >
@@ -692,7 +706,7 @@ export default async function AdminPage({
               <p className="mt-2 text-2xl font-bold text-brand-foreground">
                 {formatCurrency(monthPreorderRevenue)}
               </p>
-            </Link>
+            </Link>}
 
             <Link
               href="/admin/faturamento?source=daily&period=month"
@@ -731,7 +745,7 @@ export default async function AdminPage({
                 </h2>
               </div>
 
-              {canAccessOrders && (
+              {canAccessOrders && preordersEnabled && (
               <Link
                 href="/admin/pedidos"
                 className="text-sm font-bold text-brand-primary transition hover:underline"
@@ -878,7 +892,9 @@ export default async function AdminPage({
                 href="/admin/pedidos/encomendas"
                 className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
               >
-                Agenda de encomendas
+                {preorderScheduleEnabled
+                  ? "Agenda de encomendas"
+                  : "Encomendas"}
 
                 <span>→</span>
               </Link>

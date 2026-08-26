@@ -203,6 +203,7 @@ export async function createOrder(
     }
 
     const rateLimit = await enforcePublicOrderRateLimit(
+      "daily-order",
       protectedPhone,
       requestIp
     );

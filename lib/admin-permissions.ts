@@ -1,15 +1,21 @@
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
+
+const preordersEnabled = isInstallationModuleEnabled("preorders");
+
 export const adminPermissionOptions = [
   {
     key: "catalog",
     label: "Cardápios e produtos",
-    description:
-      "Produtos diários, categorias e catálogo de encomendas.",
+    description: preordersEnabled
+      ? "Produtos diários, categorias e catálogo de encomendas."
+      : "Produtos diários e categorias do cardápio.",
   },
   {
     key: "orders",
-    label: "Pedidos e encomendas",
-    description:
-      "Atendimento, pagamentos, comandas e encomendas manuais.",
+    label: preordersEnabled ? "Pedidos e encomendas" : "Pedidos",
+    description: preordersEnabled
+      ? "Atendimento, pagamentos, comandas e encomendas manuais."
+      : "Atendimento, pagamentos e comandas.",
   },
   {
     key: "cashier",
@@ -30,7 +36,9 @@ export const adminPermissionOptions = [
   {
     key: "billing",
     label: "Faturamento",
-    description: "Valores das vendas e encomendas.",
+    description: preordersEnabled
+      ? "Valores das vendas e encomendas."
+      : "Valores das vendas.",
   },
   {
     key: "settings",

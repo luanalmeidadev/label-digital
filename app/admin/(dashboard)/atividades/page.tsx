@@ -11,6 +11,7 @@ import {
 
 import { getAdminAccess } from "@/lib/admin-auth";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
 
 type AuditAction = "created" | "updated" | "deleted";
 
@@ -145,7 +146,15 @@ const statusLabels: Record<string, string> = {
   attendant: "Atendente",
 };
 
-const entityOptions = Object.entries(entityLabels);
+const preorderEntityTypes = new Set([
+  "preorder",
+  "preorder_product",
+  "preorder_hero",
+]);
+const preordersEnabled = isInstallationModuleEnabled("preorders");
+const entityOptions = Object.entries(entityLabels).filter(
+  ([value]) => preordersEnabled || !preorderEntityTypes.has(value)
+);
 const allowedEntities = new Set(entityOptions.map(([value]) => value));
 const allowedActions = new Set(["created", "updated", "deleted"]);
 const allowedPeriods = new Set(["7", "30", "90"]);
@@ -308,7 +317,9 @@ export default async function AtividadesPage({
     throw new Error("Não foi possível carregar o histórico de atividades.");
   }
 
-  const logs = (data ?? []) as AuditLog[];
+  const logs = ((data ?? []) as AuditLog[]).filter(
+    (log) => preordersEnabled || !preorderEntityTypes.has(log.entity_type)
+  );
 
   return (
     <main className="p-5 sm:p-8">
@@ -321,8 +332,9 @@ export default async function AtividadesPage({
             Histórico de atividades
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-6 text-brand-muted-foreground">
-            Veja quem alterou produtos, pedidos, encomendas, configurações e
-            contas administrativas.
+            {preordersEnabled
+              ? "Veja quem alterou produtos, pedidos, encomendas, configurações e contas administrativas."
+              : "Veja quem alterou produtos, pedidos, configurações e contas administrativas."}
           </p>
         </div>
 

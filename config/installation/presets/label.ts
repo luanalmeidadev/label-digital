@@ -1,4 +1,5 @@
 import { defineInstallationProfile } from "@/config/installation/validate";
+import { labelInstallationModules } from "@/config/installation/module-presets.mjs";
 
 export const labelInstallationPreset = defineInstallationProfile({
   schemaVersion: 3,
@@ -150,16 +151,5 @@ export const labelInstallationPreset = defineInstallationProfile({
     privacyNoticePath: "/privacidade",
     privacyNoticeLastUpdated: "2026-08-15",
   },
-  modules: {
-    preorders: true,
-    preorderSchedule: true,
-    delivery: true,
-    pickup: true,
-    cashRegister: true,
-    financial: true,
-    reports: true,
-    tracking: true,
-    advancedUsers: true,
-    adminAudit: true,
-  },
+  modules: labelInstallationModules,
 } as const);

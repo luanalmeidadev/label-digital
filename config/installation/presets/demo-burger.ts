@@ -1,4 +1,5 @@
 import { defineInstallationProfile } from "@/config/installation/validate";
+import { demoBurgerInstallationModules } from "@/config/installation/module-presets.mjs";
 
 export const demoBurgerInstallationPreset = defineInstallationProfile({
   schemaVersion: 3,
@@ -148,16 +149,5 @@ export const demoBurgerInstallationPreset = defineInstallationProfile({
     privacyNoticePath: "/privacidade",
     privacyNoticeLastUpdated: "2026-08-26",
   },
-  modules: {
-    preorders: true,
-    preorderSchedule: true,
-    delivery: true,
-    pickup: true,
-    cashRegister: true,
-    financial: true,
-    reports: true,
-    tracking: true,
-    advancedUsers: true,
-    adminAudit: true,
-  },
+  modules: demoBurgerInstallationModules,
 } as const);

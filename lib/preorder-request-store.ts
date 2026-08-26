@@ -4,6 +4,7 @@ import {
   getPreorderStorageClient,
   preorderStorageBucket,
 } from "@/lib/preorder-catalog-store";
+import { assertInstallationModuleEnabled } from "@/config/installation/modules";
 import {
   isPreorderRequestStatus,
   parsePreorderPrice,
@@ -117,6 +118,7 @@ export async function savePreorderRequest(
 export async function getPreorderRequest(
   id: string
 ) {
+  assertInstallationModuleEnabled("preorders");
   if (!isSafeRequestId(id)) {
     return null;
   }
@@ -142,6 +144,7 @@ export async function getPreorderRequest(
 }
 
 export async function listPreorderRequests() {
+  assertInstallationModuleEnabled("preorders");
   const supabase =
     await getPreorderStorageClient();
   const { data: files, error } =

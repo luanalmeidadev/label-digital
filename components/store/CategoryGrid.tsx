@@ -2,9 +2,14 @@ import { CakeSlice, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { getPublicInstallationProfile } from "@/config/installation/public";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
 
-const preorderContent =
-  getPublicInstallationProfile().publicContent.preorders.categoryShortcut;
+const installation = getPublicInstallationProfile();
+const preorderContent = installation.publicContent.preorders.categoryShortcut;
+const preordersEnabled = isInstallationModuleEnabled(
+  "preorders",
+  installation
+);
 
 type Category = {
   id: string;
@@ -41,7 +46,7 @@ export default function CategoryGrid({
         </p>
       </div>
 
-      <Link
+      {preordersEnabled && <Link
         href="/encomendas"
         className="group mb-4 flex items-center justify-between gap-4 rounded-2xl border border-brand-primary bg-brand-primary p-4 text-brand-primary-foreground shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-primary-hover sm:p-5"
       >
@@ -64,7 +69,7 @@ export default function CategoryGrid({
         </span>
 
         <ChevronRight size={22} className="shrink-0" />
-      </Link>
+      </Link>}
 
       <div className="grid grid-cols-3 gap-3">
         {categories.map((category) => (

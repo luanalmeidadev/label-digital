@@ -1,9 +1,14 @@
 import nextEnv from "@next/env";
 import { createClient } from "@supabase/supabase-js";
+import { resolveInstallationModuleFlags } from "../config/installation/module-presets.mjs";
 
 const { loadEnvConfig } = nextEnv;
 
 loadEnvConfig(process.cwd());
+
+const installationModules = resolveInstallationModuleFlags({
+  requestedPreset: process.env.NEXT_PUBLIC_INSTALLATION_PRESET,
+});
 
 const sourceUrl =
   process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -67,12 +72,12 @@ const bucketDefinitions = [
       "image/webp",
     ],
   },
-  {
+  ...(installationModules.preorders ? [{
     id: "preorder-catalog",
     public: false,
     fileSizeLimit: 1024 * 1024,
     allowedMimeTypes: ["application/json"],
-  },
+  }] : []),
 ];
 
 function rewriteProjectUrls(value) {
@@ -325,7 +330,9 @@ for (const table of contentTables) {
 
 await ensureBuckets();
 await syncProductImages();
-await syncPreorderConfiguration();
+if (installationModules.preorders) {
+  await syncPreorderConfiguration();
+}
 
 console.log(
   "Homologação sincronizada sem clientes, pedidos, usuários ou faturamento."

@@ -2,11 +2,16 @@ import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 import { getPublicInstallationProfile } from "@/config/installation/public";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
 
-const content =
-  getPublicInstallationProfile().publicContent.preorders.banner;
+const installation = getPublicInstallationProfile();
+const content = installation.publicContent.preorders.banner;
 
 export default function PreorderBanner() {
+  if (!isInstallationModuleEnabled("preorders", installation)) {
+    return null;
+  }
+
   return (
     <section className="pb-8">
       <div className="rounded-3xl bg-brand-secondary p-6 sm:p-8">

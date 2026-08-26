@@ -111,6 +111,29 @@ explicitamente qualquer preset diferente de `label` quando `NODE_ENV` é
 `production`, portanto uma build de produção não pode selecionar o demo por
 engano. Não existe seletor no painel administrativo.
 
+## Módulo de encomendas
+
+Encomendas é o primeiro módulo declarativo que passou a ser respeitado pelo
+Core. `config/installation/modules.ts` é a API central para consultar flags,
+validar acesso e decidir se consultas dependentes devem ser executadas. Rotas
+server-side usam `lib/installation-modules-server.ts`; componentes não devem
+comparar diretamente o identificador de um preset.
+
+Com `preorders: false`, o Core remove os CTAs públicos, navegação e abas
+administrativas, métricas, faturamento de encomendas, sitemap, robots, health
+check e recursos de backup relacionados. As rotas públicas e administrativas
+do módulo respondem como não encontradas, e as Server Actions recusam acesso
+antes de consultar catálogo ou Storage. `preorderSchedule` depende de
+`preorders` e possui proteção adicional para o calendário.
+
+O preset `label` mantém as duas flags ativas. O `demo-burger` mantém ambas
+desativadas. O código, os dados e os Storages do módulo continuam instalados no
+Core; desligar uma flag não remove nem migra dados.
+
+Scripts Node usam `config/installation/module-presets.mjs` como fonte das
+mesmas flags, evitando exigir o bucket `preorder-catalog` em instalações sem
+Encomendas. Demais módulos continuam apenas declarativos nesta fase.
+
 ## Divergências encontradas
 
 - o código alternava `La'Bel` e `La'bel`; o perfil usa a grafia exibida nos
@@ -142,7 +165,7 @@ temporariamente literais para evitar ampliar o contrato ou produzir alterações
 visuais acidentais. O favicon file-based em `app/icon.svg` também permanece
 estático; manifest, logos e Open Graph já leem o perfil. Não se deve interpretar
 esta integração como white-label completo, catálogo multissegmento ou
-desacoplamento dos módulos.
+desacoplamento completo dos módulos.
 
 ## Regra para novos hardcodes
 

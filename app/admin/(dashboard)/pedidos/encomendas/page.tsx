@@ -30,6 +30,7 @@ import {
   type PreorderRequestStatus,
 } from "@/lib/preorder-request";
 import { listPreorderRequests } from "@/lib/preorder-request-store";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
 
 export const dynamic = "force-dynamic";
 
@@ -200,6 +201,9 @@ export default async function EncomendasPedidosPage({
 }: {
   searchParams: SearchParams;
 }) {
+  const preorderScheduleEnabled = isInstallationModuleEnabled(
+    "preorderSchedule"
+  );
   const params = await searchParams;
   const query = String(params.q ?? "").trim().slice(0, 100);
   const normalizedQuery = normalizeSearch(query);
@@ -347,13 +351,13 @@ export default async function EncomendasPedidosPage({
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Link
+            {preorderScheduleEnabled && <Link
               href="/admin/pedidos/encomendas/calendario"
               className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-brand-primary px-5 text-sm font-bold text-brand-primary transition hover:bg-[#FFF7F5]"
             >
               <CalendarRange size={17} />
               Calendário
-            </Link>
+            </Link>}
             <Link
               href="/admin/pedidos/encomendas/nova"
               className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover"

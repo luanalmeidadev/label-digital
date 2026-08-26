@@ -5,8 +5,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   applicationTables,
-  storageBuckets,
+  getStorageBuckets,
 } from "../../scripts/backup-inventory.mjs";
+import {
+  demoBurgerInstallationModules,
+  labelInstallationModules,
+} from "../../config/installation/module-presets.mjs";
 
 type TableEvent = {
   index: number;
@@ -97,6 +101,7 @@ describe("inventário do backup operacional", () => {
   });
 
   it("não possui fontes duplicadas e cobre os Storages atuais", () => {
+    const storageBuckets = getStorageBuckets(labelInstallationModules);
     expect(new Set(applicationTables).size).toBe(
       applicationTables.length
     );
@@ -106,6 +111,12 @@ describe("inventário do backup operacional", () => {
     expect(storageBuckets).toEqual([
       "product-images",
       "preorder-catalog",
+    ]);
+  });
+
+  it("não exige o Storage de encomendas quando o módulo está desligado", () => {
+    expect(getStorageBuckets(demoBurgerInstallationModules)).toEqual([
+      "product-images",
     ]);
   });
 });

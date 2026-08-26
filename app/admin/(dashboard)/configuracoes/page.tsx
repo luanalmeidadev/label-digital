@@ -360,8 +360,8 @@ export default async function ConfiguracoesPage() {
                   </p>
 
                   <p className="text-xs text-brand-muted-foreground">
-                    Permitir retirada na
-                    confeitaria.
+                    Permitir retirada no
+                    estabelecimento.
                   </p>
                 </div>
               </label>

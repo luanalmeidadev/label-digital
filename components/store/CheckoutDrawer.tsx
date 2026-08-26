@@ -1138,7 +1138,7 @@ export default function CheckoutDrawer({
                   !storeSettings.deliveryEnabled && (
                     <p className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-semibold text-amber-800">
                       Os pedidos estão temporariamente indisponíveis. Entre em
-                      contato com a confeitaria para mais informações.
+                      contato com a {installation.identity.shortName} para mais informações.
                     </p>
                   )}
 

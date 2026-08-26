@@ -17,7 +17,13 @@ export const applicationTables = Object.freeze([
   "delivery_zones",
 ]);
 
-export const storageBuckets = Object.freeze([
-  "product-images",
-  "preorder-catalog",
+export const storageResources = Object.freeze([
+  Object.freeze({ name: "product-images" }),
+  Object.freeze({ name: "preorder-catalog", module: "preorders" }),
 ]);
+
+export function getStorageBuckets(modules) {
+  return storageResources
+    .filter((resource) => !resource.module || modules[resource.module] === true)
+    .map((resource) => resource.name);
+}

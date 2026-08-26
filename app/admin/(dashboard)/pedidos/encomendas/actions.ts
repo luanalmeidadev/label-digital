@@ -21,6 +21,7 @@ import {
 } from "@/lib/preorder-request-store";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
 import { reserveNextPreorderNumber } from "@/lib/sales-number-store";
+import { assertInstallationModuleEnabled } from "@/config/installation/modules";
 
 export type ManualPreorderFormState = {
   error: string;
@@ -31,6 +32,7 @@ export type EditPreorderFormState = {
 };
 
 async function requireAdmin() {
+  assertInstallationModuleEnabled("preorders");
   return requireAdminPermission("orders");
 }
 

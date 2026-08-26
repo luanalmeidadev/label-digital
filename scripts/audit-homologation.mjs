@@ -1,4 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
+import { resolveInstallationModuleFlags } from "../config/installation/module-presets.mjs";
+
+const installationModules = resolveInstallationModuleFlags({
+  requestedPreset: process.env.NEXT_PUBLIC_INSTALLATION_PRESET,
+});
 
 const url =
   process.env.HOMOLOGATION_SUPABASE_URL;
@@ -65,22 +70,24 @@ if (usersError) {
 console.log(`auth_users=${users.users.length}`);
 hasUnexpectedData ||= users.users.length !== 0;
 
-const { data: requests, error: requestsError } =
-  await supabase.storage
-    .from("preorder-catalog")
-    .list("requests", { limit: 1 });
+if (installationModules.preorders) {
+  const { data: requests, error: requestsError } =
+    await supabase.storage
+      .from("preorder-catalog")
+      .list("requests", { limit: 1 });
 
-if (requestsError) {
-  throw new Error(
-    `Falha ao auditar encomendas: ${requestsError.message}`
+  if (requestsError) {
+    throw new Error(
+      `Falha ao auditar encomendas: ${requestsError.message}`
+    );
+  }
+
+  console.log(
+    `preorder_requests=${requests?.length ?? 0}`
   );
+  hasUnexpectedData ||=
+    (requests?.length ?? 0) !== 0;
 }
-
-console.log(
-  `preorder_requests=${requests?.length ?? 0}`
-);
-hasUnexpectedData ||=
-  (requests?.length ?? 0) !== 0;
 
 if (hasUnexpectedData) {
   throw new Error(

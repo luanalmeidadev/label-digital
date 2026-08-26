@@ -10,6 +10,10 @@ import {
 
 import { listPreorderRequests } from "@/lib/preorder-request-store";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import {
+  isInstallationModuleEnabled,
+  shouldLoadInstallationModuleData,
+} from "@/config/installation/modules";
 
 type SearchParams = Promise<{
   source?: string;
@@ -93,8 +97,11 @@ export default async function FaturamentoPage({
   searchParams: SearchParams;
 }) {
   const params = await searchParams;
+  const preordersEnabled = isInstallationModuleEnabled("preorders");
   const selectedSource =
-    params.source === "preorders" ? "preorders" : "daily";
+    preordersEnabled && params.source === "preorders"
+      ? "preorders"
+      : "daily";
   const selectedPeriod =
     params.period && Object.keys(periodLabels).includes(params.period)
       ? params.period
@@ -129,7 +136,9 @@ export default async function FaturamentoPage({
       .eq("status", "completed")
       .not("completed_at", "is", null)
       .order("completed_at", { ascending: false }),
-    listPreorderRequests(),
+    shouldLoadInstallationModuleData("preorders", true)
+      ? listPreorderRequests()
+      : Promise.resolve([]),
   ]);
 
   if (error) {
@@ -227,11 +236,13 @@ export default async function FaturamentoPage({
           </p>
           <h1 className="mt-2 text-3xl font-bold text-brand-foreground">Faturamento</h1>
           <p className="mt-2 text-sm text-brand-muted-foreground">
-            Vendas diárias e encomendas ficam separadas e entram no faturamento somente após a finalização.
+            {preordersEnabled
+              ? "Vendas diárias e encomendas ficam separadas e entram no faturamento somente após a finalização."
+              : "As vendas entram no faturamento somente após a finalização."}
           </p>
         </div>
 
-        <nav aria-label="Origem do faturamento" className="mt-7 grid gap-3 sm:max-w-2xl sm:grid-cols-2">
+        <nav aria-label="Origem do faturamento" className={`mt-7 grid gap-3 sm:max-w-2xl ${preordersEnabled ? "sm:grid-cols-2" : "sm:grid-cols-1"}`}>
           {[
             {
               id: "daily",
@@ -239,12 +250,12 @@ export default async function FaturamentoPage({
               description: "Pedidos do cardápio diário",
               icon: ShoppingBag,
             },
-            {
+            ...(preordersEnabled ? [{
               id: "preorders",
               label: "Encomendas",
               description: "Pedidos para datas futuras",
               icon: CakeSlice,
-            },
+            }] : []),
           ].map((source) => {
             const Icon = source.icon;
             const active = selectedSource === source.id;

@@ -18,6 +18,7 @@ import {
   getImageDisplaySettings,
   saveImageDisplaySettings,
 } from "@/lib/image-display-settings-store";
+import { assertInstallationModuleEnabled } from "@/config/installation/modules";
 
 const PRODUCT_IMAGE_BUCKET = "product-images";
 const ALLOWED_IMAGE_TYPES = [
@@ -33,6 +34,7 @@ export type UpdatePreorderProductResult = {
 };
 
 async function requireAdmin() {
+  assertInstallationModuleEnabled("preorders");
   return requireAdminPermission("catalog");
 }
 

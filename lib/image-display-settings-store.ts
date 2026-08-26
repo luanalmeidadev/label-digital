@@ -5,6 +5,9 @@ import {
   preorderStorageBucket,
 } from "@/lib/preorder-catalog-store";
 import { normalizeImageZoom } from "@/lib/image-framing";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
+import { assertInstallationModuleEnabled } from "@/config/installation/modules";
+import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 export type PreorderHeroImageSettings = {
   image: string;
@@ -19,6 +22,8 @@ export type ImageDisplaySettings = {
 };
 
 const settingsPath = "image-display-settings.json";
+const dailySettingsPath = "settings/daily-product-image-settings.json";
+const productImagesBucket = "product-images";
 
 const defaultSettings: ImageDisplaySettings = {
   preorderHero: {
@@ -96,6 +101,23 @@ function parseSettings(
 }
 
 export async function getImageDisplaySettings() {
+  if (!isInstallationModuleEnabled("preorders")) {
+    const supabase = createSupabaseAdminClient();
+    const { data, error } = await supabase.storage
+      .from(productImagesBucket)
+      .download(dailySettingsPath);
+
+    if (error) {
+      return structuredClone(defaultSettings);
+    }
+
+    try {
+      return parseSettings(JSON.parse(await data.text()));
+    } catch {
+      return structuredClone(defaultSettings);
+    }
+  }
+
   const supabase =
     await getPreorderStorageClient();
   const { data, error } = await supabase.storage
@@ -116,6 +138,7 @@ export async function getImageDisplaySettings() {
 export async function saveImageDisplaySettings(
   settings: ImageDisplaySettings
 ) {
+  assertInstallationModuleEnabled("preorders");
   const supabase =
     await getPreorderStorageClient();
   const body = new Blob(
@@ -143,7 +166,7 @@ export async function setDailyProductZoom(
 ) {
   const settings = await getImageDisplaySettings();
   settings.dailyProductZoom[productId] = zoom;
-  await saveImageDisplaySettings(settings);
+  await saveDailyProductSettings(settings);
 }
 
 export async function removeDailyProductZoom(
@@ -151,5 +174,39 @@ export async function removeDailyProductZoom(
 ) {
   const settings = await getImageDisplaySettings();
   delete settings.dailyProductZoom[productId];
-  await saveImageDisplaySettings(settings);
+  await saveDailyProductSettings(settings);
+}
+
+async function saveDailyProductSettings(
+  settings: ImageDisplaySettings
+) {
+  if (isInstallationModuleEnabled("preorders")) {
+    await saveImageDisplaySettings(settings);
+    return;
+  }
+
+  const supabase = createSupabaseAdminClient();
+  const body = new Blob(
+    [
+      JSON.stringify(
+        { dailyProductZoom: settings.dailyProductZoom },
+        null,
+        2
+      ),
+    ],
+    { type: "application/json" }
+  );
+  const { error } = await supabase.storage
+    .from(productImagesBucket)
+    .upload(dailySettingsPath, body, {
+      contentType: "application/json",
+      cacheControl: "0",
+      upsert: true,
+    });
+
+  if (error) {
+    throw new Error(
+      "Não foi possível salvar os ajustes das imagens."
+    );
+  }
 }

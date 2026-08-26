@@ -1,9 +1,15 @@
 import type { MetadataRoute } from "next";
 
 import { getSiteUrl } from "@/lib/site-url";
+import { getModulePublicPaths } from "@/config/installation/modules";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const siteUrl = getSiteUrl();
+  const modulePages = getModulePublicPaths().map((path) => ({
+    url: new URL(path, siteUrl).toString(),
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }));
 
   return [
     {
@@ -11,11 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily",
       priority: 1,
     },
-    {
-      url: new URL("/encomendas", siteUrl).toString(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
+    ...modulePages,
     {
       url: new URL("/privacidade", siteUrl).toString(),
       changeFrequency: "yearly",

@@ -6,12 +6,18 @@ import { createClient } from "@supabase/supabase-js";
 
 import {
   applicationTables,
-  storageBuckets,
+  getStorageBuckets,
 } from "./backup-inventory.mjs";
+import { resolveInstallationModuleFlags } from "../config/installation/module-presets.mjs";
 
 const { loadEnvConfig } = nextEnv;
 
 loadEnvConfig(process.cwd());
+
+const installationModules = resolveInstallationModuleFlags({
+  requestedPreset: process.env.NEXT_PUBLIC_INSTALLATION_PRESET,
+});
+const storageBuckets = getStorageBuckets(installationModules);
 
 const checkOnly = process.argv.includes("--check");
 const requestedBackupName = process.argv

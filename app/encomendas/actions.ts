@@ -22,6 +22,7 @@ import {
   verifyTurnstileToken,
 } from "@/lib/public-action-security";
 import { reserveNextPreorderNumber } from "@/lib/sales-number-store";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
 
 export type CreatePreorderRequestResult = {
   success: boolean;
@@ -80,6 +81,13 @@ function parseFlavors(value: FormDataEntryValue | null) {
 export async function createPreorderRequest(
   formData: FormData
 ): Promise<CreatePreorderRequestResult> {
+  if (!isInstallationModuleEnabled("preorders")) {
+    return {
+      success: false,
+      error: "Encomendas não estão disponíveis nesta instalação.",
+    };
+  }
+
   const idempotencyKey = String(
     formData.get("idempotency_key") ?? ""
   );
@@ -250,6 +258,7 @@ export async function createPreorderRequest(
   }
 
   const rateLimit = await enforcePublicOrderRateLimit(
+    "preorder",
     customerPhone,
     requestIp
   );

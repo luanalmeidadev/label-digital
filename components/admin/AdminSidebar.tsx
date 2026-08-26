@@ -26,6 +26,8 @@ import type {
   AdminPermission,
   AdminRole,
 } from "@/lib/admin-permissions";
+import { isInstallationModuleEnabled } from "@/config/installation/modules";
+import type { InstallationModuleKey } from "@/config/installation/types";
 import BrandLogo from "@/components/brand/BrandLogo";
 import { logoutAdmin } from "@/app/admin/logout/actions";
 
@@ -35,6 +37,7 @@ type MenuItem = {
   icon: LucideIcon;
   permission?: AdminPermission;
   adminOnly?: boolean;
+  module?: InstallationModuleKey;
 };
 
 const menuSections: Array<{
@@ -82,6 +85,7 @@ const menuSections: Array<{
         href: "/admin/produtos",
         icon: Package,
         permission: "catalog",
+        module: "preorders",
       },
       {
         label: "Categorias",
@@ -176,7 +180,8 @@ export default function AdminSidebar({
         const visibleItems = section.items.filter(
           (item) =>
             (!item.adminOnly || role === "admin") &&
-            (!item.permission || permissions.includes(item.permission))
+            (!item.permission || permissions.includes(item.permission)) &&
+            (!item.module || isInstallationModuleEnabled(item.module))
         );
 
         if (visibleItems.length === 0) {

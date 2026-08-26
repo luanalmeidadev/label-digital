@@ -1,12 +1,10 @@
-import { requireAdminPagePermission } from "@/lib/admin-auth";
 import { requireInstallationModule } from "@/lib/installation-modules-server";
 
-export default async function EncomendasLayout({
+export default function AdminPreordersLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   requireInstallationModule("preorders");
-  await requireAdminPagePermission("catalog");
   return children;
 }

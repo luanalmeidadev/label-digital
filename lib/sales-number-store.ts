@@ -4,6 +4,7 @@ import {
   getPreorderStorageClient,
   preorderStorageBucket,
 } from "@/lib/preorder-catalog-store";
+import { assertInstallationModuleEnabled } from "@/config/installation/modules";
 
 type SalesNumberSequence =
   "preorders";
@@ -106,6 +107,7 @@ async function reserveNextNumber(
 }
 
 export async function reserveNextPreorderNumber() {
+  assertInstallationModuleEnabled("preorders");
   const number = await reserveNextNumber(
     "preorders"
   );
