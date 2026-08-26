@@ -30,3 +30,18 @@ export function calculateCashDifference(
 ) {
   return Number((countedCash - expectedCash).toFixed(2));
 }
+
+export function affectsPhysicalCash(
+  movementType: CashMovementKind,
+  paymentMethod: PaymentMethod
+) {
+  return (
+    paymentMethod === "cash" &&
+    (movementType === "supply" ||
+      movementType === "withdrawal" ||
+      movementType === "expense")
+  );
+}
+import type { PaymentMethod } from "@/lib/payment-method";
+
+export type CashMovementKind = "supply" | "withdrawal" | "expense";

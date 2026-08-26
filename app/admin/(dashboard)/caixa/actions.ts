@@ -25,6 +25,8 @@ export type CashMovementType =
   | "withdrawal"
   | "expense";
 
+export type CashMovementPaymentMethod = PaymentMethod;
+
 export type CashClosingResult =
   | {
       success: true;
@@ -473,6 +475,9 @@ export async function createCashMovement(
   const movementType = String(
     formData.get("movement_type") ?? ""
   ) as CashMovementType;
+  const paymentMethod = String(
+    formData.get("payment_method") ?? "cash"
+  );
   const amount = Number(formData.get("amount"));
   const description = String(
     formData.get("description") ?? ""
@@ -497,6 +502,16 @@ export async function createCashMovement(
     return {
       success: false,
       error: "Escolha um tipo de movimentação válido.",
+    };
+  }
+
+  if (
+    !isPaymentMethod(paymentMethod) ||
+    (movementType !== "expense" && paymentMethod !== "cash")
+  ) {
+    return {
+      success: false,
+      error: "Escolha uma forma de pagamento válida.",
     };
   }
 
@@ -526,6 +541,7 @@ export async function createCashMovement(
       p_movement_type: movementType,
       p_amount: Number(amount.toFixed(2)),
       p_description: description,
+      p_payment_method: paymentMethod,
     }
   );
   const movement = Array.isArray(data) ? data[0] : null;
@@ -557,6 +573,7 @@ export async function createCashMovement(
       movement_type: movementType,
       amount: Number(amount.toFixed(2)),
       description,
+      payment_method: paymentMethod,
     },
   });
 

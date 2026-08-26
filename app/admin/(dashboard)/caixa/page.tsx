@@ -10,7 +10,14 @@ import {
 import CashRegisterPOS from "@/components/admin/CashRegisterPOS";
 import CashSessionControls from "@/components/admin/CashSessionControls";
 import { requireAdminPagePermission } from "@/lib/admin-auth";
-import { calculateExpectedCash } from "@/lib/cash-register";
+import {
+  affectsPhysicalCash,
+  calculateExpectedCash,
+} from "@/lib/cash-register";
+import {
+  isPaymentMethod,
+  type PaymentMethod,
+} from "@/lib/payment-method";
 
 function startOfSaoPauloToday() {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -117,14 +124,22 @@ export default async function CaixaPage() {
   let movements: Array<{
     id: string;
     movementType: "supply" | "withdrawal" | "expense";
+    paymentMethod: PaymentMethod;
     amount: number;
     description: string;
     createdAt: string;
   }> = [];
   let cashSales = 0;
+  const paymentTotals: Record<PaymentMethod, number> = {
+    cash: 0,
+    pix: 0,
+    debit_card: 0,
+    credit_card: 0,
+  };
   let supplies = 0;
   let withdrawals = 0;
   let expenses = 0;
+  let cashExpenses = 0;
   let losses: Array<{
     id: string;
     productName: string;
@@ -143,7 +158,7 @@ export default async function CaixaPage() {
         .eq("orders.status", "completed"),
       access.supabase
         .from("cash_movements")
-        .select("id, movement_type, amount, description, created_at")
+        .select("id, movement_type, payment_method, amount, description, created_at")
         .eq("cash_session_id", openSession.id)
         .order("created_at", { ascending: false })
         .limit(30),
@@ -164,9 +179,12 @@ export default async function CaixaPage() {
       throw new Error("Não foi possível calcular os valores do caixa.");
     }
 
-    cashSales = (paymentsResult.data ?? [])
-      .filter((payment) => payment.method === "cash")
-      .reduce((sum, payment) => sum + Number(payment.amount), 0);
+    for (const payment of paymentsResult.data ?? []) {
+      if (isPaymentMethod(payment.method)) {
+        paymentTotals[payment.method] += Number(payment.amount);
+      }
+    }
+    cashSales = paymentTotals.cash;
 
     for (const movement of movementsResult.data ?? []) {
       const amount = Number(movement.amount);
@@ -177,6 +195,12 @@ export default async function CaixaPage() {
         withdrawals += amount;
       } else if (movement.movement_type === "expense") {
         expenses += amount;
+        if (
+          isPaymentMethod(movement.payment_method) &&
+          affectsPhysicalCash("expense", movement.payment_method)
+        ) {
+          cashExpenses += amount;
+        }
       }
     }
 
@@ -193,6 +217,9 @@ export default async function CaixaPage() {
           | "supply"
           | "withdrawal"
           | "expense",
+        paymentMethod: isPaymentMethod(movement.payment_method)
+          ? movement.payment_method
+          : "cash",
         amount: Number(movement.amount),
         description: movement.description,
         createdAt: movement.created_at,
@@ -214,7 +241,7 @@ export default async function CaixaPage() {
         cashSales,
         supplies,
         withdrawals,
-        expenses,
+        expenses: cashExpenses,
       })
     : 0;
   const closedSessions = closedSessionsResult.data ?? [];
@@ -331,7 +358,7 @@ export default async function CaixaPage() {
             session={{
               id: openSession.id,
               openingBalance: Number(openSession.opening_balance),
-              cashSales,
+              paymentTotals,
               supplies,
               withdrawals,
               expenses,

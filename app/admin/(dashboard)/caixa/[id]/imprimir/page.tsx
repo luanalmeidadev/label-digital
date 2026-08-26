@@ -65,7 +65,7 @@ export default async function CashClosingPrintPage({
         .order("created_at"),
       access.supabase
         .from("cash_movements")
-        .select("id, movement_type, amount, description, created_at")
+        .select("id, movement_type, payment_method, amount, description, created_at")
         .eq("cash_session_id", id)
         .order("created_at"),
       access.supabase
@@ -165,6 +165,10 @@ export default async function CashClosingPrintPage({
                     <span>
                       {movementLabels[movement.movement_type] ?? movement.movement_type}
                       {" — "}{movement.description}
+                      {" · "}
+                      {isPaymentMethod(movement.payment_method)
+                        ? paymentMethodLabels[movement.payment_method]
+                        : "Dinheiro"}
                     </span>
                     <strong>{formatCurrency(Number(movement.amount))}</strong>
                   </p>

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  affectsPhysicalCash,
   calculateCashDifference,
   calculateExpectedCash,
 } from "@/lib/cash-register";
@@ -33,5 +34,12 @@ describe("resumo do caixa", () => {
         expenses: 0,
       })
     ).toBe(0.3);
+  });
+
+  it("afeta o dinheiro físico somente quando a movimentação usa dinheiro", () => {
+    expect(affectsPhysicalCash("expense", "cash")).toBe(true);
+    expect(affectsPhysicalCash("expense", "pix")).toBe(false);
+    expect(affectsPhysicalCash("expense", "debit_card")).toBe(false);
+    expect(affectsPhysicalCash("expense", "credit_card")).toBe(false);
   });
 });

@@ -28,10 +28,16 @@ import {
   type ProductLossReason,
 } from "@/app/admin/(dashboard)/caixa/actions";
 import { createClientRequestId } from "@/lib/client-request-id";
+import {
+  paymentMethodLabels,
+  paymentMethods,
+  type PaymentMethod,
+} from "@/lib/payment-method";
 
 type Movement = {
   id: string;
   movementType: CashMovementType;
+  paymentMethod: PaymentMethod;
   amount: number;
   description: string;
   createdAt: string;
@@ -40,7 +46,7 @@ type Movement = {
 type SessionSummary = {
   id: string;
   openingBalance: number;
-  cashSales: number;
+  paymentTotals: Record<PaymentMethod, number>;
   supplies: number;
   withdrawals: number;
   expenses: number;
@@ -235,11 +241,16 @@ export default function CashSessionControls({
           <div className="flex items-center gap-2 text-emerald-700">
             <CircleDollarSign size={18} />
             <p className="text-xs font-bold uppercase tracking-[0.12em]">
-              Vendas em dinheiro
+              Total vendido
             </p>
           </div>
           <p className="mt-3 text-xl font-bold text-[#241B19]">
-            {formatCurrency(session.cashSales)}
+            {formatCurrency(
+              Object.values(session.paymentTotals).reduce(
+                (total, amount) => total + amount,
+                0
+              )
+            )}
           </p>
         </article>
 
@@ -268,11 +279,37 @@ export default function CashSessionControls({
         </article>
       </div>
 
+      <article className="rounded-2xl border border-[#EEE6DF] bg-white p-4 shadow-sm">
+        <div className="flex items-center gap-2">
+          <CircleDollarSign size={18} className="text-[#8B0000]" />
+          <div>
+            <h2 className="text-sm font-bold text-[#241B19]">
+              Vendas por forma de pagamento
+            </h2>
+            <p className="text-xs text-[#756A66]">
+              O esperado em dinheiro considera somente pagamentos e saídas em espécie.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {paymentMethods.map((method) => (
+            <div key={method} className="rounded-xl bg-[#FFF7F5] p-3">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-[#756A66]">
+                {paymentMethodLabels[method]}
+              </p>
+              <p className="mt-1 text-sm font-bold text-[#241B19]">
+                {formatCurrency(session.paymentTotals[method])}
+              </p>
+            </div>
+          ))}
+        </div>
+      </article>
+
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(340px,0.7fr)]">
         <article className="overflow-hidden rounded-3xl border border-[#EEE6DF] bg-white shadow-sm">
           <div className="border-b border-[#EEE6DF] p-5">
             <h2 className="font-bold text-[#241B19]">
-              Movimentar dinheiro
+              Movimentar caixa
             </h2>
             <p className="mt-1 text-xs text-[#756A66]">
               Registre toda entrada ou saída que não seja uma venda.
@@ -299,6 +336,9 @@ export default function CashSessionControls({
               name="movement_type"
               value={movementType}
             />
+            {movementType !== "expense" && (
+              <input type="hidden" name="payment_method" value="cash" />
+            )}
 
             <div className="grid gap-2 sm:grid-cols-3">
               {movementOptions.map((option) => {
@@ -326,7 +366,13 @@ export default function CashSessionControls({
               })}
             </div>
 
-            <div className="mt-4 grid gap-4 sm:grid-cols-[180px_minmax(0,1fr)]">
+            <div
+              className={`mt-4 grid gap-4 ${
+                movementType === "expense"
+                  ? "sm:grid-cols-[180px_200px_minmax(0,1fr)]"
+                  : "sm:grid-cols-[180px_minmax(0,1fr)]"
+              }`}
+            >
               <label>
                 <span className="text-xs font-bold text-[#49352C]">
                   Valor
@@ -347,6 +393,27 @@ export default function CashSessionControls({
                   />
                 </div>
               </label>
+
+              {movementType === "expense" && (
+                <label>
+                  <span className="text-xs font-bold text-[#49352C]">
+                    Pago com
+                  </span>
+                  <select
+                    name="payment_method"
+                    defaultValue="cash"
+                    required
+                    disabled={movementPending}
+                    className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-[#8B0000]"
+                  >
+                    {paymentMethods.map((method) => (
+                      <option key={method} value={method}>
+                        {paymentMethodLabels[method]}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <label>
                 <span className="text-xs font-bold text-[#49352C]">
@@ -417,7 +484,9 @@ export default function CashSessionControls({
                         {movementLabels[movement.movementType]}
                       </p>
                       <p className="mt-1 text-xs leading-5 text-[#756A66]">
-                        {movement.description} · {formatTime(movement.createdAt)}
+                        {movement.description} ·{" "}
+                        {paymentMethodLabels[movement.paymentMethod]} ·{" "}
+                        {formatTime(movement.createdAt)}
                       </p>
                     </div>
                     <p
