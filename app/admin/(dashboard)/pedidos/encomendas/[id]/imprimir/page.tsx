@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import PrintOrderButton from "@/components/admin/PrintOrderButton";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import {
   formatPreorderCurrency,
   getPreorderBalance,
@@ -9,6 +10,8 @@ import {
   preorderRequestStatusLabels,
 } from "@/lib/preorder-request";
 import { getPreorderRequest } from "@/lib/preorder-request-store";
+
+const installation = getPublicInstallationProfile();
 
 export const dynamic = "force-dynamic";
 
@@ -110,7 +113,7 @@ export default async function ImprimirEncomendaPage({
           >
             <header className="border-b border-dashed border-black pb-4 text-center">
               <h1 className="print-title text-xl font-bold uppercase">
-                La&apos;Bel Confeitaria
+                {installation.identity.name}
               </h1>
               <p className="mt-1 text-sm font-bold uppercase">Comanda de encomenda</p>
               <p className="mt-1 text-sm">{request.requestNumber}</p>
@@ -216,7 +219,7 @@ export default async function ImprimirEncomendaPage({
             </section>
 
             <footer className="pt-4 text-center text-xs">
-              <p className="font-bold">La&apos;Bel Confeitaria</p>
+              <p className="font-bold">{installation.identity.name}</p>
               <p className="mt-1">{request.requestNumber}</p>
             </footer>
           </div>

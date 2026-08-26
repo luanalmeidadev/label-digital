@@ -2,6 +2,7 @@ import {
   INSTALLATION_PROFILE_SCHEMA_VERSION,
   foodBusinessSegments,
   installationModuleKeys,
+  schemaOrgTypes,
   type InstallationProfile,
 } from "@/config/installation/types";
 
@@ -41,6 +42,9 @@ const requiredStringPaths = [
   "seo.openGraph.locale",
   "seo.openGraph.title",
   "seo.openGraph.description",
+  "seo.openGraph.image.alt",
+  "seo.openGraph.image.eyebrow",
+  "seo.openGraph.image.description",
   "seo.twitter.title",
   "seo.twitter.description",
   "publicContent.hero.eyebrow",
@@ -54,6 +58,13 @@ const requiredStringPaths = [
   "publicContent.fulfillment.deliveryOnly.description",
   "publicContent.fulfillment.unavailable.title",
   "publicContent.fulfillment.unavailable.description",
+  "publicContent.preorders.banner.eyebrow",
+  "publicContent.preorders.banner.title",
+  "publicContent.preorders.banner.description",
+  "publicContent.preorders.banner.ctaLabel",
+  "publicContent.preorders.categoryShortcut.eyebrow",
+  "publicContent.preorders.categoryShortcut.title",
+  "publicContent.preorders.categoryShortcut.description",
   "legal.controllerName",
   "legal.locality.city",
   "legal.locality.state",
@@ -268,6 +279,32 @@ export function validateInstallationProfile(
 
   if (getValue(profile, "seo.openGraph.type") !== "website") {
     errors.push("seo.openGraph.type deve ser website.");
+  }
+
+  const schemaOrgType = getValue(profile, "seo.schemaOrgType");
+  if (
+    typeof schemaOrgType !== "string" ||
+    !schemaOrgTypes.includes(
+      schemaOrgType as (typeof schemaOrgTypes)[number]
+    )
+  ) {
+    errors.push("seo.schemaOrgType não é reconhecido.");
+  }
+
+  const openGraphFooterItems = getValue(
+    profile,
+    "seo.openGraph.image.footerItems"
+  );
+  if (
+    !Array.isArray(openGraphFooterItems) ||
+    openGraphFooterItems.length === 0 ||
+    openGraphFooterItems.some(
+      (item) => typeof item !== "string" || !item.trim()
+    )
+  ) {
+    errors.push(
+      "seo.openGraph.image.footerItems deve conter ao menos um texto válido."
+    );
   }
 
   const twitterCard = getValue(profile, "seo.twitter.card");

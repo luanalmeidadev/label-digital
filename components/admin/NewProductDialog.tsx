@@ -12,6 +12,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ImagePositionEditor from "@/components/admin/ImagePositionEditor";
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
+const installation = getPublicInstallationProfile();
 
 type Category = {
   id: string;
@@ -108,7 +111,7 @@ const [imagePositionY, setImagePositionY] =
           <DialogTitle>Novo produto</DialogTitle>
 
           <DialogDescription>
-            Cadastre um novo item para o cardápio da La&apos;bel.
+            Cadastre um novo item para o cardápio da {installation.identity.shortName}.
           </DialogDescription>
         </DialogHeader>
 

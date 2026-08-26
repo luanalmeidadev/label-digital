@@ -4,6 +4,10 @@ import { useEffect } from "react";
 import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
+const installation = getPublicInstallationProfile();
+
 export default function GlobalError({
   error,
   retry,
@@ -17,7 +21,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="pt-BR">
+    <html lang={installation.regionalization.locale}>
       <body
         style={{
           margin: 0,
@@ -26,7 +30,7 @@ export default function GlobalError({
           fontFamily: "Arial, Helvetica, sans-serif",
         }}
       >
-        <title>Algo deu errado | La&apos;Bel Confeitaria</title>
+        <title>Algo deu errado | {installation.identity.name}</title>
         <main
           style={{
             minHeight: "100vh",
@@ -59,7 +63,7 @@ export default function GlobalError({
                 textTransform: "uppercase",
               }}
             >
-              La&apos;Bel Confeitaria
+              {installation.identity.name}
             </p>
             <h1 style={{ margin: "18px 0 0", fontSize: 28 }}>
               Não foi possível abrir esta página

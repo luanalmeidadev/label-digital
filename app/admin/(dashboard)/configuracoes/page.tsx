@@ -12,6 +12,7 @@ import {
 
 import AdminAccountsManager from "@/components/admin/AdminAccountsManager";
 import MonitoringTestCard from "@/components/admin/MonitoringTestCard";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { listAdminAccounts } from "@/lib/admin-accounts";
 import { getAdminAccess } from "@/lib/admin-auth";
 
@@ -23,6 +24,8 @@ import {
   updateDeliveryZone,
   updateStoreSettings,
 } from "./actions";
+
+const installation = getPublicInstallationProfile();
 
 const weekdayLabels: Record<
   number,
@@ -161,8 +164,8 @@ export default async function ConfiguracoesPage() {
           </h1>
 
           <p className="mt-2 text-sm text-[#756A66]">
-            Gerencie os dados gerais da
-            La&apos;bel e o funcionamento
+            Gerencie os dados gerais da{" "}
+            {installation.identity.shortName} e o funcionamento
             do cardápio.
           </p>
         </div>
@@ -187,7 +190,7 @@ export default async function ConfiguracoesPage() {
 
               <div>
                 <h2 className="font-bold text-[#241B19]">
-                  Dados da La&apos;bel
+                  Dados da {installation.identity.shortName}
                 </h2>
 
                 <p className="text-xs text-[#756A66]">
@@ -522,8 +525,7 @@ export default async function ConfiguracoesPage() {
                 </h2>
 
                 <p className="text-xs text-[#756A66]">
-                  Configure onde a
-                  La&apos;bel realiza entregas.
+                  Configure onde a {installation.identity.shortName} realiza entregas.
                 </p>
               </div>
             </div>

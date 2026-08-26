@@ -1,5 +1,9 @@
 import Image from "next/image";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
+const installation = getPublicInstallationProfile();
+
 export default function EmptyProducts() {
   return (
     <section className="pb-8">
@@ -17,7 +21,7 @@ export default function EmptyProducts() {
         </h2>
 
         <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
-          Estamos preparando o cardápio digital da La&apos;bel.
+          Estamos preparando o cardápio digital da {installation.identity.shortName}.
           Os produtos serão cadastrados em breve.
         </p>
       </div>

@@ -1,3 +1,8 @@
+import { getPublicInstallationProfile } from "@/config/installation/public";
+import { buildWhatsAppShortUrl } from "@/lib/whatsapp-link";
+
+const installation = getPublicInstallationProfile();
+
 type WhatsAppItem = {
   name: string;
   quantity: number;
@@ -26,9 +31,9 @@ type WhatsAppOrder = {
 };
 
 function currency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
+  return new Intl.NumberFormat(installation.regionalization.locale, {
     style: "currency",
-    currency: "BRL",
+    currency: installation.regionalization.currency,
   }).format(value);
 }
 
@@ -45,7 +50,9 @@ export function buildWhatsAppMessage(order: WhatsAppOrder) {
       ? `\u{1F69A} Entrega\n${order.address ?? "Endereço não informado"}`
       : "\u{1F3EA} Retirada na loja";
 
-  return `\u{1F370} NOVO PEDIDO - LA'BEL
+  return `\u{1F370} NOVO PEDIDO - ${installation.identity.shortName.toLocaleUpperCase(
+    installation.regionalization.locale
+  )}
 
 Pedido: ${order.orderNumber}
 
@@ -70,7 +77,7 @@ Taxa de entrega: ${currency(order.deliveryFee ?? 0)}
 \u{1F4DD} Observações
 ${order.notes || "Nenhuma"}
 
-Pedido gerado pelo Cardápio La'bel.`;
+Pedido gerado pelo Cardápio ${installation.identity.shortName}.`;
 }
 
 export function buildWhatsAppUrl(
@@ -79,4 +86,3 @@ export function buildWhatsAppUrl(
 ) {
   return buildWhatsAppShortUrl(phone, message);
 }
-import { buildWhatsAppShortUrl } from "@/lib/whatsapp-link";

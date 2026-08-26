@@ -3,10 +3,13 @@
 import { revalidatePath } from "next/cache";
 import * as Sentry from "@sentry/nextjs";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import {
   requireAdminPermission,
   requireAdministrator,
 } from "@/lib/admin-auth";
+
+const installation = getPublicInstallationProfile();
 
 export type MonitoringTestResult = {
   success: boolean;
@@ -26,7 +29,9 @@ export async function sendMonitoringTestEvent(): Promise<MonitoringTestResult> {
   }
 
   const eventId = Sentry.captureException(
-    new Error("Teste manual do monitoramento La'Bel"),
+    new Error(
+      `Teste manual do monitoramento ${installation.identity.shortName}`
+    ),
     {
       tags: {
         area: "admin-settings",

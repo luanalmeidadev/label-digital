@@ -11,12 +11,17 @@ import {
 } from "lucide-react";
 
 import ReportsActions from "@/components/admin/ReportsActions";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { requireAdminPagePermission } from "@/lib/admin-auth";
 import {
   buildReportCsv,
   reportPeriodLabels,
   resolveReportPeriod,
 } from "@/lib/admin-reporting";
+import {
+  buildReportFilename,
+  buildReportTitle,
+} from "@/lib/installation-presentation";
 import {
   paymentMethodLabels,
   type PaymentMethod,
@@ -28,10 +33,12 @@ type SearchParams = Promise<{
   to?: string;
 }>;
 
+const installation = getPublicInstallationProfile();
+
 function formatCurrency(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
+  return new Intl.NumberFormat(installation.regionalization.locale, {
     style: "currency",
-    currency: "BRL",
+    currency: installation.regionalization.currency,
   }).format(value);
 }
 
@@ -186,7 +193,7 @@ export default async function ReportsPage({
     new Map<string, { name: string; quantity: number; total: number }>()
   );
   const csv = buildReportCsv([
-    ["RELATÓRIO LA'BEL CONFEITARIA"],
+    [buildReportTitle(installation)],
     ["Período", period.label],
     [],
     ["RESUMO"],
@@ -250,7 +257,7 @@ export default async function ReportsPage({
           </div>
           <ReportsActions
             csv={csv}
-            filename={`relatorio-label-${period.from || "completo"}-${period.to || "atual"}.csv`}
+            filename={buildReportFilename(installation, period)}
           />
         </header>
 

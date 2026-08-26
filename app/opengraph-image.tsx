@@ -1,7 +1,20 @@
 import { ImageResponse } from "next/og";
 
-export const alt =
-  "La'Bel Confeitaria — doces, bolos e encomendas artesanais em Palhoça";
+import { getPublicInstallationProfile } from "@/config/installation/public";
+import {
+  getBusinessSegmentLabel,
+  getInstallationBrandMark,
+  hexToRgba,
+} from "@/lib/installation-presentation";
+
+const installation = getPublicInstallationProfile();
+const openGraphImage = installation.seo.openGraph.image;
+const segmentLabel = getBusinessSegmentLabel(
+  installation.identity.businessSegment
+);
+const brandMark = getInstallationBrandMark(installation);
+
+export const alt = openGraphImage.alt;
 
 export const size = {
   width: 1200,
@@ -22,8 +35,8 @@ export default function OpenGraphImage() {
           flexDirection: "column",
           justifyContent: "space-between",
           overflow: "hidden",
-          background: "#8B0000",
-          color: "#FFFDF9",
+          background: installation.theme.primary,
+          color: installation.theme.background,
           padding: "64px 76px",
           fontFamily: "sans-serif",
         }}
@@ -36,7 +49,10 @@ export default function OpenGraphImage() {
             borderRadius: 999,
             right: -90,
             top: -150,
-            border: "2px solid rgba(210,180,140,0.28)",
+            border: `2px solid ${hexToRgba(
+              installation.theme.accent,
+              0.28
+            )}`,
             display: "flex",
           }}
         />
@@ -48,7 +64,7 @@ export default function OpenGraphImage() {
             borderRadius: 999,
             right: 60,
             bottom: -190,
-            background: "rgba(210,180,140,0.12)",
+            background: hexToRgba(installation.theme.accent, 0.12),
             display: "flex",
           }}
         />
@@ -66,9 +82,9 @@ export default function OpenGraphImage() {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              border: "2px solid #D2B48C",
+              border: `2px solid ${installation.theme.accent}`,
               borderRadius: 22,
-              color: "#D2B48C",
+              color: installation.theme.accent,
               fontFamily: "serif",
               fontSize: 39,
               fontWeight: 700,
@@ -76,7 +92,7 @@ export default function OpenGraphImage() {
               paddingRight: 5,
             }}
           >
-            L&apos;
+            {brandMark}
           </div>
           <div
             style={{
@@ -87,26 +103,26 @@ export default function OpenGraphImage() {
           >
             <div
               style={{
-                color: "#D2B48C",
+                color: installation.theme.accent,
                 fontFamily: "serif",
                 fontSize: 38,
                 fontWeight: 700,
                 letterSpacing: 1,
               }}
             >
-              La&apos;Bel
+              {installation.identity.shortName}
             </div>
             <div
               style={{
                 marginTop: 3,
-                color: "rgba(255,253,249,0.72)",
+                color: hexToRgba(installation.theme.background, 0.72),
                 fontSize: 14,
                 fontWeight: 700,
                 letterSpacing: 5,
                 textTransform: "uppercase",
               }}
             >
-              Confeitaria
+              {segmentLabel}
             </div>
           </div>
         </div>
@@ -114,14 +130,14 @@ export default function OpenGraphImage() {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div
             style={{
-              color: "#D2B48C",
+              color: installation.theme.accent,
               fontSize: 24,
               fontWeight: 700,
               letterSpacing: 6,
               textTransform: "uppercase",
             }}
           >
-            Cardápio digital
+            {openGraphImage.eyebrow}
           </div>
           <div
             style={{
@@ -133,16 +149,17 @@ export default function OpenGraphImage() {
               letterSpacing: -2,
             }}
           >
-            Um doce momento começa por aqui.
+            {installation.identity.slogan ??
+              installation.publicContent.hero.title}
           </div>
           <div
             style={{
               marginTop: 28,
-              color: "rgba(255,253,249,0.78)",
+              color: hexToRgba(installation.theme.background, 0.78),
               fontSize: 27,
             }}
           >
-            Doces, bolos e encomendas artesanais em Palhoça.
+            {openGraphImage.description}
           </div>
         </div>
 
@@ -150,12 +167,12 @@ export default function OpenGraphImage() {
           style={{
             display: "flex",
             alignItems: "center",
-            color: "#D2B48C",
+            color: installation.theme.accent,
             fontSize: 21,
             fontWeight: 700,
           }}
         >
-          Cardápio do dia&nbsp;&nbsp;•&nbsp;&nbsp;Encomendas&nbsp;&nbsp;•&nbsp;&nbsp;Palhoça/SC
+          {openGraphImage.footerItems.join("   •   ")}
         </div>
       </div>
     ),

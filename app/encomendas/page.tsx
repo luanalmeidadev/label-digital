@@ -16,6 +16,7 @@ import {
 import BrandLogo from "@/components/brand/BrandLogo";
 import PreorderWhatsAppButton from "@/components/store/PreorderWhatsAppButton";
 import StoreRealtimeRefresh from "@/components/store/StoreRealtimeRefresh";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { getPreorderCatalog } from "@/lib/preorder-catalog-store";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 import {
@@ -32,6 +33,8 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+
+const installation = getPublicInstallationProfile();
 
 function ProductCard({
   product,
@@ -206,7 +209,7 @@ export default async function EncomendasPage() {
             <div className="relative aspect-[5/4] overflow-hidden rounded-[2rem] border border-white/15 bg-[#F7F0EA] shadow-2xl">
               <Image
                 src={imageSettings.preorderHero.image}
-                alt="Bolo personalizado da La'Bel Confeitaria"
+                alt={`Bolo personalizado da ${installation.identity.name}`}
                 fill
                 loading="eager"
                 sizes="(max-width: 1024px) 100vw, 520px"

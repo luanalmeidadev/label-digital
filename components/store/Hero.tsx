@@ -1,7 +1,11 @@
 import { Clock3, MapPin } from "lucide-react";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import type { PublicBusinessHour } from "@/lib/public-store-settings";
 import StoreOpenStatus from "@/components/store/StoreOpenStatus";
+
+const installation = getPublicInstallationProfile();
+const publicContent = installation.publicContent;
 
 type HeroProps = {
   storeName: string;
@@ -85,30 +89,18 @@ function getFulfillmentCopy(
   deliveryEnabled: boolean
 ) {
   if (pickupEnabled && deliveryEnabled) {
-    return {
-      title: "Retirada ou entrega",
-      description: "Escolha como prefere receber seu pedido.",
-    };
+    return publicContent.fulfillment.pickupAndDelivery;
   }
 
   if (pickupEnabled) {
-    return {
-      title: "Retirada no local",
-      description: "Retire seu pedido diretamente na confeitaria.",
-    };
+    return publicContent.fulfillment.pickupOnly;
   }
 
   if (deliveryEnabled) {
-    return {
-      title: "Entrega",
-      description: "Receba seu pedido em uma região atendida.",
-    };
+    return publicContent.fulfillment.deliveryOnly;
   }
 
-  return {
-    title: "Recebimento indisponível",
-    description: "Entre em contato com a confeitaria para mais informações.",
-  };
+  return publicContent.fulfillment.unavailable;
 }
 
 export default function Hero({
@@ -132,12 +124,11 @@ export default function Hero({
           </p>
 
           <h1 className="mt-2 text-3xl font-bold leading-tight text-white sm:text-4xl">
-            Um doce momento começa por aqui.
+            {publicContent.hero.title}
           </h1>
 
           <p className="mt-4 max-w-md text-sm leading-6 text-white/75 sm:text-base">
-            Escolha seus favoritos, monte seu pedido e continue o atendimento
-            pelo WhatsApp.
+            {publicContent.hero.description}
           </p>
         </div>
 

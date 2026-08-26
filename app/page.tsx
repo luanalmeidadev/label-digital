@@ -10,6 +10,8 @@ import CartProvider from "@/components/store/CartProvider";
 import CartUI from "@/components/store/CartUI";
 import StoreRealtimeRefresh from "@/components/store/StoreRealtimeRefresh";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
+import { buildStoreSchemaOrg } from "@/lib/installation-presentation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 import {
@@ -19,17 +21,8 @@ import {
 import { getPublicStoreSettings } from "@/lib/public-store-settings";
 import { getSiteUrl } from "@/lib/site-url";
 
-const schemaWeekdays = [
-  "Sunday",
-  "Monday",
-  "Tuesday",
-  "Wednesday",
-  "Thursday",
-  "Friday",
-  "Saturday",
-];
-
 export default async function Home() {
+  const installation = getPublicInstallationProfile();
   const supabase =
     await createSupabaseServerClient();
 
@@ -101,33 +94,16 @@ export default async function Home() {
   );
   const instagramUrl = buildInstagramUrl(storeSettings.instagram);
   const siteUrl = getSiteUrl();
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "Bakery",
-    name: storeSettings.storeName,
-    url: siteUrl.toString(),
-    telephone: storeSettings.whatsapp,
-    image: new URL("/opengraph-image", siteUrl).toString(),
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: `${storeSettings.address.street}, ${storeSettings.address.number}`,
-      addressLocality: storeSettings.address.city,
-      addressRegion: storeSettings.address.state,
-      addressCountry: "BR",
-    },
-    areaServed: storeSettings.deliveryCities,
-    sameAs: instagramUrl ? [instagramUrl] : undefined,
-    openingHoursSpecification: storeSettings.businessHours
-      .filter(
-        (hour) => hour.isOpen && hour.opensAt && hour.closesAt
-      )
-      .map((hour) => ({
-        "@type": "OpeningHoursSpecification",
-        dayOfWeek: schemaWeekdays[hour.weekday],
-        opens: hour.opensAt,
-        closes: hour.closesAt,
-      })),
-  };
+  const jsonLd = buildStoreSchemaOrg({
+    installation,
+    siteUrl,
+    storeName: storeSettings.storeName,
+    whatsapp: storeSettings.whatsapp,
+    address: storeSettings.address,
+    deliveryCities: storeSettings.deliveryCities,
+    businessHours: storeSettings.businessHours,
+    instagramUrl,
+  });
 
   return (
     <CartProvider
@@ -168,7 +144,7 @@ export default async function Home() {
 
               <p className="mt-1 text-xs leading-5 text-amber-700">
                 Atualize a página em alguns instantes. Se o problema continuar,
-                entre em contato com a La&apos;bel.
+                entre em contato com a {installation.identity.shortName}.
               </p>
             </div>
           )}
@@ -200,7 +176,7 @@ export default async function Home() {
                 </a>
               )}
               <Link
-                href="/privacidade"
+                href={installation.legal.privacyNoticePath}
                 className="transition hover:text-[#D2B48C]"
               >
                 Privacidade

@@ -1,4 +1,4 @@
-export const INSTALLATION_PROFILE_SCHEMA_VERSION = 1 as const;
+export const INSTALLATION_PROFILE_SCHEMA_VERSION = 2 as const;
 
 export const installationModuleKeys = [
   "preorders",
@@ -35,6 +35,16 @@ export const foodBusinessSegments = [
 
 export type FoodBusinessSegment =
   (typeof foodBusinessSegments)[number];
+
+export const schemaOrgTypes = [
+  "Bakery",
+  "Restaurant",
+  "FastFoodRestaurant",
+  "CafeOrCoffeeShop",
+  "FoodEstablishment",
+] as const;
+
+export type SchemaOrgType = (typeof schemaOrgTypes)[number];
 
 export type InstallationProfile = {
   readonly schemaVersion: typeof INSTALLATION_PROFILE_SCHEMA_VERSION;
@@ -101,13 +111,19 @@ export type InstallationProfile = {
     readonly description: string;
     readonly keywords: readonly string[];
     readonly siteName: string;
-    readonly schemaOrgType: string;
+    readonly schemaOrgType: SchemaOrgType;
     readonly manifestDescription: string;
     readonly openGraph: {
       readonly type: "website";
       readonly locale: string;
       readonly title: string;
       readonly description: string;
+      readonly image: {
+        readonly alt: string;
+        readonly eyebrow: string;
+        readonly description: string;
+        readonly footerItems: readonly string[];
+      };
     };
     readonly twitter: {
       readonly card: "summary" | "summary_large_image";
@@ -139,6 +155,19 @@ export type InstallationProfile = {
         readonly description: string;
       };
       readonly unavailable: {
+        readonly title: string;
+        readonly description: string;
+      };
+    };
+    readonly preorders: {
+      readonly banner: {
+        readonly eyebrow: string;
+        readonly title: string;
+        readonly description: string;
+        readonly ctaLabel: string;
+      };
+      readonly categoryShortcut: {
+        readonly eyebrow: string;
         readonly title: string;
         readonly description: string;
       };

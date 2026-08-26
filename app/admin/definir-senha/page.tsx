@@ -2,7 +2,10 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 
 import SetPasswordForm from "@/components/admin/SetPasswordForm";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const installation = getPublicInstallationProfile();
 
 export default async function SetPasswordPage() {
   const supabase =
@@ -20,8 +23,8 @@ export default async function SetPasswordPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Image
-            src="/brand/monograma-vinho.svg"
-            alt="La'bel"
+            src={installation.identity.assets.monograms.default}
+            alt={installation.identity.name}
             width={90}
             height={96}
             className="mx-auto h-auto"
@@ -40,7 +43,7 @@ export default async function SetPasswordPage() {
         <SetPasswordForm />
 
         <p className="mt-6 text-center text-xs text-[#756A66]">
-          Área restrita • La&apos;bel Confeitaria
+          Área restrita • {installation.identity.name}
         </p>
       </div>
     </main>

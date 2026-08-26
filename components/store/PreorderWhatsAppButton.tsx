@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import TurnstileWidget from "@/components/store/TurnstileWidget";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { createClientRequestId } from "@/lib/client-request-id";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
 import type { PreorderProduct } from "@/lib/preorder-menu";
@@ -41,6 +42,8 @@ import {
   buildWhatsAppShortUrl,
   buildWhatsAppWebUrl,
 } from "@/lib/whatsapp-link";
+
+const installation = getPublicInstallationProfile();
 
 type RequestProduct = Pick<
   PreorderProduct,
@@ -150,7 +153,9 @@ function buildPreorderMessage({
   notes: string;
 }) {
   return [
-    "\u{1F370} *SOLICITAÇÃO DE ENCOMENDA - LA\u2019BEL*",
+    `\u{1F370} *SOLICITAÇÃO DE ENCOMENDA - ${installation.identity.shortName
+      .replaceAll("'", "’")
+      .toLocaleUpperCase(installation.regionalization.locale)}*`,
     "",
     `*Código:* ${requestNumber}`,
     `*Cliente:* ${customerName}`,

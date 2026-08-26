@@ -1,13 +1,17 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
+const installation = getPublicInstallationProfile();
+
 export default function NotFound() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#FFFDF9] px-5 py-12">
       <section className="w-full max-w-lg rounded-3xl border border-[#EEE6DF] bg-white p-7 text-center shadow-sm sm:p-10">
         <Image
-          src="/brand/monograma-vinho.svg"
-          alt="La'Bel Confeitaria"
+          src={installation.identity.assets.monograms.default}
+          alt={installation.identity.name}
           width={100}
           height={107}
           className="mx-auto h-auto"

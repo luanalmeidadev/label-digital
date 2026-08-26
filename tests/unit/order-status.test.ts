@@ -68,6 +68,7 @@ describe("avisos de status pelo WhatsApp", () => {
     });
 
     expect(message).toContain("Pedido #24 confirmado");
+    expect(message).toContain("🍰 *LA’BEL CONFEITARIA*");
     expect(message).toContain(
       "https://labelconfeitaria.com.br/pedido/abc"
     );

@@ -1,6 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
 import { loginAdmin } from "./actions";
+
+const installation = getPublicInstallationProfile();
 
 const loginErrorMessages: Record<string, string> = {
   missing: "Preencha o e-mail e a senha.",
@@ -45,8 +50,8 @@ export default async function AdminLoginPage({
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Image
-            src="/brand/monograma-vinho.svg"
-            alt="La'bel"
+            src={installation.identity.assets.monograms.default}
+            alt={installation.identity.name}
             width={90}
             height={96}
             className="mx-auto h-auto"
@@ -55,7 +60,7 @@ export default async function AdminLoginPage({
           />
 
           <h1 className="mt-5 text-2xl font-bold text-[#241B19]">
-            Administração La&apos;bel
+            Administração {installation.identity.shortName}
           </h1>
 
           <p className="mt-2 text-sm text-[#756A66]">
@@ -140,7 +145,7 @@ export default async function AdminLoginPage({
         </form>
 
         <p className="mt-6 text-center text-xs text-[#756A66]">
-          Área restrita • La&apos;bel Confeitaria
+          Área restrita • {installation.identity.name}
         </p>
       </div>
     </main>

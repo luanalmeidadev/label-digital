@@ -1,7 +1,10 @@
 import Image from "next/image";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { getImageFramingStyle } from "@/lib/image-framing";
 
 import AddToCartButton from "./AddToCartButton";
+
+const installation = getPublicInstallationProfile();
 
 type Category = {
   id: string;
@@ -164,7 +167,7 @@ export default function MenuSections({
         <section className="mb-10">
           <div className="mb-5">
             <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#8B0000]">
-              Seleção La&apos;bel
+              Seleção {installation.identity.shortName}
             </p>
 
             <h2 className="mt-1 text-2xl font-bold text-[#241B19]">
@@ -247,7 +250,7 @@ export default function MenuSections({
           </h2>
 
           <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
-            Os produtos da La&apos;bel estarão disponíveis por aqui em breve.
+            Os produtos da {installation.identity.shortName} estarão disponíveis por aqui em breve.
           </p>
         </section>
       )}

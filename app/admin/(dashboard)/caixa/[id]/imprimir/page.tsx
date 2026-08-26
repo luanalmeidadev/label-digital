@@ -1,11 +1,14 @@
 import { notFound } from "next/navigation";
 
 import PrintOrderButton from "@/components/admin/PrintOrderButton";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { requireAdminPagePermission } from "@/lib/admin-auth";
 import {
   isPaymentMethod,
   paymentMethodLabels,
 } from "@/lib/payment-method";
+
+const installation = getPublicInstallationProfile();
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -111,7 +114,9 @@ export default async function CashClosingPrintPage({
 
         <article className="rounded-3xl border border-[#DDD3CB] bg-white p-6 shadow-sm print:rounded-none print:border-0 print:p-0 print:shadow-none">
           <header className="border-b border-[#DDD3CB] pb-5 text-center">
-            <h1 className="text-xl font-bold uppercase">La&apos;Bel Confeitaria</h1>
+            <h1 className="text-xl font-bold uppercase">
+              {installation.identity.name}
+            </h1>
             <p className="mt-1 text-sm font-bold uppercase">Fechamento de caixa</p>
             <p className="mt-2 text-xs text-[#756A66]">
               Aberto em {formatDate(session.opened_at)} · Fechado em{" "}

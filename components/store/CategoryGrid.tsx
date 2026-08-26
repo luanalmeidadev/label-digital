@@ -1,6 +1,11 @@
 import { CakeSlice, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
+const preorderContent =
+  getPublicInstallationProfile().publicContent.preorders.categoryShortcut;
+
 type Category = {
   id: string;
   name: string;
@@ -47,13 +52,13 @@ export default function CategoryGrid({
 
           <span className="min-w-0">
             <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#F3D9B6]">
-              Cardápio de encomendas
+              {preorderContent.eyebrow}
             </span>
             <span className="mt-1 block text-base font-extrabold sm:text-lg">
-              Quero encomendar
+              {preorderContent.title}
             </span>
             <span className="mt-0.5 block text-xs text-white/75">
-              Bolos, doces e sobremesas para momentos especiais
+              {preorderContent.description}
             </span>
           </span>
         </span>

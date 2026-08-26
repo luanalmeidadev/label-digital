@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 
 import { createOrder } from "@/app/store/checkout/actions";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { createClientRequestId } from "@/lib/client-request-id";
 import {
   paymentMethodLabels,
@@ -36,6 +37,8 @@ import type { StoreCheckoutSettings } from "./CartUI";
 
 import { useCart } from "./CartProvider";
 import TurnstileWidget from "./TurnstileWidget";
+
+const installation = getPublicInstallationProfile();
 
 export type FulfillmentType =
   | "pickup"
@@ -687,7 +690,9 @@ export default function CheckoutDrawer({
          */
 
         const message = [
-          "\u{1F370} *LA'BEL CONFEITARIA*",
+          `\u{1F370} *${installation.identity.name.toLocaleUpperCase(
+            installation.regionalization.locale
+          )}*`,
 
           `*Pedido #${result.orderNumber}*`,
 
@@ -1081,7 +1086,7 @@ export default function CheckoutDrawer({
 
                     <p className="mt-1 text-xs leading-5 text-[#756A66]">
                       Retirar na
-                      La&apos;bel.
+                      {installation.identity.shortName}.
                     </p>
                   </button>
                   )}

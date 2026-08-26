@@ -1,4 +1,9 @@
-import { storeConfig } from "@/config/store";
+import { getPublicInstallationProfile } from "@/config/installation/public";
+import { formatInstallationAddress } from "@/lib/installation-presentation";
+
+const installation = getPublicInstallationProfile();
+const messageBrandName = installation.identity.name.replaceAll("'", "’");
+const messageShortName = installation.identity.shortName.replaceAll("'", "’");
 
 export type NotifiableOrderStatus =
   | "confirmed"
@@ -78,7 +83,7 @@ export function buildOrderStatusWhatsAppMessage({
   orderNumber,
   status,
   trackingUrl,
-  pickupAddress = `${storeConfig.address.street}, ${storeConfig.address.number} — ${storeConfig.address.city}/${storeConfig.address.state}`,
+  pickupAddress = formatInstallationAddress(installation),
 }: {
   orderNumber: number;
   status: NotifiableOrderStatus;
@@ -99,7 +104,7 @@ export function buildOrderStatusWhatsAppMessage({
             `Pedido #${orderNumber}`,
             "",
             "Agora é só aguardar. \u2764\uFE0F",
-            "Obrigado por escolher a La’Bel!",
+            `Obrigado por escolher a ${messageShortName}!`,
           ]
         : [
             "\u{1F381} Seu pedido está pronto para retirada!",
@@ -110,7 +115,9 @@ export function buildOrderStatusWhatsAppMessage({
           ];
 
   return [
-    "\u{1F370} *LA’BEL CONFEITARIA*",
+    `\u{1F370} *${messageBrandName.toLocaleUpperCase(
+      installation.regionalization.locale
+    )}*`,
     "",
     ...statusMessage,
     "",

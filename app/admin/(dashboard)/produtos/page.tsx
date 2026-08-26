@@ -4,6 +4,7 @@ import DeleteProductDialog from "@/components/admin/DeleteProductDialog";
 import EditProductDialog from "@/components/admin/EditProductDialog";
 import NewProductDialog from "@/components/admin/NewProductDialog";
 import ProductCategorySection from "@/components/admin/ProductCategorySection";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 
@@ -15,6 +16,8 @@ import {
   toggleProductStatus,
   updateProduct,
 } from "./actions";
+
+const installation = getPublicInstallationProfile();
 
 export default async function ProdutosPage() {
   const supabase = await createSupabaseServerClient();
@@ -103,8 +106,8 @@ export default async function ProdutosPage() {
             </h1>
 
             <p className="mt-2 text-sm text-[#756A66]">
-              Cadastre e gerencie os produtos disponíveis no cardápio da
-              La&apos;bel.
+              Cadastre e gerencie os produtos disponíveis no cardápio da{" "}
+              {installation.identity.shortName}.
             </p>
           </div>
 
@@ -357,7 +360,7 @@ export default async function ProdutosPage() {
               </h3>
 
               <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#756A66]">
-                Quando os produtos da La&apos;bel forem cadastrados, eles
+                Quando os produtos da {installation.identity.shortName} forem cadastrados, eles
                 aparecerão aqui para edição e controle de disponibilidade.
               </p>
 

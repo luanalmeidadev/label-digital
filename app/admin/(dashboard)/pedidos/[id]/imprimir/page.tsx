@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 
 import PrintOrderButton from "@/components/admin/PrintOrderButton";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { paymentMethodLabels } from "@/lib/payment-method";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const installation = getPublicInstallationProfile();
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -170,7 +173,7 @@ export default async function ImprimirPedidoPage({
             {/* CABEÇALHO */}
             <header className="border-b border-dashed border-black pb-4 text-center">
               <h1 className="print-title text-xl font-bold uppercase">
-                La&apos;bel Confeitaria
+                {installation.identity.name}
               </h1>
 
               <p className="mt-1 text-sm">
@@ -388,7 +391,7 @@ export default async function ImprimirPedidoPage({
             {/* RODAPÉ */}
             <footer className="border-t border-dashed border-black pt-4 text-center text-xs">
               <p className="font-bold">
-                La&apos;bel Confeitaria
+                {installation.identity.name}
               </p>
 
               <p className="mt-1">

@@ -13,16 +13,19 @@ import {
 
 import BrandLogo from "@/components/brand/BrandLogo";
 import OrderTrackingRefresh from "@/components/store/OrderTrackingRefresh";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { paymentMethodLabels } from "@/lib/payment-method";
 import { verifyOrderTrackingToken } from "@/lib/order-tracking-token";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+
+const installation = getPublicInstallationProfile();
+const displayShortName = installation.identity.shortName.replaceAll("'", "’");
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Acompanhar pedido",
-  description:
-    "Acompanhe o andamento do seu pedido na La’Bel Confeitaria.",
+  description: `Acompanhe o andamento do seu pedido na ${installation.identity.name}.`,
   robots: {
     index: false,
     follow: false,
@@ -40,9 +43,10 @@ const uuidPattern =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function formatDate(value: string) {
-  return new Intl.DateTimeFormat("pt-BR", {
+  return new Intl.DateTimeFormat(installation.regionalization.locale, {
     dateStyle: "long",
     timeStyle: "short",
+    timeZone: installation.regionalization.timeZone,
   }).format(new Date(value));
 }
 
@@ -61,7 +65,7 @@ function getStages(
       status: "confirmed",
       label: "Pedido confirmado",
       description:
-        "A La’Bel confirmou e iniciou o preparo.",
+        `A ${displayShortName} confirmou e iniciou o preparo.`,
       icon: PackageCheck,
     },
     orderType === "delivery"
@@ -172,7 +176,7 @@ export default async function OrderTrackingPage({
           <Link
             href="/"
             className="inline-flex"
-            aria-label="Voltar ao cardápio da La’Bel"
+            aria-label={`Voltar ao cardápio da ${displayShortName}`}
           >
             <BrandLogo variant="order" eager />
           </Link>
@@ -205,7 +209,7 @@ export default async function OrderTrackingPage({
                   </h2>
 
                   <p className="mt-1 text-sm leading-6 text-red-600">
-                    Fale com a La’Bel pelo WhatsApp caso precise de ajuda.
+                    Fale com a {displayShortName} pelo WhatsApp caso precise de ajuda.
                   </p>
                 </div>
               </div>

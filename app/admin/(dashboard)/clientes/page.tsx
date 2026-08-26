@@ -6,7 +6,10 @@ import {
 } from "lucide-react";
 
 import CustomerDetailsDialog from "@/components/admin/CustomerDetailsDialog";
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+
+const installation = getPublicInstallationProfile();
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -125,7 +128,7 @@ export default async function ClientesPage() {
 
           <p className="mt-2 text-sm text-[#756A66]">
             Consulte os clientes, pedidos e endereços
-            cadastrados na La&apos;bel.
+            cadastrados na {installation.identity.shortName}.
           </p>
         </div>
 

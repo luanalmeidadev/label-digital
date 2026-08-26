@@ -1,10 +1,10 @@
 import { defineInstallationProfile } from "@/config/installation/validate";
 
 export const labelInstallationPreset = defineInstallationProfile({
-  schemaVersion: 1,
+  schemaVersion: 2,
   preset: {
     id: "label",
-    version: 1,
+    version: 2,
   },
   identity: {
     name: "La'Bel Confeitaria",
@@ -81,6 +81,12 @@ export const labelInstallationPreset = defineInstallationProfile({
       title: "La'Bel Confeitaria | Doces e encomendas em Palhoça",
       description:
         "Cardápio do dia, doces, bolos e encomendas artesanais em Palhoça.",
+      image: {
+        alt: "La'Bel Confeitaria — doces, bolos e encomendas artesanais em Palhoça",
+        eyebrow: "Cardápio digital",
+        description: "Doces, bolos e encomendas artesanais em Palhoça.",
+        footerItems: ["Cardápio do dia", "Encomendas", "Palhoça/SC"],
+      },
     },
     twitter: {
       card: "summary_large_image",
@@ -114,6 +120,20 @@ export const labelInstallationPreset = defineInstallationProfile({
         title: "Recebimento indisponível",
         description:
           "Entre em contato com a confeitaria para mais informações.",
+      },
+    },
+    preorders: {
+      banner: {
+        eyebrow: "Encomendas",
+        title: "Planejando algo especial?",
+        description:
+          "Bolos, doces, brownies e sobremesas feitos especialmente para a sua celebração.",
+        ctaLabel: "Ver cardápio de encomendas",
+      },
+      categoryShortcut: {
+        eyebrow: "Cardápio de encomendas",
+        title: "Quero encomendar",
+        description: "Bolos, doces e sobremesas para momentos especiais",
       },
     },
   },

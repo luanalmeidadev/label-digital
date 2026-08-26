@@ -22,14 +22,15 @@ O contrato está em `config/installation/types.ts`, a validação em
 ## Preset La'Bel
 
 O preset compatível atual fica em
-`config/installation/presets/label.ts`. Ele possui `schemaVersion: 1` e
-`preset.version: 1`, e reproduz os valores atualmente encontrados no código:
+`config/installation/presets/label.ts`. Ele possui `schemaVersion: 2` e
+`preset.version: 2`, e reproduz os valores atualmente encontrados no código:
 
 - identidade, assets e paleta La'Bel;
 - WhatsApp e Instagram;
 - endereço de fallback;
 - `pt-BR`, `BRL` e `America/Sao_Paulo`;
-- SEO, Hero, textos de retirada/entrega e dados legais atuais;
+- SEO, Open Graph, Hero, textos de retirada/entrega, chamadas de encomendas e
+  dados legais atuais;
 - todos os módulos usados hoje marcados como habilitados.
 
 Todos os dados do perfil atual são públicos. Secrets de Supabase, Turnstile,
@@ -40,12 +41,26 @@ privada de instalação porque esta fase não precisa dela.
 ## Resolução e compatibilidade
 
 `getPublicInstallationProfile()` é a entrada única para consumidores públicos.
-Nesta primeira fase, apenas pontos de baixo risco foram conectados:
+As seguintes áreas já estão conectadas ao perfil:
 
 1. os fallbacks de `config/store.ts` para nome, contatos, endereço e
    modalidades;
 2. `BrandLogo`, mantendo o mesmo logo creme, dimensões e texto alternativo;
-3. o manifest PWA, mantendo nome, descrição, cores, locale e ícone atuais.
+3. metadata global, viewport, manifest PWA, JSON-LD e imagem Open Graph;
+4. Hero, chamadas públicas de encomendas, estados vazios e identidade das
+   telas de autenticação;
+5. mensagens institucionais de pedidos e WhatsApp, sem alterar o fluxo manual
+   de envio;
+6. cabeçalhos e rodapés das impressões de pedido, encomenda e caixa;
+7. título e nome seguro dos arquivos CSV de relatório;
+8. aviso de privacidade e seu contato;
+9. páginas de erro e identidade textual principal do administrativo.
+
+`lib/installation-presentation.ts` concentra transformações de apresentação
+que não pertencem aos componentes, como metadata, Schema.org, endereço,
+relatórios e textos legais. `lib/site-url.ts` exige `SITE_URL` válida na
+produção da Vercel; o fallback para localhost é restrito ao fluxo local e
+previews podem usar a URL fornecida pela Vercel.
 
 `lib/public-store-settings.ts` continua sendo a fonte operacional do banco para
 nome, contato, endereço, horários, regiões e modalidades. O preset é o fallback
@@ -68,13 +83,31 @@ local e não substitui alterações já feitas no admin ou em `store_settings`.
 
 A aplicação ainda não é totalmente white-label. Permanecem temporariamente:
 
-- metadata do layout, JSON-LD, Open Graph gerado e textos legais renderizados;
-- textos do Hero, encomendas, mensagens de WhatsApp, impressões e CSV;
 - cores hardcoded e tokens com namespace La'Bel;
 - horários e cidades de fallback em `config/store.ts`;
-- catálogo e fluxo de encomendas específicos de confeitaria;
+- descrições do catálogo e o fluxo de encomendas específicos de confeitaria;
+- textos operacionais que não representam identidade institucional;
 - namespaces técnicos de Auth e localStorage;
 - configuração operacional armazenada em `store_settings` e tabelas auxiliares.
+
+As cores gerais continuam propositalmente fora desta fase. Somente metadata,
+manifest, Open Graph e branding central leem o tema do perfil. Não se deve
+interpretar esta integração como white-label completo ou como desacoplamento
+dos módulos.
+
+## Regra para novos hardcodes
+
+Nome da empresa, nome curto, slogan, contatos, endereço, localidade, logos,
+ícones, metadata, identidade de relatórios e textos institucionais não devem
+ser adicionados diretamente a componentes. Esses valores devem ser incluídos
+no contrato quando realmente fizerem parte de todas as instalações e lidos por
+`getPublicInstallationProfile()` ou por um helper de apresentação.
+
+Dados operacionais editáveis pelo administrativo continuam vindo de
+`store_settings`; o perfil atua como identidade e fallback local. Strings de
+domínio específicas do catálogo de confeitaria devem permanecer no módulo até
+a futura definição de presets de conteúdo. Namespaces técnicos persistidos não
+devem ser renomeados sem uma migração de compatibilidade.
 
 ## Presets futuros
 

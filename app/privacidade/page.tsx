@@ -3,16 +3,23 @@ import Link from "next/link";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 
 import BrandLogo from "@/components/brand/BrandLogo";
-import { storeConfig } from "@/config/store";
+import { getPublicInstallationProfile } from "@/config/installation/public";
+import {
+  buildPrivacyContactMessage,
+  formatPrivacyNoticeDate,
+} from "@/lib/installation-presentation";
+
+const installation = getPublicInstallationProfile();
+const legal = installation.legal;
+const privacyNoticeDate = formatPrivacyNoticeDate(installation);
 
 export const metadata: Metadata = {
   title: "Privacidade",
-  description:
-    "Saiba como a La'Bel Confeitaria utiliza e protege os dados informados nos pedidos.",
+  description: `Saiba como ${legal.controllerName} utiliza e protege os dados informados nos pedidos.`,
 };
 
-const whatsappUrl = `https://wa.me/${storeConfig.whatsapp}?text=${encodeURIComponent(
-  "Olá! Quero falar sobre os meus dados pessoais no sistema da La'Bel."
+const whatsappUrl = `https://wa.me/${installation.contact.whatsapp}?text=${encodeURIComponent(
+  buildPrivacyContactMessage(installation)
 )}`;
 
 export default function PrivacyPage() {
@@ -39,9 +46,8 @@ export default function PrivacyPage() {
           Como cuidamos dos seus dados
         </h1>
         <p className="mt-4 text-sm leading-7 text-[#756A66] sm:text-base">
-          Este aviso explica, de forma simples, como a La&apos;Bel
-          Confeitaria utiliza os dados informados no cardápio digital.
-          Última atualização: 15 de agosto de 2026.
+          Este aviso explica, de forma simples, como {legal.controllerName}
+          utiliza os dados informados no cardápio digital. Última atualização: {privacyNoticeDate}.
         </p>
 
         <div className="mt-10 space-y-8 text-sm leading-7 text-[#493F3B] sm:text-base">
@@ -50,8 +56,8 @@ export default function PrivacyPage() {
               1. Quem é responsável
             </h2>
             <p className="mt-2">
-              A La&apos;Bel Confeitaria, localizada em Palhoça/SC,
-              é responsável pelas decisões sobre os dados utilizados
+              {legal.controllerName}, localizada em {legal.locality.city}/
+              {legal.locality.state}, é responsável pelas decisões sobre os dados utilizados
               para atender os pedidos realizados neste site.
             </p>
           </section>
@@ -142,7 +148,7 @@ export default function PrivacyPage() {
 
         <section className="mt-10 rounded-3xl bg-[#8B0000] p-6 text-white sm:p-8">
           <h2 className="text-xl font-bold">
-            Fale com a La&apos;Bel
+            Fale com a {installation.identity.shortName}
           </h2>
           <p className="mt-2 text-sm leading-6 text-white/80">
             Para consultar, corrigir ou solicitar uma providência sobre seus

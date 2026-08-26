@@ -13,11 +13,14 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
+import { getPublicInstallationProfile } from "@/config/installation/public";
 import { getAdminAccess } from "@/lib/admin-auth";
 import { hasAdminPermission } from "@/lib/admin-permissions";
 import { listPreorderRequests } from "@/lib/preorder-request-store";
 import { getPreorderPaymentStatus } from "@/lib/preorder-request";
 import { cn } from "@/lib/utils";
+
+const installation = getPublicInstallationProfile();
 
 const statusLabels: Record<string, string> = {
   created: "Criado",
@@ -599,8 +602,7 @@ export default async function AdminPage({
             </h1>
 
             <p className="mt-2 text-sm text-[#756A66]">
-              Acompanhe aqui o
-              movimento da La&apos;bel.
+              Acompanhe aqui o movimento da {installation.identity.shortName}.
             </p>
           </div>
 
@@ -836,7 +838,7 @@ export default async function AdminPage({
           {/* ACESSOS RÁPIDOS */}
           <div className="rounded-3xl bg-[#D2B48C] p-6">
             <p className="text-xs font-bold uppercase tracking-[0.15em] text-[#8B0000]">
-              La&apos;bel Digital
+              {installation.identity.shortName} Digital
             </p>
 
             <h2 className="mt-2 text-2xl font-bold text-[#8B0000]">

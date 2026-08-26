@@ -31,16 +31,49 @@ describe("Installation Profile", () => {
     const validation = validateInstallationProfile(labelInstallationPreset);
 
     expect(validation).toEqual({ valid: true, errors: [] });
-    expect(labelInstallationPreset.schemaVersion).toBe(1);
+    expect(labelInstallationPreset.schemaVersion).toBe(2);
     expect(labelInstallationPreset.preset).toEqual({
       id: "label",
-      version: 1,
+      version: 2,
     });
     expect(labelInstallationPreset.regionalization).toEqual({
       locale: "pt-BR",
       currency: "BRL",
       timeZone: "America/Sao_Paulo",
     });
+  });
+
+  it("valida Schema.org e o conteúdo institucional versionado", () => {
+    expect(labelInstallationPreset.seo.schemaOrgType).toBe("Bakery");
+    expect(labelInstallationPreset.seo.openGraph.image.footerItems).toEqual([
+      "Cardápio do dia",
+      "Encomendas",
+      "Palhoça/SC",
+    ]);
+    expect(labelInstallationPreset.publicContent.preorders.banner).toMatchObject({
+      eyebrow: "Encomendas",
+      title: "Planejando algo especial?",
+      ctaLabel: "Ver cardápio de encomendas",
+    });
+  });
+
+  it("rejeita tipo Schema.org e rodapé da OG desconhecidos", () => {
+    const invalidProfile = cloneAsRecord();
+    const seo = nestedRecord(invalidProfile, "seo");
+    const openGraph = nestedRecord(seo, "openGraph");
+    const image = nestedRecord(openGraph, "image");
+
+    seo.schemaOrgType = "LojaDeDoces";
+    image.footerItems = [];
+
+    const validation = validateInstallationProfile(invalidProfile);
+
+    expect(validation.errors).toEqual(
+      expect.arrayContaining([
+        "seo.schemaOrgType não é reconhecido.",
+        "seo.openGraph.image.footerItems deve conter ao menos um texto válido.",
+      ])
+    );
   });
 
   it("rejeita campos obrigatórios ausentes", () => {

@@ -2,6 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 
 import RecoverPasswordForm from "@/components/admin/RecoverPasswordForm";
+import { getPublicInstallationProfile } from "@/config/installation/public";
+
+const installation = getPublicInstallationProfile();
 
 export default function RecoverPasswordPage() {
   return (
@@ -9,8 +12,8 @@ export default function RecoverPasswordPage() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Image
-            src="/brand/monograma-vinho.svg"
-            alt="La'bel"
+            src={installation.identity.assets.monograms.default}
+            alt={installation.identity.name}
             width={90}
             height={96}
             className="mx-auto h-auto"
