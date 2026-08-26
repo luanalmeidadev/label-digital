@@ -27,8 +27,9 @@ npm run backup:check
 npm run backup
 ```
 
-O primeiro comando apenas valida o acesso e não grava dados. O segundo cria
-a cópia local.
+O primeiro comando valida, em modo somente leitura, o acesso a todas as tabelas
+da aplicação e aos dois Storages, sem gravar dados. O segundo cria a cópia
+local.
 
 O comando cria `backups/<data-e-hora>` com:
 
@@ -37,6 +38,21 @@ O comando cria `backups/<data-e-hora>` com:
 - todas as imagens de produtos;
 - o catálogo, as imagens e os pedidos de encomenda guardados no Storage;
 - um manifesto para conferir a quantidade de registros e arquivos.
+
+O snapshot JSON inclui os seguintes grupos de tabelas:
+
+- catálogo: `categories` e `products`;
+- clientes: `customers` e `addresses`;
+- pedidos: `orders` e `order_items`;
+- caixa e financeiro: `cash_sessions`, `order_payments`, `cash_movements`,
+  `order_refunds` e `product_losses`;
+- administração e auditoria: `admin_profiles` e `admin_audit_logs`;
+- configurações: `store_settings`, `business_hours` e `delivery_zones`.
+
+O inventário fica centralizado em `scripts/backup-inventory.mjs`. O teste
+`npm run test:backup` compara esse inventário com as tabelas públicas criadas
+pelas migrations e deve ser atualizado conscientemente se uma tabela deixar de
+fazer parte do snapshot.
 
 A pasta `backups` contém dados pessoais de clientes, está ignorada pelo Git
 e deve ser copiada para um local privado e criptografado. Nunca envie essa

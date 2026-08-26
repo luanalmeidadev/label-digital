@@ -4,6 +4,11 @@ import path from "node:path";
 import nextEnv from "@next/env";
 import { createClient } from "@supabase/supabase-js";
 
+import {
+  applicationTables,
+  storageBuckets,
+} from "./backup-inventory.mjs";
+
 const { loadEnvConfig } = nextEnv;
 
 loadEnvConfig(process.cwd());
@@ -49,50 +54,37 @@ const supabase = createClient(
   }
 );
 
-const applicationTables = [
-  "categories",
-  "products",
-  "customers",
-  "addresses",
-  "orders",
-  "order_items",
-  "admin_profiles",
-  "store_settings",
-  "business_hours",
-  "delivery_zones",
-];
-
-const storageBuckets = [
-  "product-images",
-  "preorder-catalog",
-];
-
 if (checkOnly) {
-  const [database, ...storageResults] =
-    await Promise.all([
-      supabase
-        .from("store_settings")
+  const tableResults = await Promise.all(
+    applicationTables.map(async (table) => ({
+      source: `tabela ${table}`,
+      result: await supabase
+        .from(table)
         .select("id")
         .limit(1),
-      ...storageBuckets.map((bucket) =>
-        supabase.storage
-          .from(bucket)
-          .list("", { limit: 1 })
-      ),
-    ]);
+    }))
+  );
+  const storageResults = await Promise.all(
+    storageBuckets.map(async (bucket) => ({
+      source: `Storage ${bucket}`,
+      result: await supabase.storage
+        .from(bucket)
+        .list("", { limit: 1 }),
+    }))
+  );
   const failure = [
-    database,
+    ...tableResults,
     ...storageResults,
-  ].find((result) => result.error);
+  ].find(({ result }) => result.error);
 
-  if (failure?.error) {
+  if (failure?.result.error) {
     throw new Error(
-      `Falha ao validar o backup: ${failure.error.message}`
+      `Falha ao validar ${failure.source}: ${failure.result.error.message}`
     );
   }
 
   console.log(
-    "Acesso ao banco e aos Storages validado. Nenhum arquivo foi criado."
+    `${applicationTables.length} tabelas e ${storageBuckets.length} Storages validados. Nenhum arquivo foi criado.`
   );
   process.exit(0);
 }
