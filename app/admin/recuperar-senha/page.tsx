@@ -11,15 +11,16 @@ export default function RecoverPasswordPage() {
     <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-10">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Image
-            src={installation.identity.assets.monograms.default}
-            alt={installation.identity.name}
-            width={90}
-            height={96}
-            className="mx-auto h-auto"
-            style={{ height: "auto" }}
-            priority
-          />
+          <div className="relative mx-auto h-24 w-[90px]">
+            <Image
+              src={installation.identity.assets.monograms.default}
+              alt={installation.identity.name}
+              fill
+              sizes="90px"
+              className="object-contain"
+              priority
+            />
+          </div>
           <h1 className="mt-5 text-2xl font-bold text-brand-foreground">
             Recuperar senha
           </h1>

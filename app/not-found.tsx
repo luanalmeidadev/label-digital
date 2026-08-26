@@ -9,15 +9,16 @@ export default function NotFound() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-12">
       <section className="w-full max-w-lg rounded-3xl border border-brand-border bg-white p-7 text-center shadow-sm sm:p-10">
-        <Image
-          src={installation.identity.assets.monograms.default}
-          alt={installation.identity.name}
-          width={100}
-          height={107}
-          className="mx-auto h-auto"
-          style={{ height: "auto" }}
-          priority
-        />
+        <div className="relative mx-auto h-[107px] w-[100px]">
+          <Image
+            src={installation.identity.assets.monograms.default}
+            alt={installation.identity.name}
+            fill
+            sizes="100px"
+            className="object-contain"
+            priority
+          />
+        </div>
         <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">
           Página não encontrada
         </p>

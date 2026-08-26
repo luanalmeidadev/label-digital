@@ -1085,7 +1085,7 @@ export default function CheckoutDrawer({
                     </p>
 
                     <p className="mt-1 text-xs leading-5 text-brand-muted-foreground">
-                      Retirar na
+                      Retirar na{" "}
                       {installation.identity.shortName}.
                     </p>
                   </button>
