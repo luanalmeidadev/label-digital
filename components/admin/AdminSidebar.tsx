@@ -85,7 +85,6 @@ const menuSections: Array<{
         href: "/admin/produtos",
         icon: Package,
         permission: "catalog",
-        module: "preorders",
       },
       {
         label: "Categorias",
@@ -98,6 +97,7 @@ const menuSections: Array<{
         href: "/admin/encomendas",
         icon: CakeSlice,
         permission: "catalog",
+        module: "preorders",
       },
     ],
   },

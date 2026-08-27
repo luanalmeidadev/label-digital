@@ -103,4 +103,21 @@ describe("módulos da instalação", () => {
       source.includes('InstallationModuleEnabled("preorders")')
     )).toBe(true);
   });
+
+  it("mantem produtos independentes e oculta atalhos administrativos de encomendas", async () => {
+    const [sidebar, dashboard] = await Promise.all([
+      readProjectFile("components/admin/AdminSidebar.tsx"),
+      readProjectFile("app/admin/(dashboard)/page.tsx"),
+    ]);
+
+    expect(sidebar).toMatch(
+      /label: "Produtos",[\s\S]*?permission: "catalog",\s*}/
+    );
+    expect(sidebar).toMatch(
+      /label: "Encomendas",[\s\S]*?permission: "catalog",[\s\S]*?module: "preorders",/
+    );
+    expect(dashboard).toContain(
+      "{canAccessOrders && preordersEnabled && ("
+    );
+  });
 });

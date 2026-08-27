@@ -887,7 +887,7 @@ export default async function AdminPage({
               </Link>
               )}
 
-              {canAccessOrders && (
+              {canAccessOrders && preordersEnabled && (
               <Link
                 href="/admin/pedidos/encomendas"
                 className="flex items-center justify-between rounded-xl bg-white/60 px-4 py-3 text-sm font-bold text-brand-primary transition hover:bg-white"
