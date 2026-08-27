@@ -42,6 +42,7 @@ function renderProduct(configuration: FoodCatalogConfiguration) {
       products={[
         {
           id: "product-1",
+          catalog_version: 1,
           category_id: "category-1",
           name: "Produto teste",
           description: null,

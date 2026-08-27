@@ -8,6 +8,7 @@ import type { PricedCatalogItem } from "@/lib/food-catalog/types";
 
 function createPricedItem(): PricedCatalogItem {
   return {
+    catalogVersion: 1,
     productId: "22222222-2222-4222-8222-222222222222",
     productName: "X-Bacon",
     variantId: "33333333-3333-4333-8333-333333333333",
@@ -73,4 +74,3 @@ describe("snapshot imutável do item", () => {
     );
   });
 });
-

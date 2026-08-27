@@ -17,6 +17,7 @@ import {
 import type { FoodCatalogConfiguration } from "@/lib/food-catalog/types";
 
 const product: CartProduct = {
+  catalogVersion: 1,
   id: "product-x-bacon",
   name: "X-Bacon",
   price: 28,
@@ -348,7 +349,34 @@ describe("identidade e persistência do carrinho V2", () => {
       options: [],
       itemNotes: null,
       pricingMode: "simple",
+      catalogVersion: 0,
     });
+  });
+
+  it("migra o envelope V2 e recebe a versão atual ao sincronizar", () => {
+    const current = createConfiguredCartItem({
+      product,
+      configuration: configurableCatalog,
+      selection: validSelection(),
+    });
+    const { catalogVersion, ...legacyItem } = current;
+    expect(catalogVersion).toBe(1);
+    const restored = deserializeCart(
+      JSON.stringify({ version: 2, items: [legacyItem] })
+    );
+
+    expect(restored[0].catalogVersion).toBe(0);
+
+    const synchronized = synchronizeCartWithCatalog(restored, [
+      {
+        ...product,
+        catalogVersion: 7,
+        available: true,
+        configuration: configurableCatalog,
+      },
+    ]);
+
+    expect(synchronized[0].catalogVersion).toBe(7);
   });
 
   it("ignora JSON corrompido e itens inválidos de forma controlada", () => {
@@ -387,6 +415,7 @@ describe("identidade e persistência do carrinho V2", () => {
     const synchronized = synchronizeCartWithCatalog([item], [
       {
         ...product,
+        catalogVersion: 2,
         available: true,
         configuration: updatedCatalog,
       },
@@ -394,5 +423,6 @@ describe("identidade e persistência do carrinho V2", () => {
 
     expect(synchronized[0].price).toBe(34);
     expect(synchronized[0].optionsPrice).toBe(6);
+    expect(synchronized[0].catalogVersion).toBe(2);
   });
 });

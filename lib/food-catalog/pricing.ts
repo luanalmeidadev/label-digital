@@ -292,6 +292,7 @@ export async function priceConfiguredCatalogItem(
   return {
     productId: product.id,
     productName: product.name,
+    catalogVersion: product.catalogVersion,
     variantId: base.variantId,
     variantName: base.variantName,
     quantity: selection.quantity,
@@ -303,4 +304,3 @@ export async function priceConfiguredCatalogItem(
     optionSnapshots: options.snapshots,
   };
 }
-

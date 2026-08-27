@@ -50,6 +50,7 @@ export type FoodCatalogProduct = {
   id: string;
   name: string;
   price: number;
+  catalogVersion: number;
   pricingMode: CatalogPricingMode;
   active: boolean;
   available: boolean;
@@ -84,6 +85,7 @@ export type OrderItemOptionSnapshot = {
 export type PricedCatalogItem = {
   productId: string;
   productName: string;
+  catalogVersion: number;
   variantId: string | null;
   variantName: string | null;
   quantity: number;

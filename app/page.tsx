@@ -48,6 +48,7 @@ export default async function Home() {
         name,
         description,
         price,
+        catalog_version,
         pricing_mode,
         image_url,
         image_position_x,
@@ -137,6 +138,7 @@ export default async function Home() {
               name: product.name,
               price: Number(product.price),
               image_url: product.image_url,
+              catalogVersion: Number(product.catalog_version),
               available: product.available,
               configuration: product.configuration,
             }))

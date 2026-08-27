@@ -17,6 +17,7 @@ type ProductRow = {
   id: string;
   name: string;
   price: number | string;
+  catalog_version: number | string;
   pricing_mode: CatalogPricingMode;
   active: boolean;
   available: boolean;
@@ -84,7 +85,7 @@ export async function getFoodCatalogProductBase(
 ) {
   let query = supabase
     .from("products")
-    .select("id, name, price, pricing_mode, active, available")
+    .select("id, name, price, catalog_version, pricing_mode, active, available")
     .eq("id", productId);
 
   if (options.publicOnly) {
@@ -107,10 +108,21 @@ export async function getFoodCatalogProductBase(
     id: row.id,
     name: row.name,
     price: toCatalogNumber(row.price, "products.price"),
+    catalogVersion: toCatalogVersion(row.catalog_version),
     pricingMode: row.pricing_mode,
     active: row.active,
     available: row.available,
   };
+}
+
+function toCatalogVersion(value: number | string) {
+  const parsed = typeof value === "number" ? value : Number(value);
+
+  if (!Number.isSafeInteger(parsed) || parsed < 1) {
+    throw new Error("Versão inválida do catálogo.");
+  }
+
+  return parsed;
 }
 
 export async function getProductVariants(

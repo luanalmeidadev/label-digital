@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useRef,
   useState,
@@ -122,6 +123,7 @@ export default function CheckoutDrawer({
   onClose,
   onBack,
 }: CheckoutDrawerProps) {
+  const router = useRouter();
   const {
     items,
     totalItems,
@@ -571,6 +573,18 @@ export default function CheckoutDrawer({
                 productId:
                   item.id,
 
+                catalogVersion:
+                  item.catalogVersion,
+
+                variantId:
+                  item.variant?.id ?? null,
+
+                optionIds:
+                  item.options.map((option) => option.id),
+
+                itemNotes:
+                  item.itemNotes,
+
                 quantity:
                   item.quantity,
               })
@@ -592,6 +606,9 @@ export default function CheckoutDrawer({
           setOrderError(
             result.error
           );
+          if (result.code === "CATALOG_REVIEW_REQUIRED") {
+            router.refresh();
+          }
           setTurnstileToken("");
           setTurnstileResetKey(
             (current) => current + 1

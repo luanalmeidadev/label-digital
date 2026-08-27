@@ -24,6 +24,7 @@ type Product = {
   name: string;
   description: string | null;
   price: number;
+  catalog_version: number;
   image_url: string | null;
   image_position_x: number;
   image_position_y: number;
@@ -111,6 +112,7 @@ function ProductCard({
                     name: product.name,
                     price: Number(product.price),
                     image_url: product.image_url,
+                    catalogVersion: product.catalog_version,
                   }}
                   configuration={product.configuration}
                 />
@@ -121,6 +123,7 @@ function ProductCard({
                     name: product.name,
                     price: Number(product.price),
                     image_url: product.image_url,
+                    catalogVersion: product.catalog_version,
                   }}
                 />
               )

@@ -1,6 +1,10 @@
 "use server";
 
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { priceConfiguredCatalogItem } from "@/lib/food-catalog/pricing";
+import { createFoodCatalogProductRepository } from "@/lib/food-catalog/repository";
+import { buildPersistableOrderItemSnapshot } from "@/lib/food-catalog/snapshot";
+import { CatalogPricingError } from "@/lib/food-catalog/types";
 import { createOrderTrackingToken } from "@/lib/order-tracking-token";
 import { getStoreOpenStatus } from "@/lib/store-open-status";
 import {
@@ -22,6 +26,10 @@ import {
 
 type CheckoutItem = {
   productId: string;
+  catalogVersion: number;
+  variantId?: string | null;
+  optionIds?: string[];
+  itemNotes?: string | null;
   quantity: number;
 };
 
@@ -77,6 +85,7 @@ type CreateOrderResult =
   | {
       success: false;
       error: string;
+      code?: "CATALOG_REVIEW_REQUIRED";
     };
 
 function normalizeText(value: string) {
@@ -144,6 +153,19 @@ function isCreateOrderInput(value: unknown): value is CreateOrderInput {
       (item) =>
         isRecord(item) &&
         typeof item.productId === "string" &&
+        typeof item.catalogVersion === "number" &&
+        Number.isSafeInteger(item.catalogVersion) &&
+        item.catalogVersion >= 0 &&
+        (item.variantId === undefined ||
+          item.variantId === null ||
+          typeof item.variantId === "string") &&
+        (item.optionIds === undefined ||
+          (Array.isArray(item.optionIds) &&
+            item.optionIds.length <= 50 &&
+            item.optionIds.every((optionId) => typeof optionId === "string"))) &&
+        (item.itemNotes === undefined ||
+          item.itemNotes === null ||
+          typeof item.itemNotes === "string") &&
         typeof item.quantity === "number" &&
         Number.isFinite(item.quantity)
     )
@@ -352,6 +374,10 @@ export async function createOrder(
         .map((item) => ({
           productId:
             item.productId,
+          catalogVersion: Math.floor(item.catalogVersion),
+          variantId: item.variantId ?? null,
+          optionIds: item.optionIds ?? [],
+          itemNotes: item.itemNotes?.trim() || null,
           quantity: Math.floor(
             Number(item.quantity)
           ),
@@ -361,8 +387,10 @@ export async function createOrder(
             /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
               item.productId
             ) &&
+            item.catalogVersion >= 0 &&
+            item.optionIds.length <= 50 &&
             item.quantity > 0 &&
-            item.quantity <= 1000
+            item.quantity <= 999
         );
 
     if (
@@ -375,39 +403,14 @@ export async function createOrder(
       };
     }
 
-    /*
-     * Soma produtos duplicados enviados
-     * pelo navegador.
-     */
-    const quantities =
-      new Map<string, number>();
-
-    for (
-      const item of normalizedItems
-    ) {
-      quantities.set(
-        item.productId,
-        (quantities.get(
-          item.productId
-        ) ?? 0) + item.quantity
-      );
-    }
-
-    if (
-      [...quantities.values()].some(
-        (quantity) => quantity > 1000
-      )
-    ) {
+    if (normalizedItems.length !== input.items.length) {
       return {
         success: false,
         error:
-          "A quantidade informada é muito alta. Revise sua sacola.",
+          "Uma configuração da sacola é inválida. Revise os itens e tente novamente.",
+        code: "CATALOG_REVIEW_REQUIRED",
       };
     }
-
-    const productIds = [
-      ...quantities.keys(),
-    ];
 
     /*
      * =========================================
@@ -415,74 +418,47 @@ export async function createOrder(
      * =========================================
      */
 
-    const {
-      data: products,
-      error: productsError,
-    } = await supabase
-      .from("products")
-      .select(
-        "id, name, price, active, available"
+    const catalogRepository =
+      createFoodCatalogProductRepository(supabase);
+    const pricedItems = await Promise.all(
+      normalizedItems.map((item) =>
+        priceConfiguredCatalogItem(catalogRepository, {
+          productId: item.productId,
+          variantId: item.variantId,
+          optionIds: item.optionIds,
+          itemNotes: item.itemNotes,
+          quantity: item.quantity,
+        })
       )
-      .in("id", productIds);
+    );
 
-    if (productsError) {
-      console.error(
-        "Erro ao consultar produtos:",
-        productsError
-      );
+    const staleItem = pricedItems.find(
+      (item, index) =>
+        item.catalogVersion !== normalizedItems[index].catalogVersion
+    );
 
+    if (staleItem) {
       return {
         success: false,
-        error:
-          "Não foi possível validar os produtos.",
+        code: "CATALOG_REVIEW_REQUIRED",
+        error: `${staleItem.productName} foi atualizado. Revise sua sacola antes de finalizar.`,
       };
     }
 
-    if (
-      !products ||
-      products.length !==
-        productIds.length
-    ) {
+    const subtotal = pricedItems.reduce(
+      (sum, item) => sum + item.itemTotal,
+      0
+    );
+
+    const orderItems = pricedItems.map((item) => {
+      const snapshot = buildPersistableOrderItemSnapshot(item);
+
       return {
-        success: false,
-        error:
-          "Um ou mais produtos não foram encontrados.",
+        catalog_version: item.catalogVersion,
+        ...snapshot.item,
+        options: snapshot.options,
       };
-    }
-
-    let subtotal = 0;
-
-    const orderItems =
-      products.map((product) => {
-        if (
-          !product.active ||
-          !product.available
-        ) {
-          throw new Error(
-            `PRODUCT_UNAVAILABLE:${product.name}`
-          );
-        }
-
-        const quantity =
-          quantities.get(
-            product.id
-          ) ?? 0;
-
-        const unitPrice =
-          Number(product.price);
-
-        subtotal +=
-          unitPrice * quantity;
-
-        return {
-          product_id: product.id,
-          product_name:
-            product.name,
-          quantity,
-          unit_price:
-            unitPrice,
-        };
-      });
+    });
 
     /*
      * =========================================
@@ -597,12 +573,14 @@ export async function createOrder(
         paymentMethod,
         cashChangeFor,
         address: input.address ?? null,
-        items: [...normalizedItems].sort(
-          (first, second) =>
-            first.productId.localeCompare(
-              second.productId
-            )
-        ),
+        items: normalizedItems
+          .map((item) => ({
+            ...item,
+            optionIds: [...item.optionIds].sort(),
+          }))
+          .sort((first, second) =>
+            JSON.stringify(first).localeCompare(JSON.stringify(second))
+          ),
         notes,
       });
 
@@ -842,7 +820,8 @@ export async function createOrder(
 
     idempotencyStarted = true;
     const failProtectedRequest = async (
-      error: string
+      error: string,
+      code?: "CATALOG_REVIEW_REQUIRED"
     ): Promise<CreateOrderResult> => {
       await releaseIdempotentRequest(
         "daily-order",
@@ -853,6 +832,7 @@ export async function createOrder(
       return {
         success: false,
         error,
+        code,
       };
     };
 
@@ -1135,112 +1115,56 @@ export async function createOrder(
     }
 
     const {
-      data: order,
+      data: createdOrders,
       error: orderError,
-    } = await supabase
-      .from("orders")
-      .insert({
-        customer_id:
-          customerId,
+    } = await supabase.rpc("create_online_order_atomic", {
+      p_customer_id: customerId,
+      p_address_id: addressId,
+      p_order_type: input.orderType,
+      p_payment_method: paymentMethod,
+      p_cash_change_for: cashChangeFor,
+      p_delivery_fee: deliveryFee,
+      p_notes: notes || null,
+      p_items: orderItems,
+    });
 
-        address_id:
-          addressId,
+    const order = Array.isArray(createdOrders)
+      ? createdOrders[0]
+      : null;
 
-        order_type:
-          input.orderType,
+    if (orderError || !order) {
+      const catalogChanged =
+        orderError?.message?.includes("CATALOG_CHANGED:") ?? false;
 
-        sales_channel: "online",
-
-        payment_method:
-          paymentMethod,
-
-        cash_change_for:
-          cashChangeFor,
-
-        status: "sent_to_whatsapp",
-
-        subtotal,
-
-        delivery_fee:
-          deliveryFee,
-
-        total,
-
-        notes:
-          notes || null,
-      })
-      .select(
-        "id, order_number"
-      )
-      .single();
-
-    if (
-      orderError ||
-      !order
-    ) {
       console.error(
-        "Erro ao criar pedido:",
+        "Erro ao criar pedido de forma atômica:",
         orderError
       );
 
       return failProtectedRequest(
-        "Não foi possível criar o pedido."
+        catalogChanged
+          ? "Um item foi atualizado ou ficou indisponível. Revise sua sacola antes de finalizar."
+          : "Não foi possível criar o pedido.",
+        catalogChanged ? "CATALOG_REVIEW_REQUIRED" : undefined
       );
     }
 
-    /*
-     * =========================================
-     * 10. CRIAR ITENS
-     * =========================================
-     */
-
-    const itemsToInsert =
-      orderItems.map(
-        (item) => ({
-          order_id:
-            order.id,
-          ...item,
-        })
-      );
-
-    const {
-      error: itemsError,
-    } = await supabase
-      .from("order_items")
-      .insert(itemsToInsert);
-
-    if (itemsError) {
-      console.error(
-        "Erro ao criar itens:",
-        itemsError
-      );
-
-      /*
-       * Evita deixar pedido sem itens.
-       */
-      await supabase
-        .from("orders")
-        .delete()
-        .eq("id", order.id);
-
-      return failProtectedRequest(
-        "Não foi possível salvar os itens do pedido."
-      );
-    }
+    const authoritativeTotal = Number(order.total);
+    const authoritativeDeliveryFee = Number(order.delivery_fee);
 
     const result: CreateOrderResult = {
       success: true,
-      orderId: order.id,
-      trackingToken: createOrderTrackingToken(order.id),
+      orderId: order.order_id,
+      trackingToken: createOrderTrackingToken(order.order_id),
 
       orderNumber:
         Number(
           order.order_number
         ),
 
-      total,
+      total: authoritativeTotal,
 
-      deliveryFee,
+      deliveryFee: authoritativeDeliveryFee,
 
       deliveryFeeType,
     };
@@ -1262,21 +1186,11 @@ export async function createOrder(
       );
     }
 
-    if (
-      error instanceof Error &&
-      error.message.startsWith(
-        "PRODUCT_UNAVAILABLE:"
-      )
-    ) {
-      const productName =
-        error.message.replace(
-          "PRODUCT_UNAVAILABLE:",
-          ""
-        );
-
+    if (error instanceof CatalogPricingError) {
       return {
         success: false,
-        error: `${productName} não está mais disponível.`,
+        code: "CATALOG_REVIEW_REQUIRED",
+        error: `${error.message} Revise sua sacola antes de finalizar.`,
       };
     }
 

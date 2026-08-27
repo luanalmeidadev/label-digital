@@ -19,6 +19,8 @@ const mocks = vi.hoisted(() => ({
   verifyTurnstileToken: vi.fn(),
 }));
 
+vi.mock("server-only", () => ({}));
+
 vi.mock("@/lib/supabase/admin", () => ({
   createSupabaseAdminClient:
     mocks.createSupabaseAdminClient,
@@ -51,7 +53,7 @@ const baseInput = {
   phone: "(48) 99999-9999",
   orderType: "pickup" as const,
   paymentMethod: "pix" as const,
-  items: [{ productId: "produto-1", quantity: 1 }],
+  items: [{ productId: "produto-1", catalogVersion: 1, quantity: 1 }],
 };
 
 function useBusinessHours(

@@ -6,7 +6,7 @@ import type {
   ProductVariant,
 } from "@/lib/food-catalog/types";
 
-export const CART_STORAGE_VERSION = 2 as const;
+export const CART_STORAGE_VERSION = 3 as const;
 export const MAX_CART_ITEM_QUANTITY = 999;
 export const MAX_ITEM_NOTES_LENGTH = 300;
 const MAX_OPTIONS_PER_ITEM = 50;
@@ -16,6 +16,7 @@ export type CartProduct = {
   name: string;
   price: number;
   image_url: string | null;
+  catalogVersion: number;
 };
 
 export type CartVariantSnapshot = {
@@ -88,6 +89,11 @@ type PersistedCart = {
   items: readonly CartItem[];
 };
 
+type PersistedCartV2 = {
+  version: 2;
+  items: readonly unknown[];
+};
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -107,6 +113,12 @@ function normalizeQuantity(value: unknown) {
   }
 
   return value;
+}
+
+function normalizeCatalogVersion(value: unknown, fallback = 0) {
+  return typeof value === "number" && Number.isSafeInteger(value) && value >= 0
+    ? value
+    : fallback;
 }
 
 export function normalizeCartNotes(value: string | null | undefined) {
@@ -440,7 +452,7 @@ function parseOptionSnapshots(value: unknown): CartOptionSnapshot[] {
   });
 }
 
-function parseV2Item(value: unknown): CartItem | null {
+function parsePersistedItem(value: unknown, legacyCatalogVersion = false): CartItem | null {
   if (
     !isRecord(value) ||
     typeof value.id !== "string" ||
@@ -476,6 +488,15 @@ function parseV2Item(value: unknown): CartItem | null {
     }
 
     const pricingMode = value.pricingMode;
+    const catalogVersion = normalizeCatalogVersion(
+      value.catalogVersion,
+      legacyCatalogVersion ? 0 : -1
+    );
+
+    if (catalogVersion < 0) {
+      return null;
+    }
+
     const identity = {
       productId: value.id,
       variantId: variant?.id ?? null,
@@ -488,6 +509,7 @@ function parseV2Item(value: unknown): CartItem | null {
       name: value.name,
       price: value.price,
       image_url: value.image_url,
+      catalogVersion,
       lineKey: createCartLineKey(identity),
       configurationSignature: createCartConfigurationSignature(identity),
       pricingMode,
@@ -525,6 +547,7 @@ function parseLegacyItem(value: unknown): CartItem | null {
       name: value.name,
       price: value.price,
       image_url: value.image_url,
+      catalogVersion: 0,
     },
     quantity
   );
@@ -554,8 +577,14 @@ export function deserializeCart(raw: string | null) {
     : isRecord(parsed) &&
         parsed.version === CART_STORAGE_VERSION &&
         Array.isArray(parsed.items)
-      ? parsed.items.map(parseV2Item)
-      : [];
+      ? parsed.items.map((item) => parsePersistedItem(item))
+      : isRecord(parsed) &&
+          parsed.version === 2 &&
+          Array.isArray(parsed.items)
+        ? (parsed as PersistedCartV2).items.map((item) =>
+            parsePersistedItem(item, true)
+          )
+        : [];
 
   return candidates
     .filter((item): item is CartItem => item !== null)

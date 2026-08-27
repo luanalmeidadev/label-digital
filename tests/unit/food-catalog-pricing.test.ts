@@ -30,6 +30,7 @@ function createRepository(...products: FoodCatalogProduct[]) {
 
 function createSimpleProduct(): FoodCatalogProduct {
   return {
+    catalogVersion: 1,
     id: ids.simpleProduct,
     name: "Bolo de pote",
     price: 18.55,
@@ -43,6 +44,7 @@ function createSimpleProduct(): FoodCatalogProduct {
 
 function createBurger(): FoodCatalogProduct {
   return {
+    catalogVersion: 1,
     id: ids.burger,
     name: "X-Bacon",
     price: 0,
@@ -312,4 +314,3 @@ describe("precificação autoritativa do catálogo", () => {
     );
   });
 });
-
