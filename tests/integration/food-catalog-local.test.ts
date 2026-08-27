@@ -4,7 +4,10 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 vi.mock("server-only", () => ({}));
 
 import { priceConfiguredCatalogItem } from "@/lib/food-catalog/pricing";
-import { createFoodCatalogProductRepository } from "@/lib/food-catalog/repository";
+import {
+  createFoodCatalogProductRepository,
+  getFoodCatalogConfigurations,
+} from "@/lib/food-catalog/repository";
 import { CatalogPricingError } from "@/lib/food-catalog/types";
 
 const localSupabaseUrl = process.env.LOCAL_SUPABASE_URL;
@@ -29,6 +32,8 @@ const ids = {
   bacon: "40000000-0000-4000-8000-000000000009",
   egg: "40000000-0000-4000-8000-000000000010",
   unavailableOption: "40000000-0000-4000-8000-000000000011",
+  inactiveVariant: "40000000-0000-4000-8000-000000000012",
+  inactiveOption: "40000000-0000-4000-8000-000000000013",
 };
 
 const testSuite = runLocalIntegration ? describe : describe.skip;
@@ -74,6 +79,7 @@ testSuite("food catalog no Supabase local", () => {
         product_id: ids.burger,
         name: "Tradicional",
         price: 20,
+        active: true,
         available: true,
         sort_order: 0,
       },
@@ -82,8 +88,18 @@ testSuite("food catalog no Supabase local", () => {
         product_id: ids.burger,
         name: "Grande indisponível",
         price: 26,
+        active: true,
         available: false,
         sort_order: 1,
+      },
+      {
+        id: ids.inactiveVariant,
+        product_id: ids.burger,
+        name: "Variante inativa",
+        price: 30,
+        active: false,
+        available: true,
+        sort_order: 2,
       },
     ]);
     expect(variants.error).toBeNull();
@@ -118,6 +134,7 @@ testSuite("food catalog no Supabase local", () => {
         option_group_id: ids.pointGroup,
         name: "Ao ponto",
         price_delta: 0,
+        active: true,
         available: true,
         sort_order: 0,
       },
@@ -126,6 +143,7 @@ testSuite("food catalog no Supabase local", () => {
         option_group_id: ids.additionsGroup,
         name: "Cheddar",
         price_delta: 4,
+        active: true,
         available: true,
         sort_order: 0,
       },
@@ -134,6 +152,7 @@ testSuite("food catalog no Supabase local", () => {
         option_group_id: ids.additionsGroup,
         name: "Bacon",
         price_delta: 5,
+        active: true,
         available: true,
         sort_order: 1,
       },
@@ -142,6 +161,7 @@ testSuite("food catalog no Supabase local", () => {
         option_group_id: ids.additionsGroup,
         name: "Ovo",
         price_delta: 2,
+        active: true,
         available: true,
         sort_order: 2,
       },
@@ -150,8 +170,18 @@ testSuite("food catalog no Supabase local", () => {
         option_group_id: ids.additionsGroup,
         name: "Cebola crispy indisponível",
         price_delta: 3,
+        active: true,
         available: false,
         sort_order: 3,
+      },
+      {
+        id: ids.inactiveOption,
+        option_group_id: ids.additionsGroup,
+        name: "Opção inativa",
+        price_delta: 1,
+        active: false,
+        available: true,
+        sort_order: 4,
       },
     ]);
     expect(options.error).toBeNull();
@@ -199,6 +229,34 @@ testSuite("food catalog no Supabase local", () => {
       unitPrice: 29,
       itemTotal: 58,
     });
+  });
+
+  it("carrega somente entidades ativas para o configurador público", async () => {
+    const configurations = await getFoodCatalogConfigurations(
+      supabase,
+      [ids.burger],
+      { publicOnly: true }
+    );
+    const configuration = configurations[ids.burger];
+
+    expect(configuration.variants.map((variant) => variant.id)).toContain(
+      ids.unavailableVariant
+    );
+    expect(configuration.variants.map((variant) => variant.id)).not.toContain(
+      ids.inactiveVariant
+    );
+    expect(
+      configuration.optionGroups.flatMap((group) =>
+        group.options.map((option) => option.id)
+      )
+    ).toEqual(
+      expect.arrayContaining([ids.unavailableOption])
+    );
+    expect(
+      configuration.optionGroups.flatMap((group) =>
+        group.options.map((option) => option.id)
+      )
+    ).not.toContain(ids.inactiveOption);
   });
 
   it("rejeita grupo obrigatorio ausente e maximo excedido", async () => {

@@ -12,6 +12,8 @@ import StoreRealtimeRefresh from "@/components/store/StoreRealtimeRefresh";
 
 import { getPublicInstallationProfile } from "@/config/installation/public";
 import { buildStoreSchemaOrg } from "@/lib/installation-presentation";
+import { getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
+import type { FoodCatalogConfiguration } from "@/lib/food-catalog/types";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 import {
@@ -46,6 +48,7 @@ export default async function Home() {
         name,
         description,
         price,
+        pricing_mode,
         image_url,
         image_position_x,
         image_position_y,
@@ -76,15 +79,34 @@ export default async function Home() {
   const categories =
     categoriesResult.data ?? [];
 
-  const products = (productsResult.data ?? []).map(
-    (product) => ({
-      ...product,
-      image_zoom:
-        imageSettings.dailyProductZoom[
-          product.id
-        ] ?? 100,
-    })
-  );
+  let catalogConfigurations: Record<string, FoodCatalogConfiguration> = {};
+  let catalogConfigurationsLoaded = true;
+
+  if (!productsResult.error && productsResult.data?.length) {
+    try {
+      catalogConfigurations = await getFoodCatalogConfigurations(
+        supabase,
+        productsResult.data.map((product) => product.id),
+        { publicOnly: true }
+      );
+    } catch (error) {
+      catalogConfigurationsLoaded = false;
+      console.error("Erro ao carregar configurações do catálogo:", error);
+    }
+  }
+
+  const products = (productsResult.data ?? []).map((product) => ({
+    ...product,
+    image_zoom:
+      imageSettings.dailyProductZoom[product.id] ?? 100,
+    configuration:
+      catalogConfigurations[product.id] ??
+      ({
+        pricingMode: product.pricing_mode ?? "simple",
+        variants: [],
+        optionGroups: [],
+      } satisfies FoodCatalogConfiguration),
+  }));
 
   const hasLoadError =
     Boolean(categoriesResult.error) ||
@@ -108,7 +130,7 @@ export default async function Home() {
   return (
     <CartProvider
       catalogProducts={
-        productsResult.error
+        productsResult.error || !catalogConfigurationsLoaded
           ? undefined
           : products.map((product) => ({
               id: product.id,
@@ -116,6 +138,7 @@ export default async function Home() {
               price: Number(product.price),
               image_url: product.image_url,
               available: product.available,
+              configuration: product.configuration,
             }))
       }
     >

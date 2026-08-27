@@ -257,31 +257,42 @@ export async function getConfiguredFoodCatalogProduct(
 
 export async function getFoodCatalogConfigurations(
   supabase: SupabaseClient,
-  productIds: readonly string[]
+  productIds: readonly string[],
+  options: CatalogReadOptions = {}
 ): Promise<Record<string, FoodCatalogConfiguration>> {
   if (productIds.length === 0) {
     return {};
   }
 
+  let productsQuery = supabase
+    .from("products")
+    .select("id, pricing_mode")
+    .in("id", [...productIds]);
+  let variantsQuery = supabase
+    .from("product_variants")
+    .select("id, product_id, name, sku, price, active, available, sort_order")
+    .in("product_id", [...productIds])
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+  let groupsQuery = supabase
+    .from("product_option_groups")
+    .select(
+      "id, product_id, name, selection_mode, min_selections, max_selections, presentation_mode, active, sort_order"
+    )
+    .in("product_id", [...productIds])
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (options.publicOnly) {
+    productsQuery = productsQuery.eq("active", true);
+    variantsQuery = variantsQuery.eq("active", true);
+    groupsQuery = groupsQuery.eq("active", true);
+  }
+
   const [productsResult, variantsResult, groupsResult] = await Promise.all([
-    supabase
-      .from("products")
-      .select("id, pricing_mode")
-      .in("id", [...productIds]),
-    supabase
-      .from("product_variants")
-      .select("id, product_id, name, sku, price, active, available, sort_order")
-      .in("product_id", [...productIds])
-      .order("sort_order", { ascending: true })
-      .order("id", { ascending: true }),
-    supabase
-      .from("product_option_groups")
-      .select(
-        "id, product_id, name, selection_mode, min_selections, max_selections, presentation_mode, active, sort_order"
-      )
-      .in("product_id", [...productIds])
-      .order("sort_order", { ascending: true })
-      .order("id", { ascending: true }),
+    productsQuery,
+    variantsQuery,
+    groupsQuery,
   ]);
 
   if (productsResult.error) {
@@ -298,15 +309,21 @@ export async function getFoodCatalogConfigurations(
 
   const groupRows = (groupsResult.data ?? []) as ProductOptionGroupRow[];
   const groupIds = groupRows.map((group) => group.id);
+  let catalogOptionsQuery = supabase
+    .from("product_options")
+    .select(
+      "id, option_group_id, name, price_delta, active, available, sort_order"
+    )
+    .in("option_group_id", groupIds)
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (options.publicOnly) {
+    catalogOptionsQuery = catalogOptionsQuery.eq("active", true);
+  }
+
   const optionsResult = groupIds.length
-    ? await supabase
-        .from("product_options")
-        .select(
-          "id, option_group_id, name, price_delta, active, available, sort_order"
-        )
-        .in("option_group_id", groupIds)
-        .order("sort_order", { ascending: true })
-        .order("id", { ascending: true })
+    ? await catalogOptionsQuery
     : { data: [], error: null };
 
   if (optionsResult.error) {

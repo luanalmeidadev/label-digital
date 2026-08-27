@@ -1,8 +1,14 @@
 import Image from "next/image";
 import { getPublicInstallationProfile } from "@/config/installation/public";
+import {
+  getCatalogStartingPrice,
+  isConfigurableProduct,
+} from "@/lib/cart";
+import type { FoodCatalogConfiguration } from "@/lib/food-catalog/types";
 import { getImageFramingStyle } from "@/lib/image-framing";
 
 import AddToCartButton from "./AddToCartButton";
+import ProductConfiguratorDialog from "./ProductConfiguratorDialog";
 
 const installation = getPublicInstallationProfile();
 
@@ -25,6 +31,7 @@ type Product = {
   product_type: string;
   available: boolean;
   featured: boolean;
+  configuration: FoodCatalogConfiguration;
 };
 
 type MenuSectionsProps = {
@@ -44,6 +51,12 @@ function ProductCard({
 }: {
   product: Product;
 }) {
+  const configurable = isConfigurableProduct(product.configuration);
+  const startingPrice = getCatalogStartingPrice(
+    Number(product.price),
+    product.configuration
+  );
+
   return (
     <article
       className={`overflow-hidden rounded-2xl border border-brand-border bg-white shadow-sm transition ${
@@ -82,23 +95,35 @@ function ProductCard({
 
           <div className="mt-auto pt-4">
             <p className="font-bold text-brand-primary">
-              {formatCurrency(
-                Number(product.price)
+              {configurable && (
+                <span className="mr-1 text-xs font-semibold text-brand-muted-foreground">
+                  A partir de
+                </span>
               )}
+              {formatCurrency(startingPrice)}
             </p>
 
             {product.available ? (
-              <AddToCartButton
-                product={{
-                  id: product.id,
-                  name: product.name,
-                  price: Number(
-                    product.price
-                  ),
-                  image_url:
-                    product.image_url,
-                }}
-              />
+              configurable ? (
+                <ProductConfiguratorDialog
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: Number(product.price),
+                    image_url: product.image_url,
+                  }}
+                  configuration={product.configuration}
+                />
+              ) : (
+                <AddToCartButton
+                  product={{
+                    id: product.id,
+                    name: product.name,
+                    price: Number(product.price),
+                    image_url: product.image_url,
+                  }}
+                />
+              )
             ) : (
               <p className="mt-2 text-xs font-bold text-brand-muted-foreground">
                 Indisponível no momento

@@ -92,7 +92,7 @@ export default function CartDrawer({
             <div className="space-y-4">
               {items.map((item) => (
                 <article
-                  key={item.id}
+                  key={item.lineKey}
                   className="rounded-2xl border border-brand-border bg-white p-4"
                 >
                   <div className="flex gap-3">
@@ -124,12 +124,49 @@ export default function CartDrawer({
                               item.price
                             )}
                           </p>
+
+                          {(item.variant ||
+                            item.options.length > 0 ||
+                            item.itemNotes) && (
+                            <div className="mt-2 space-y-1 text-xs leading-5 text-brand-muted-foreground">
+                              {item.variant && (
+                                <p className="font-semibold text-brand-foreground">
+                                  {item.variant.name}
+                                </p>
+                              )}
+
+                              {item.options.map((option) => (
+                                <p key={option.id}>
+                                  {option.presentationMode === "removal"
+                                    ? "−"
+                                    : option.presentationMode === "addition"
+                                      ? "+"
+                                      : "•"}{" "}
+                                  {option.name}
+                                  {option.priceDelta > 0 && (
+                                    <span>
+                                      {" "}· +{formatCurrency(option.priceDelta)}
+                                    </span>
+                                  )}
+                                </p>
+                              ))}
+
+                              {item.itemNotes && (
+                                <p className="break-words">
+                                  <span className="font-semibold text-brand-foreground">
+                                    Obs.:
+                                  </span>{" "}
+                                  {item.itemNotes}
+                                </p>
+                              )}
+                            </div>
+                          )}
                         </div>
 
                         <button
                           type="button"
                           onClick={() =>
-                            removeItem(item.id)
+                            removeItem(item.lineKey)
                           }
                           aria-label={`Remover ${item.name}`}
                           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-red-100 text-red-600"
@@ -144,7 +181,7 @@ export default function CartDrawer({
                             type="button"
                             onClick={() =>
                               decreaseItem(
-                                item.id
+                                item.lineKey
                               )
                             }
                             className="flex h-9 w-9 items-center justify-center text-brand-primary"
@@ -160,7 +197,7 @@ export default function CartDrawer({
                             type="button"
                             onClick={() =>
                               increaseItem(
-                                item.id
+                                item.lineKey
                               )
                             }
                             className="flex h-9 w-9 items-center justify-center text-brand-primary"
