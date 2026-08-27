@@ -1,4 +1,8 @@
 import { getPublicInstallationProfile } from "@/config/installation/public";
+import {
+  buildOrderItemWhatsAppLines,
+  type OrderItemOptionSnapshotInput,
+} from "@/lib/order-item-display";
 import { buildWhatsAppShortUrl } from "@/lib/whatsapp-link";
 
 const installation = getPublicInstallationProfile();
@@ -7,6 +11,11 @@ type WhatsAppItem = {
   name: string;
   quantity: number;
   unitPrice: number;
+  variantName?: string | null;
+  baseUnitPrice?: number | null;
+  optionsUnitPrice?: number;
+  itemNotes?: string | null;
+  options?: OrderItemOptionSnapshotInput[];
 };
 
 type WhatsAppOrder = {
@@ -39,10 +48,29 @@ function currency(value: number) {
 
 export function buildWhatsAppMessage(order: WhatsAppOrder) {
   const items = order.items
-    .map(
-      (item) =>
-        `${item.quantity}x ${item.name}\n${currency(item.unitPrice)} cada`
-    )
+    .map((item) => {
+      const configured = Boolean(
+        item.variantName || item.itemNotes || item.options?.length
+      );
+
+      if (!configured) {
+        return `${item.quantity}x ${item.name}\n${currency(item.unitPrice)} cada`;
+      }
+
+      return buildOrderItemWhatsAppLines(
+        {
+          product_name: item.name,
+          quantity: item.quantity,
+          unit_price: item.unitPrice,
+          variant_name: item.variantName,
+          base_unit_price: item.baseUnitPrice,
+          options_unit_price: item.optionsUnitPrice,
+          item_notes: item.itemNotes,
+          order_item_options: item.options,
+        },
+        currency
+      ).join("\n");
+    })
     .join("\n\n");
 
   const delivery =

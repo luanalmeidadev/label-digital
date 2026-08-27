@@ -111,7 +111,21 @@ export default async function PedidosPage() {
           id,
           product_name,
           quantity,
-          unit_price
+          unit_price,
+          variant_name,
+          base_unit_price,
+          options_unit_price,
+          item_notes,
+          configuration_signature,
+          order_item_options (
+            id,
+            group_name,
+            option_name,
+            presentation_mode,
+            price_delta,
+            group_sort_order,
+            option_sort_order
+          )
         )
       `)
       .order("created_at", {
@@ -481,6 +495,39 @@ export default async function PedidosPage() {
                                   unit_price:
                                     Number(
                                       item.unit_price
+                                    ),
+
+                                  variant_name:
+                                    item.variant_name,
+
+                                  base_unit_price:
+                                    item.base_unit_price === null
+                                      ? null
+                                      : Number(item.base_unit_price),
+
+                                  options_unit_price:
+                                    Number(item.options_unit_price),
+
+                                  item_notes:
+                                    item.item_notes,
+
+                                  configuration_signature:
+                                    item.configuration_signature,
+
+                                  order_item_options:
+                                    (item.order_item_options ?? []).map(
+                                      (option) => ({
+                                        id: option.id,
+                                        group_name: option.group_name,
+                                        option_name: option.option_name,
+                                        presentation_mode:
+                                          option.presentation_mode,
+                                        price_delta: Number(option.price_delta),
+                                        group_sort_order:
+                                          option.group_sort_order,
+                                        option_sort_order:
+                                          option.option_sort_order,
+                                      })
                                     ),
                                 })
                               ),

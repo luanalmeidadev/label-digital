@@ -53,4 +53,11 @@ describe("integração autoritativa do checkout", () => {
     );
     expect(drawerSource).toContain("router.refresh()");
   });
+
+  it("usa o snapshot autoritativo na mensagem depois da persistencia", () => {
+    expect(actionSource).toContain("items: orderItems.map((item) => ({");
+    expect(actionSource).toContain("order_item_options: item.options");
+    expect(drawerSource).toContain("buildOrderItemsWhatsAppText(");
+    expect(drawerSource).toContain("result.items");
+  });
 });

@@ -6,6 +6,7 @@ import { createFoodCatalogProductRepository } from "@/lib/food-catalog/repositor
 import { buildPersistableOrderItemSnapshot } from "@/lib/food-catalog/snapshot";
 import { CatalogPricingError } from "@/lib/food-catalog/types";
 import { createOrderTrackingToken } from "@/lib/order-tracking-token";
+import type { OrderItemSnapshotInput } from "@/lib/order-item-display";
 import { getStoreOpenStatus } from "@/lib/store-open-status";
 import {
   isPaymentMethod,
@@ -77,6 +78,7 @@ type CreateOrderResult =
       orderNumber: number;
       total: number;
       deliveryFee: number;
+      items: OrderItemSnapshotInput[];
       deliveryFeeType:
         | "fixed"
         | "consult"
@@ -1165,6 +1167,18 @@ export async function createOrder(
       total: authoritativeTotal,
 
       deliveryFee: authoritativeDeliveryFee,
+
+      items: orderItems.map((item) => ({
+        product_name: item.product_name,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        variant_name: item.variant_name,
+        base_unit_price: item.base_unit_price,
+        options_unit_price: item.options_unit_price,
+        item_notes: item.item_notes,
+        configuration_signature: item.configuration_signature,
+        order_item_options: item.options,
+      })),
 
       deliveryFeeType,
     };

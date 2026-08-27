@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 
 import PrintOrderButton from "@/components/admin/PrintOrderButton";
+import OrderItemSnapshotDetails from "@/components/orders/OrderItemSnapshotDetails";
 import { getPublicInstallationProfile } from "@/config/installation/public";
 import { paymentMethodLabels } from "@/lib/payment-method";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -77,7 +78,21 @@ export default async function ImprimirPedidoPage({
         id,
         product_name,
         quantity,
-        unit_price
+        unit_price,
+        variant_name,
+        base_unit_price,
+        options_unit_price,
+        item_notes,
+        configuration_signature,
+        order_item_options (
+          id,
+          group_name,
+          option_name,
+          presentation_mode,
+          price_delta,
+          group_sort_order,
+          option_sort_order
+        )
       )
     `)
     .eq("id", id)
@@ -335,6 +350,12 @@ export default async function ImprimirPedidoPage({
                       )}{" "}
                       cada
                     </p>
+
+                    <OrderItemSnapshotDetails
+                      item={item}
+                      formatCurrency={formatCurrency}
+                      print
+                    />
                   </div>
                 ))}
               </div>

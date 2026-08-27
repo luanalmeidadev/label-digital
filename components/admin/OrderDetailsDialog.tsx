@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import WhatsAppStatusButton from "@/components/admin/WhatsAppStatusButton";
+import OrderItemSnapshotDetails from "@/components/orders/OrderItemSnapshotDetails";
 import {
   Dialog,
   DialogContent,
@@ -30,13 +31,9 @@ import {
   type UpdateOrderStatusResult,
 } from "@/lib/order-status";
 import { paymentMethodLabels } from "@/lib/payment-method";
+import type { OrderItemSnapshotInput } from "@/lib/order-item-display";
 
-type OrderItem = {
-  id: string;
-  product_name: string;
-  quantity: number;
-  unit_price: number;
-};
+type OrderItem = OrderItemSnapshotInput & { id: string };
 
 type OrderDetailsDialogProps = {
   pickupAddress: string;
@@ -477,6 +474,12 @@ export default function OrderDetailsDialog({
                         )}{" "}
                         cada
                       </p>
+
+                      <OrderItemSnapshotDetails
+                        item={item}
+                        formatCurrency={formatCurrency}
+                        showPriceBreakdown
+                      />
                     </div>
 
                     <p className="font-bold text-brand-foreground">

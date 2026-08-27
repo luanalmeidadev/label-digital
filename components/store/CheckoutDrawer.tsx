@@ -25,6 +25,7 @@ import {
 import { createOrder } from "@/app/store/checkout/actions";
 import { getPublicInstallationProfile } from "@/config/installation/public";
 import { createClientRequestId } from "@/lib/client-request-id";
+import { buildOrderItemsWhatsAppText } from "@/lib/order-item-display";
 import {
   paymentMethodLabels,
   type PaymentMethod,
@@ -623,16 +624,10 @@ export default function CheckoutDrawer({
          * =====================================
          */
 
-        const itemLines =
-          items
-            .map(
-              (item) =>
-                `${item.quantity}x ${item.name} — ${formatCurrency(
-                  item.price *
-                    item.quantity
-                )}`
-            )
-            .join("\n");
+        const itemLines = buildOrderItemsWhatsAppText(
+          result.items,
+          formatCurrency
+        );
 
         const customerPhone =
           phone.replace(
