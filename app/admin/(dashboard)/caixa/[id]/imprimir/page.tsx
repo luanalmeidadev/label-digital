@@ -73,7 +73,9 @@ export default async function CashClosingPrintPage({
         .order("created_at"),
       access.supabase
         .from("product_losses")
-        .select("id, product_name, quantity, reason, estimated_value, created_at")
+        .select(
+          "id, product_name, variant_name, quantity, reason, estimated_value, created_at"
+        )
         .eq("cash_session_id", id)
         .order("created_at"),
     ]);
@@ -202,7 +204,8 @@ export default async function CashClosingPrintPage({
               {losses.map((loss) => (
                 <p key={loss.id} className="flex justify-between gap-3">
                   <span>
-                    {loss.quantity}x {loss.product_name} ·{" "}
+                    {loss.quantity}x {loss.product_name}
+                    {loss.variant_name ? ` · ${loss.variant_name}` : ""} ·{" "}
                     {lossLabels[loss.reason] ?? loss.reason}
                   </span>
                   <strong>{formatCurrency(Number(loss.estimated_value))}</strong>

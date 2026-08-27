@@ -28,6 +28,7 @@ import {
   type ProductLossReason,
 } from "@/app/admin/(dashboard)/caixa/actions";
 import { createClientRequestId } from "@/lib/client-request-id";
+import type { CatalogPricingMode } from "@/lib/food-catalog/types";
 import {
   paymentMethodLabels,
   paymentMethods,
@@ -56,11 +57,17 @@ type SessionSummary = {
 type LossProduct = {
   id: string;
   name: string;
+  pricingMode: CatalogPricingMode;
+  variants: Array<{
+    id: string;
+    name: string;
+  }>;
 };
 
 type ProductLoss = {
   id: string;
   productName: string;
+  variantName: string | null;
   quantity: number;
   reason: string;
   estimatedValue: number;
@@ -151,6 +158,10 @@ export default function CashSessionControls({
   const [lossError, setLossError] = useState("");
   const [lossSuccess, setLossSuccess] = useState("");
   const [lossPending, startLossTransition] = useTransition();
+  const [selectedLossProductId, setSelectedLossProductId] = useState("");
+  const selectedLossProduct = products.find(
+    (product) => product.id === selectedLossProductId
+  );
 
   function handleMovement(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -217,6 +228,7 @@ export default function CashSessionControls({
 
       setLossSuccess("Perda registrada com sucesso.");
       lossFormRef.current?.reset();
+      setSelectedLossProductId("");
       setLossReference(createClientRequestId());
       router.refresh();
     });
@@ -532,7 +544,10 @@ export default function CashSessionControls({
                   name="product_id"
                   required
                   disabled={lossPending}
-                  defaultValue=""
+                  value={selectedLossProductId}
+                  onChange={(event) =>
+                    setSelectedLossProductId(event.target.value)
+                  }
                   className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
                 >
                   <option value="" disabled>Selecione o produto</option>
@@ -543,6 +558,31 @@ export default function CashSessionControls({
                   ))}
                 </select>
               </label>
+
+              {selectedLossProduct?.pricingMode === "variant" && (
+                <label>
+                  <span className="text-xs font-bold text-[#49352C]">
+                    Variante
+                  </span>
+                  <select
+                    key={selectedLossProduct.id}
+                    name="variant_id"
+                    required
+                    disabled={lossPending}
+                    defaultValue=""
+                    className="mt-2 h-11 w-full rounded-xl border border-[#DDD3CB] bg-white px-3 text-sm outline-none focus:border-brand-primary"
+                  >
+                    <option value="" disabled>
+                      Selecione a variante
+                    </option>
+                    {selectedLossProduct.variants.map((variant) => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
 
               <label>
                 <span className="text-xs font-bold text-[#49352C]">Quantidade</span>
@@ -624,6 +664,11 @@ export default function CashSessionControls({
                     <p className="text-sm font-bold text-brand-foreground">
                       {loss.quantity}x {loss.productName}
                     </p>
+                    {loss.variantName && (
+                      <p className="mt-0.5 text-xs font-semibold text-brand-muted-foreground">
+                        Variante: {loss.variantName}
+                      </p>
+                    )}
                     <p className="mt-1 text-xs text-brand-muted-foreground">
                       {lossReasonLabels[loss.reason as ProductLossReason] ?? loss.reason}
                       {" · "}{formatTime(loss.createdAt)}

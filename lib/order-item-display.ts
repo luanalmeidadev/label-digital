@@ -2,6 +2,7 @@ import type { OptionPresentationMode } from "@/lib/food-catalog/types";
 
 export type OrderItemOptionSnapshotInput = {
   id?: string;
+  option_id?: string | null;
   group_name: string;
   option_name: string;
   presentation_mode: string;
@@ -25,6 +26,7 @@ export type OrderItemSnapshotInput = {
 
 export type OrderItemOptionSnapshotView = {
   id?: string;
+  optionId: string | null;
   groupName: string;
   optionName: string;
   presentationMode: OptionPresentationMode;
@@ -78,6 +80,7 @@ export function normalizeOrderItemSnapshot(
   const options = (item.order_item_options ?? [])
     .map((option) => ({
       id: option.id,
+      optionId: option.option_id ?? null,
       groupName: option.group_name.trim(),
       optionName: option.option_name.trim(),
       presentationMode: normalizePresentationMode(option.presentation_mode),

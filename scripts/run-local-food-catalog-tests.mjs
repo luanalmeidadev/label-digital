@@ -12,17 +12,19 @@ const testArguments = isWindows
       "/d",
       "/s",
       "/c",
-      "npm.cmd exec -- vitest run tests/integration/food-catalog-local.test.ts tests/integration/food-catalog-admin-local.test.ts tests/integration/configured-checkout-local.test.ts tests/integration/configured-cashier-sale-local.test.ts",
+      "npm.cmd exec -- vitest run --no-file-parallelism tests/integration/food-catalog-local.test.ts tests/integration/food-catalog-admin-local.test.ts tests/integration/configured-checkout-local.test.ts tests/integration/configured-cashier-sale-local.test.ts tests/integration/configured-reports-losses-local.test.ts",
     ]
   : [
       "exec",
       "--",
       "vitest",
       "run",
+      "--no-file-parallelism",
       "tests/integration/food-catalog-local.test.ts",
       "tests/integration/food-catalog-admin-local.test.ts",
       "tests/integration/configured-checkout-local.test.ts",
       "tests/integration/configured-cashier-sale-local.test.ts",
+      "tests/integration/configured-reports-losses-local.test.ts",
     ];
 
 const testResult = spawnSync(

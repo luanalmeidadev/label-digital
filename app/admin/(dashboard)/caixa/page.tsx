@@ -158,6 +158,7 @@ export default async function CaixaPage() {
   let losses: Array<{
     id: string;
     productName: string;
+    variantName: string | null;
     quantity: number;
     reason: string;
     estimatedValue: number;
@@ -179,7 +180,9 @@ export default async function CaixaPage() {
         .limit(30),
       access.supabase
         .from("product_losses")
-        .select("id, product_name, quantity, reason, estimated_value, created_at")
+        .select(
+          "id, product_name, variant_name, quantity, reason, estimated_value, created_at"
+        )
         .eq("cash_session_id", openSession.id)
         .order("created_at", { ascending: false })
         .limit(30),
@@ -243,6 +246,7 @@ export default async function CaixaPage() {
     losses = (lossesResult.data ?? []).map((loss) => ({
       id: loss.id,
       productName: loss.product_name,
+      variantName: loss.variant_name,
       quantity: Number(loss.quantity),
       reason: loss.reason,
       estimatedValue: Number(loss.estimated_value),
@@ -383,6 +387,13 @@ export default async function CaixaPage() {
             products={products.map((product) => ({
               id: product.id,
               name: product.name,
+              pricingMode: product.configuration.pricingMode,
+              variants: product.configuration.variants
+                .filter((variant) => variant.active)
+                .map((variant) => ({
+                  id: variant.id,
+                  name: variant.name,
+                })),
             }))}
             losses={losses}
           />

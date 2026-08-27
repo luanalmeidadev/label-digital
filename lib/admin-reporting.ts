@@ -1,3 +1,9 @@
+import {
+  getOrderItemOptionLabel,
+  normalizeOrderItemSnapshot,
+  type OrderItemSnapshotInput,
+} from "@/lib/order-item-display";
+
 export const reportPeriodLabels = {
   today: "Hoje",
   "7d": "7 dias",
@@ -140,4 +146,152 @@ function csvCell(value: string | number) {
 
 export function buildReportCsv(rows: Array<Array<string | number>>) {
   return rows.map((row) => row.map(csvCell).join(";")).join("\r\n");
+}
+
+export type ReportOrderItemInput = OrderItemSnapshotInput & {
+  product_id?: string | null;
+  variant_id?: string | null;
+};
+
+export type ProductSalesSummary = {
+  key: string;
+  name: string;
+  quantity: number;
+  revenue: number;
+  baseRevenue: number;
+  optionsRevenue: number;
+};
+
+export type VariantSalesSummary = {
+  key: string;
+  productName: string;
+  variantName: string;
+  quantity: number;
+  revenue: number;
+};
+
+export type OptionSalesSummary = {
+  key: string;
+  productName: string;
+  groupName: string;
+  optionName: string;
+  selections: number;
+  revenue: number;
+};
+
+export type SoldItemDetail = {
+  productName: string;
+  variantName: string | null;
+  optionLabels: string[];
+  itemNotes: string | null;
+  quantity: number;
+  baseUnitPrice: number | null;
+  optionsUnitPrice: number;
+  unitPrice: number;
+  total: number;
+};
+
+export type SoldItemsReport = {
+  products: ProductSalesSummary[];
+  variants: VariantSalesSummary[];
+  options: OptionSalesSummary[];
+  details: SoldItemDetail[];
+};
+
+function money(value: number) {
+  return Number(value.toFixed(2));
+}
+
+export function summarizeSoldOrderItems(
+  items: readonly ReportOrderItemInput[]
+): SoldItemsReport {
+  const products = new Map<string, ProductSalesSummary>();
+  const variants = new Map<string, VariantSalesSummary>();
+  const options = new Map<string, OptionSalesSummary>();
+  const details: SoldItemDetail[] = [];
+
+  for (const item of items) {
+    const snapshot = normalizeOrderItemSnapshot(item);
+    const productKey = item.product_id ?? `snapshot:${snapshot.productName}`;
+    const baseUnitPrice = snapshot.baseUnitPrice ?? snapshot.unitPrice;
+    const currentProduct = products.get(productKey) ?? {
+      key: productKey,
+      name: snapshot.productName,
+      quantity: 0,
+      revenue: 0,
+      baseRevenue: 0,
+      optionsRevenue: 0,
+    };
+
+    currentProduct.quantity += snapshot.quantity;
+    currentProduct.revenue = money(
+      currentProduct.revenue + snapshot.itemTotal
+    );
+    currentProduct.baseRevenue = money(
+      currentProduct.baseRevenue + baseUnitPrice * snapshot.quantity
+    );
+    currentProduct.optionsRevenue = money(
+      currentProduct.optionsRevenue +
+        snapshot.optionsUnitPrice * snapshot.quantity
+    );
+    products.set(productKey, currentProduct);
+
+    if (snapshot.variantName) {
+      const variantKey = `${productKey}:variant:${
+        item.variant_id ?? snapshot.variantName
+      }`;
+      const currentVariant = variants.get(variantKey) ?? {
+        key: variantKey,
+        productName: snapshot.productName,
+        variantName: snapshot.variantName,
+        quantity: 0,
+        revenue: 0,
+      };
+
+      currentVariant.quantity += snapshot.quantity;
+      currentVariant.revenue = money(
+        currentVariant.revenue + snapshot.itemTotal
+      );
+      variants.set(variantKey, currentVariant);
+    }
+
+    for (const option of snapshot.options) {
+      const optionKey = `${productKey}:option:${
+        option.optionId ?? `${option.groupName}:${option.optionName}`
+      }`;
+      const currentOption = options.get(optionKey) ?? {
+        key: optionKey,
+        productName: snapshot.productName,
+        groupName: option.groupName,
+        optionName: option.optionName,
+        selections: 0,
+        revenue: 0,
+      };
+
+      currentOption.selections += snapshot.quantity;
+      currentOption.revenue = money(
+        currentOption.revenue + option.priceDelta * snapshot.quantity
+      );
+      options.set(optionKey, currentOption);
+    }
+
+    details.push({
+      productName: snapshot.productName,
+      variantName: snapshot.variantName,
+      optionLabels: snapshot.options.map(getOrderItemOptionLabel),
+      itemNotes: snapshot.itemNotes,
+      quantity: snapshot.quantity,
+      baseUnitPrice,
+      optionsUnitPrice: snapshot.optionsUnitPrice,
+      unitPrice: snapshot.unitPrice,
+      total: money(snapshot.itemTotal),
+    });
+  }
+
+  return {
+    products: [...products.values()],
+    variants: [...variants.values()],
+    options: [...options.values()],
+    details,
+  };
 }

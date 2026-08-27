@@ -3,6 +3,8 @@ import {
   BarChart3,
   CalendarDays,
   CircleDollarSign,
+  Layers3,
+  ListChecks,
   PackageSearch,
   ReceiptText,
   TrendingDown,
@@ -17,6 +19,7 @@ import {
   buildReportCsv,
   reportPeriodLabels,
   resolveReportPeriod,
+  summarizeSoldOrderItems,
 } from "@/lib/admin-reporting";
 import {
   buildReportFilename,
@@ -58,7 +61,30 @@ export default async function ReportsPage({
     .not("completed_at", "is", null);
   let itemsQuery = access.supabase
     .from("order_items")
-    .select("product_id, product_name, quantity, unit_price, orders!inner(status, completed_at)")
+    .select(`
+      id,
+      product_id,
+      product_name,
+      variant_id,
+      variant_name,
+      quantity,
+      base_unit_price,
+      options_unit_price,
+      unit_price,
+      item_notes,
+      configuration_signature,
+      order_item_options (
+        id,
+        option_id,
+        group_name,
+        option_name,
+        presentation_mode,
+        price_delta,
+        group_sort_order,
+        option_sort_order
+      ),
+      orders!inner(status, completed_at)
+    `)
     .eq("orders.status", "completed")
     .not("orders.completed_at", "is", null);
   let refundsQuery = access.supabase
@@ -66,7 +92,9 @@ export default async function ReportsPage({
     .select("amount, created_at");
   let lossesQuery = access.supabase
     .from("product_losses")
-    .select("product_id, product_name, quantity, estimated_value, created_at");
+    .select(
+      "product_id, product_name, variant_id, variant_name, quantity, estimated_value, created_at"
+    );
 
   if (period.startIso) {
     ordersQuery = ordersQuery.gte("completed_at", period.startIso);
@@ -125,26 +153,20 @@ export default async function ReportsPage({
     0
   );
   const averageTicket = orders.length > 0 ? revenue / orders.length : 0;
-  const productSales = new Map<
-    string,
-    { name: string; quantity: number; revenue: number }
-  >();
-
-  for (const item of items) {
-    const key = item.product_id ?? item.product_name;
-    const current = productSales.get(key) ?? {
-      name: item.product_name,
-      quantity: 0,
-      revenue: 0,
-    };
-    current.quantity += Number(item.quantity);
-    current.revenue += Number(item.quantity) * Number(item.unit_price);
-    productSales.set(key, current);
-  }
+  const soldItemsReport = summarizeSoldOrderItems(items);
+  const productSales = new Map(
+    soldItemsReport.products.map((product) => [product.key, product])
+  );
 
   const bestSellers = [...productSales.values()]
     .sort((a, b) => b.quantity - a.quantity)
     .slice(0, 10);
+  const variantSales = [...soldItemsReport.variants].sort(
+    (a, b) => b.quantity - a.quantity || b.revenue - a.revenue
+  );
+  const optionSales = [...soldItemsReport.options].sort(
+    (a, b) => b.selections - a.selections || b.revenue - a.revenue
+  );
   const slowMovers = (productsResult.data ?? [])
     .map((product) => ({
       name: product.name,
@@ -205,14 +227,73 @@ export default async function ReportsPage({
     ["Perdas estimadas", formatCurrency(lossTotal)],
     [],
     ["PRODUTOS VENDIDOS"],
-    ["Produto", "Quantidade", "Faturamento"],
+    [
+      "Produto",
+      "Quantidade",
+      "Receita base",
+      "Adicionais",
+      "Faturamento",
+    ],
     ...[...productSales.values()]
       .sort((a, b) => b.quantity - a.quantity)
       .map((product) => [
         product.name,
         product.quantity,
+        formatCurrency(product.baseRevenue),
+        formatCurrency(product.optionsRevenue),
         formatCurrency(product.revenue),
       ]),
+    ...(variantSales.length > 0
+      ? [
+          [],
+          ["VARIANTES VENDIDAS"],
+          ["Produto", "Variante", "Quantidade", "Faturamento"],
+          ...variantSales.map((variant) => [
+            variant.productName,
+            variant.variantName,
+            variant.quantity,
+            formatCurrency(variant.revenue),
+          ]),
+        ]
+      : []),
+    ...(optionSales.length > 0
+      ? [
+          [],
+          ["OPÇÕES ESCOLHIDAS"],
+          ["Produto", "Grupo", "Opção", "Seleções", "Receita adicional"],
+          ...optionSales.map((option) => [
+            option.productName,
+            option.groupName,
+            option.optionName,
+            option.selections,
+            formatCurrency(option.revenue),
+          ]),
+        ]
+      : []),
+    [],
+    ["DETALHES DOS ITENS VENDIDOS"],
+    [
+      "Produto",
+      "Variante",
+      "Opções",
+      "Observação",
+      "Quantidade",
+      "Preço base unitário",
+      "Adicionais unitários",
+      "Preço final unitário",
+      "Total do item",
+    ],
+    ...soldItemsReport.details.map((item) => [
+      item.productName,
+      item.variantName ?? "",
+      item.optionLabels.join(" | "),
+      item.itemNotes ?? "",
+      item.quantity,
+      item.baseUnitPrice === null ? "" : formatCurrency(item.baseUnitPrice),
+      formatCurrency(item.optionsUnitPrice),
+      formatCurrency(item.unitPrice),
+      formatCurrency(item.total),
+    ]),
     [],
     ["VENDAS POR ORIGEM"],
     ["Origem", "Vendas", "Faturamento"],
@@ -236,6 +317,15 @@ export default async function ReportsPage({
       loss.name,
       loss.quantity,
       formatCurrency(loss.total),
+    ]),
+    [],
+    ["DETALHES DAS PERDAS"],
+    ["Produto", "Variante", "Quantidade", "Valor estimado"],
+    ...losses.map((loss) => [
+      loss.product_name,
+      loss.variant_name ?? "",
+      Number(loss.quantity),
+      formatCurrency(Number(loss.estimated_value)),
     ]),
   ]);
 
@@ -338,6 +428,94 @@ export default async function ReportsPage({
             );
           })}
         </section>
+
+        {(variantSales.length > 0 || optionSales.length > 0) && (
+          <section className="mt-7 grid gap-5 lg:grid-cols-2">
+            {variantSales.length > 0 && (
+              <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+                <div className="flex items-center gap-3 border-b border-brand-border p-5">
+                  <Layers3 size={20} className="text-brand-primary" />
+                  <div>
+                    <h2 className="font-bold text-brand-foreground">
+                      Vendas por variante
+                    </h2>
+                    <p className="text-xs text-brand-muted-foreground">
+                      Análise complementar sem dividir o ranking principal
+                    </p>
+                  </div>
+                </div>
+                <div className="divide-y divide-brand-border">
+                  {variantSales.slice(0, 10).map((variant) => (
+                    <div
+                      key={variant.key}
+                      className="flex items-center justify-between gap-4 p-4"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-brand-foreground">
+                          {variant.variantName}
+                        </p>
+                        <p className="text-xs text-brand-muted-foreground">
+                          {variant.productName}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-brand-primary">
+                          {variant.quantity} un.
+                        </p>
+                        <p className="text-xs text-brand-muted-foreground">
+                          {formatCurrency(variant.revenue)}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            )}
+
+            {optionSales.length > 0 && (
+              <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
+                <div className="flex items-center gap-3 border-b border-brand-border p-5">
+                  <ListChecks size={20} className="text-brand-primary" />
+                  <div>
+                    <h2 className="font-bold text-brand-foreground">
+                      Opções mais escolhidas
+                    </h2>
+                    <p className="text-xs text-brand-muted-foreground">
+                      Escolhas e adicionais, sem tratá-los como produtos
+                    </p>
+                  </div>
+                </div>
+                <div className="divide-y divide-brand-border">
+                  {optionSales.slice(0, 10).map((option) => (
+                    <div
+                      key={option.key}
+                      className="flex items-center justify-between gap-4 p-4"
+                    >
+                      <div>
+                        <p className="text-sm font-bold text-brand-foreground">
+                          {option.optionName}
+                        </p>
+                        <p className="text-xs text-brand-muted-foreground">
+                          {option.productName} · {option.groupName}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-brand-primary">
+                          {option.selections} seleção(ões)
+                        </p>
+                        {option.revenue > 0 && (
+                          <p className="text-xs text-brand-muted-foreground">
+                            + {formatCurrency(option.revenue)}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </article>
+            )}
+          </section>
+        )}
 
         <section className="mt-7 grid gap-5 lg:grid-cols-2">
           <article className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">

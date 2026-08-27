@@ -492,6 +492,8 @@ export async function createProductLoss(
   );
   const reference = String(formData.get("loss_reference") ?? "");
   const productId = String(formData.get("product_id") ?? "");
+  const variantIdValue = String(formData.get("variant_id") ?? "");
+  const variantId = variantIdValue || null;
   const quantity = Number(formData.get("quantity"));
   const reason = String(
     formData.get("reason") ?? ""
@@ -508,7 +510,8 @@ export async function createProductLoss(
   if (
     !uuidPattern.test(cashSessionId) ||
     !uuidPattern.test(reference) ||
-    !uuidPattern.test(productId)
+    !uuidPattern.test(productId) ||
+    (variantId !== null && !uuidPattern.test(variantId))
   ) {
     return {
       success: false,
@@ -525,11 +528,12 @@ export async function createProductLoss(
   }
 
   const { data, error } = await access.supabase.rpc(
-    "create_product_loss",
+    "create_configured_product_loss",
     {
       p_cash_session_id: cashSessionId,
       p_loss_reference: reference,
       p_product_id: productId,
+      p_variant_id: variantId,
       p_quantity: quantity,
       p_reason: reason,
       p_notes: notes || null,
@@ -541,9 +545,15 @@ export async function createProductLoss(
     console.error("Erro ao registrar perda:", error);
     return {
       success: false,
-      error: error?.message.includes("não está aberto")
+      error: error?.message.includes("CASH_SESSION_CLOSED")
         ? "Este caixa não está mais aberto. Atualize a página."
-        : "Não foi possível registrar a perda.",
+        : error?.message.includes("LOSS_VARIANT_REQUIRED")
+          ? "Selecione a variante do produto."
+          : error?.message.includes("LOSS_VARIANT_NOT_FOUND")
+            ? "A variante mudou ou não está mais disponível. Atualize a página."
+            : error?.message.includes("LOSS_PRODUCT_NOT_FOUND")
+              ? "O produto mudou ou não está mais disponível. Atualize a página."
+              : "Não foi possível registrar a perda.",
     };
   }
 
@@ -554,6 +564,7 @@ export async function createProductLoss(
     summary: "Registrou uma perda de produto",
     metadata: {
       product_id: productId,
+      variant_id: variantId,
       quantity,
       reason,
       estimated_value: Number(loss.estimated_value),
