@@ -12,7 +12,7 @@ const testArguments = isWindows
       "/d",
       "/s",
       "/c",
-      "npm.cmd exec -- vitest run tests/integration/food-catalog-local.test.ts",
+      "npm.cmd exec -- vitest run tests/integration/food-catalog-local.test.ts tests/integration/food-catalog-admin-local.test.ts",
     ]
   : [
       "exec",
@@ -20,6 +20,7 @@ const testArguments = isWindows
       "vitest",
       "run",
       "tests/integration/food-catalog-local.test.ts",
+      "tests/integration/food-catalog-admin-local.test.ts",
     ];
 
 const testResult = spawnSync(

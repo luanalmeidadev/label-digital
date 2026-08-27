@@ -483,6 +483,54 @@ SELECT extensions.ok(
   'escrita administrativa foi persistida durante o teste'
 );
 
+-- Authenticated user without catalog permission cannot manage the catalog.
+INSERT INTO auth.users (
+  id,
+  aud,
+  role,
+  email,
+  raw_app_meta_data,
+  raw_user_meta_data,
+  created_at,
+  updated_at
+) VALUES (
+  '30000000-0000-4000-8000-000000000002',
+  'authenticated',
+  'authenticated',
+  'orders-only@example.test',
+  '{"label_role":"attendant","label_permissions":["orders"]}'::jsonb,
+  '{}'::jsonb,
+  now(),
+  now()
+);
+
+INSERT INTO public.admin_profiles (id, name)
+VALUES ('30000000-0000-4000-8000-000000000002', 'Orders Only Local');
+
+SET LOCAL ROLE authenticated;
+SELECT set_config(
+  'request.jwt.claims',
+  '{"sub":"30000000-0000-4000-8000-000000000002","role":"authenticated","app_metadata":{"label_role":"attendant","label_permissions":["orders"]}}',
+  true
+);
+
+SELECT extensions.ok(
+  pg_temp.statement_raises(
+    '42501',
+    $$
+      INSERT INTO public.product_variants (product_id, name, price)
+      VALUES (
+        '20000000-0000-4000-8000-000000000001',
+        'Sem permissao',
+        99
+      )
+    $$
+  ),
+  'usuario autenticado sem catalog nao consegue escrever no catalogo'
+);
+
+RESET ROLE;
+
 SELECT * FROM extensions.finish();
 
 ROLLBACK;

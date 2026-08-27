@@ -12,9 +12,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import ImagePositionEditor from "@/components/admin/ImagePositionEditor";
-import { getPublicInstallationProfile } from "@/config/installation/public";
-
-const installation = getPublicInstallationProfile();
 
 type Category = {
   id: string;
@@ -111,7 +108,8 @@ const [imagePositionY, setImagePositionY] =
           <DialogTitle>Novo produto</DialogTitle>
 
           <DialogDescription>
-            Cadastre um novo item para o cardápio da {installation.identity.shortName}.
+            Cadastre as informações básicas do item. Se ele tiver tamanhos ou
+            adicionais, use “Configurar” depois de salvar.
           </DialogDescription>
         </DialogHeader>
 

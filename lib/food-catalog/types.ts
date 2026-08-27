@@ -57,6 +57,11 @@ export type FoodCatalogProduct = {
   optionGroups: ProductOptionGroup[];
 };
 
+export type FoodCatalogConfiguration = Pick<
+  FoodCatalogProduct,
+  "pricingMode" | "variants" | "optionGroups"
+>;
+
 export type SelectedCatalogItemConfiguration = {
   productId: string;
   variantId?: string | null;

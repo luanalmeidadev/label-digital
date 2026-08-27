@@ -4,6 +4,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
   CatalogPricingMode,
+  FoodCatalogConfiguration,
   FoodCatalogProduct,
   OptionPresentationMode,
   OptionSelectionMode,
@@ -254,6 +255,128 @@ export async function getConfiguredFoodCatalogProduct(
   };
 }
 
+export async function getFoodCatalogConfigurations(
+  supabase: SupabaseClient,
+  productIds: readonly string[]
+): Promise<Record<string, FoodCatalogConfiguration>> {
+  if (productIds.length === 0) {
+    return {};
+  }
+
+  const [productsResult, variantsResult, groupsResult] = await Promise.all([
+    supabase
+      .from("products")
+      .select("id, pricing_mode")
+      .in("id", [...productIds]),
+    supabase
+      .from("product_variants")
+      .select("id, product_id, name, sku, price, active, available, sort_order")
+      .in("product_id", [...productIds])
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true }),
+    supabase
+      .from("product_option_groups")
+      .select(
+        "id, product_id, name, selection_mode, min_selections, max_selections, presentation_mode, active, sort_order"
+      )
+      .in("product_id", [...productIds])
+      .order("sort_order", { ascending: true })
+      .order("id", { ascending: true }),
+  ]);
+
+  if (productsResult.error) {
+    throwCatalogReadError("produtos configuráveis", productsResult.error);
+  }
+
+  if (variantsResult.error) {
+    throwCatalogReadError("variantes", variantsResult.error);
+  }
+
+  if (groupsResult.error) {
+    throwCatalogReadError("grupos de opções", groupsResult.error);
+  }
+
+  const groupRows = (groupsResult.data ?? []) as ProductOptionGroupRow[];
+  const groupIds = groupRows.map((group) => group.id);
+  const optionsResult = groupIds.length
+    ? await supabase
+        .from("product_options")
+        .select(
+          "id, option_group_id, name, price_delta, active, available, sort_order"
+        )
+        .in("option_group_id", groupIds)
+        .order("sort_order", { ascending: true })
+        .order("id", { ascending: true })
+    : { data: [], error: null };
+
+  if (optionsResult.error) {
+    throwCatalogReadError("opções", optionsResult.error);
+  }
+
+  const variantsByProduct = new Map<string, ProductVariant[]>();
+  for (const row of (variantsResult.data ?? []) as ProductVariantRow[]) {
+    const current = variantsByProduct.get(row.product_id) ?? [];
+    current.push({
+      id: row.id,
+      productId: row.product_id,
+      name: row.name,
+      sku: row.sku,
+      price: toCatalogNumber(row.price, "product_variants.price"),
+      active: row.active,
+      available: row.available,
+      sortOrder: row.sort_order,
+    });
+    variantsByProduct.set(row.product_id, current);
+  }
+
+  const optionsByGroup = new Map<string, ProductOption[]>();
+  for (const row of (optionsResult.data ?? []) as ProductOptionRow[]) {
+    const current = optionsByGroup.get(row.option_group_id) ?? [];
+    current.push({
+      id: row.id,
+      optionGroupId: row.option_group_id,
+      name: row.name,
+      priceDelta: toCatalogNumber(
+        row.price_delta,
+        "product_options.price_delta"
+      ),
+      active: row.active,
+      available: row.available,
+      sortOrder: row.sort_order,
+    });
+    optionsByGroup.set(row.option_group_id, current);
+  }
+
+  const groupsByProduct = new Map<string, ProductOptionGroup[]>();
+  for (const row of groupRows) {
+    const current = groupsByProduct.get(row.product_id) ?? [];
+    current.push({
+      id: row.id,
+      productId: row.product_id,
+      name: row.name,
+      selectionMode: row.selection_mode,
+      minSelections: row.min_selections,
+      maxSelections: row.max_selections,
+      presentationMode: row.presentation_mode,
+      active: row.active,
+      sortOrder: row.sort_order,
+      options: optionsByGroup.get(row.id) ?? [],
+    });
+    groupsByProduct.set(row.product_id, current);
+  }
+
+  return Object.fromEntries(
+    (productsResult.data ?? []).map((row) => [
+      row.id,
+      {
+        pricingMode: row.pricing_mode as CatalogPricingMode,
+        variants: variantsByProduct.get(row.id) ?? [],
+        optionGroups: groupsByProduct.get(row.id) ?? [],
+      },
+    ])
+  );
+}
+
 export function createFoodCatalogProductRepository(
   supabase: SupabaseClient
 ): FoodCatalogProductRepository {
@@ -263,4 +386,3 @@ export function createFoodCatalogProductRepository(
     },
   };
 }
-

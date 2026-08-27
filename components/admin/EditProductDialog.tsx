@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import ImagePositionEditor from "@/components/admin/ImagePositionEditor";
 import { getImageFramingStyle } from "@/lib/image-framing";
+import type { CatalogPricingMode } from "@/lib/food-catalog/types";
 
 type Category = {
   id: string;
@@ -28,6 +29,7 @@ type EditProductDialogProps = {
   name: string;
   description: string | null;
   price: number;
+  pricingMode?: CatalogPricingMode;
   categoryId: string | null;
   imageUrl: string | null;
   imagePositionX: number;
@@ -46,6 +48,7 @@ export default function EditProductDialog({
   name,
   description,
   price,
+  pricingMode = "simple",
   categoryId,
   imageUrl,
   imagePositionX,
@@ -423,7 +426,9 @@ const [positionY, setPositionY] =
               htmlFor={`product-price-${id}`}
               className="text-sm font-bold text-brand-foreground"
             >
-              Preço
+              {pricingMode === "variant"
+                ? "Preço base de compatibilidade"
+                : "Preço"}
             </label>
 
             <input
@@ -437,6 +442,11 @@ const [positionY, setPositionY] =
               disabled={saving}
               className="mt-2 h-12 w-full rounded-xl border border-[#DDD3CB] bg-white px-4 text-sm outline-none transition focus:border-brand-primary disabled:opacity-60"
             />
+            {pricingMode === "variant" && (
+              <p className="mt-2 text-xs text-brand-muted-foreground">
+                A venda usará o preço da variante escolhida.
+              </p>
+            )}
           </div>
 
           {/* STATUS */}

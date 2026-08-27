@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, Package } from "lucide-react";
 
+import ConfigurableProductDialog from "@/components/admin/ConfigurableProductDialog";
 import DeleteProductDialog from "@/components/admin/DeleteProductDialog";
 import EditProductDialog from "@/components/admin/EditProductDialog";
 import NewProductDialog from "@/components/admin/NewProductDialog";
@@ -7,6 +8,7 @@ import ProductCategorySection from "@/components/admin/ProductCategorySection";
 import { getPublicInstallationProfile } from "@/config/installation/public";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
+import { getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
 
 import {
   createProduct,
@@ -16,6 +18,18 @@ import {
   toggleProductStatus,
   updateProduct,
 } from "./actions";
+import {
+  removeProductOption,
+  removeProductOptionGroup,
+  removeProductVariant,
+  reorderProductOption,
+  reorderProductOptionGroup,
+  reorderProductVariant,
+  saveProductOption,
+  saveProductOptionGroup,
+  saveProductVariant,
+  setCatalogPricingMode,
+} from "./catalog-actions";
 
 const installation = getPublicInstallationProfile();
 
@@ -30,6 +44,7 @@ export default async function ProdutosPage() {
       name,
       description,
       price,
+      pricing_mode,
       image_url,
       image_position_x,
       image_position_y,
@@ -60,6 +75,10 @@ export default async function ProdutosPage() {
 
   const imageSettings =
     await getImageDisplaySettings();
+  const catalogConfigurations = await getFoodCatalogConfigurations(
+    supabase,
+    (products ?? []).map((product) => product.id)
+  );
 
   const activeCategories = (categories ?? [])
     .filter((category) => category.active)
@@ -172,6 +191,15 @@ export default async function ProdutosPage() {
                       )
                         ? product.categories[0]
                         : product.categories;
+                      const catalogConfiguration =
+                        catalogConfigurations[product.id] ?? {
+                          pricingMode: product.pricing_mode,
+                          variants: [],
+                          optionGroups: [],
+                        };
+                      const configurable =
+                        catalogConfiguration.pricingMode === "variant" ||
+                        catalogConfiguration.optionGroups.length > 0;
 
                       return (
                   <article
@@ -184,6 +212,7 @@ export default async function ProdutosPage() {
                         name={product.name}
                         description={product.description}
                         price={Number(product.price)}
+                        pricingMode={product.pricing_mode}
                         categoryId={product.category_id}
                         available={product.available}
                         featured={product.featured}
@@ -216,6 +245,10 @@ export default async function ProdutosPage() {
                               Destaque
                             </span>
                           )}
+
+                          <span className="rounded-full bg-brand-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-primary">
+                            {configurable ? "Configurável" : "Simples"}
+                          </span>
                         </div>
 
                         <p className="mt-1 text-sm text-brand-muted-foreground">
@@ -235,6 +268,22 @@ export default async function ProdutosPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                      <ConfigurableProductDialog
+                        productId={product.id}
+                        productName={product.name}
+                        configuration={catalogConfiguration}
+                        setPricingModeAction={setCatalogPricingMode}
+                        saveVariantAction={saveProductVariant}
+                        removeVariantAction={removeProductVariant}
+                        reorderVariantAction={reorderProductVariant}
+                        saveGroupAction={saveProductOptionGroup}
+                        removeGroupAction={removeProductOptionGroup}
+                        reorderGroupAction={reorderProductOptionGroup}
+                        saveOptionAction={saveProductOption}
+                        removeOptionAction={removeProductOption}
+                        reorderOptionAction={reorderProductOption}
+                      />
+
                       <span
                         className={`rounded-full px-3 py-1 text-xs font-bold ${
                           product.available
