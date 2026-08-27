@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="title desc">
+  <title id="title">Ilustração de X-Bacon</title>
+  <desc id="desc">Hambúrguer artesanal com bacon em fundo laranja.</desc>
+  <defs><linearGradient id="bg" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#5f2317"/><stop offset="1" stop-color="#f4a340"/></linearGradient><linearGradient id="bun" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#ffd17c"/><stop offset="1" stop-color="#e68722"/></linearGradient></defs>
+  <rect width="640" height="480" rx="42" fill="url(#bg)"/>
+  <circle cx="102" cy="88" r="76" fill="#fff9f0" opacity=".1"/>
+  <ellipse cx="320" cy="402" rx="215" ry="28" fill="#3a160f" opacity=".45"/>
+  <path d="M132 204c18-87 86-132 188-132s170 45 188 132z" fill="url(#bun)"/>
+  <g fill="#fff3cc"><circle cx="220" cy="122" r="5"/><circle cx="280" cy="101" r="5"/><circle cx="342" cy="119" r="5"/><circle cx="412" cy="137" r="5"/></g>
+  <path d="M132 218h376l-34 39-67-16-91 23-88-20-61 18z" fill="#68ae43"/>
+  <path d="M149 264h342l-22 38H171z" fill="#ffcf3f"/>
+  <path d="M164 298l65 24 55-26 68 25 66-27 60 26-12 37-55-23-61 25-70-23-55 25-73-28z" fill="#c64a2a"/>
+  <path d="M178 304l51 18 55-26 68 25 66-27 44 20-10 14-37-16-64 27-68-25-54 25-56-20z" fill="#f29a63"/>
+  <rect x="153" y="344" width="334" height="55" rx="27" fill="#542919"/>
+  <path d="M139 389h362c-17 39-83 59-181 59s-164-20-181-59z" fill="url(#bun)"/>
+</svg>

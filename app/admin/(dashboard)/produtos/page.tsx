@@ -6,6 +6,7 @@ import EditProductDialog from "@/components/admin/EditProductDialog";
 import NewProductDialog from "@/components/admin/NewProductDialog";
 import ProductCategorySection from "@/components/admin/ProductCategorySection";
 import { getPublicInstallationProfile } from "@/config/installation/public";
+import { getCatalogStartingPrice } from "@/lib/cart";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 import { getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
@@ -200,6 +201,10 @@ export default async function ProdutosPage() {
                       const configurable =
                         catalogConfiguration.pricingMode === "variant" ||
                         catalogConfiguration.optionGroups.length > 0;
+                      const startingPrice = getCatalogStartingPrice(
+                        Number(product.price),
+                        catalogConfiguration
+                      );
 
                       return (
                   <article
@@ -256,10 +261,15 @@ export default async function ProdutosPage() {
                         </p>
 
                         <p className="mt-2 text-sm font-bold text-brand-primary">
+                          {catalogConfiguration.pricingMode === "variant" && (
+                            <span className="mr-1 text-[10px] font-semibold text-brand-muted-foreground">
+                              A partir de
+                            </span>
+                          )}
                           {new Intl.NumberFormat("pt-BR", {
                             style: "currency",
                             currency: "BRL",
-                          }).format(Number(product.price))}
+                          }).format(startingPrice)}
                         </p>
                         <p className="mt-1 text-[10px] font-semibold text-[#A3948D]">
                           Clique na foto para editar e enquadrar

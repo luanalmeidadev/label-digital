@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="title desc">
+  <title id="title">Ilustração de batata frita</title>
+  <desc id="desc">Porção de batatas douradas em embalagem laranja.</desc>
+  <defs><linearGradient id="bg"><stop stop-color="#fff0d6"/><stop offset="1" stop-color="#f4a340"/></linearGradient></defs>
+  <rect width="640" height="480" rx="42" fill="url(#bg)"/>
+  <circle cx="100" cy="98" r="74" fill="#1f4d3a" opacity=".12"/>
+  <g stroke="#ffd45f" stroke-width="34" stroke-linecap="round"><path d="M222 248l-20-148"/><path d="M270 232l6-159"/><path d="M318 229l35-148"/><path d="M365 237l66-126"/><path d="M407 258l86-106"/></g>
+  <g stroke="#ed9a28" stroke-width="5" opacity=".55"><path d="M219 226l-15-114"/><path d="M273 211l5-126"/><path d="M323 211l29-116"/><path d="M371 220l53-101"/><path d="M413 241l70-84"/></g>
+  <path d="M155 215h350l-46 218H201z" fill="#d64a2e"/><path d="M155 215h350l-19 53H174z" fill="#ef6942"/>
+  <circle cx="330" cy="337" r="58" fill="#fff9f0" opacity=".95"/><path d="M302 336h56M330 308v56" stroke="#1f4d3a" stroke-width="14" stroke-linecap="round"/>
+</svg>

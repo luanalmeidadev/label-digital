@@ -20,7 +20,12 @@
     "quality": "npm run lint && npm run typecheck && npm run test:coverage && npm run build",
     "backup": "node scripts/backup-supabase.mjs",
     "backup:check": "node scripts/backup-supabase.mjs --check",
-    "backup:check:local": "node scripts/check-local-backup.mjs"
+    "backup:check:local": "node scripts/check-local-backup.mjs",
+    "demo:burger:seed": "node scripts/seed-demo-burger.mjs",
+    "demo:burger:reset": "node scripts/seed-demo-burger.mjs --reset",
+    "demo:burger": "node scripts/run-demo-burger.mjs dev",
+    "demo:burger:test": "node scripts/run-demo-burger.mjs test",
+    "demo:burger:visual": "node scripts/run-demo-burger.mjs visual"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="title desc">
+  <title id="title">Ilustração de refrigerante</title>
+  <desc id="desc">Copo de refrigerante gelado em fundo verde.</desc>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#16392b"/><stop offset="1" stop-color="#39795f"/></linearGradient><linearGradient id="drink" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#6d2419"/><stop offset="1" stop-color="#24100d"/></linearGradient></defs>
+  <rect width="640" height="480" rx="42" fill="url(#bg)"/>
+  <g fill="#fff9f0" opacity=".24"><circle cx="110" cy="112" r="18"/><circle cx="520" cy="96" r="31"/><circle cx="550" cy="350" r="14"/></g>
+  <path d="M282 65h28l86 120-20 14z" fill="#f4a340"/>
+  <path d="M204 133h247l-30 301H235z" fill="#fff9f0"/>
+  <path d="M223 184h209l-22 232H246z" fill="url(#drink)"/>
+  <path d="M197 128h261v37H197z" fill="#e7d8c9"/><path d="M217 113h221v20H217z" fill="#fff"/>
+  <g fill="#fff" opacity=".5"><circle cx="278" cy="246" r="7"/><circle cx="361" cy="300" r="9"/><circle cx="314" cy="354" r="6"/></g>
+  <path d="M270 278c34-46 86-46 120 0-34 46-86 46-120 0z" fill="#f4a340"/><circle cx="330" cy="278" r="22" fill="#fff9f0"/>
+</svg>

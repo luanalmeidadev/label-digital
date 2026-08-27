@@ -27,6 +27,20 @@ const emojiBySlug: Record<string, string> = {
   bebidas: "🥤",
 };
 
+function categoryEmoji(category: Category) {
+  const searchable = `${category.slug} ${category.name}`
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+
+  if (/hamburg|burger/.test(searchable)) return "🍔";
+  if (/porc|batata/.test(searchable)) return "🍟";
+  if (/bebida|refrigerante/.test(searchable)) return "🥤";
+  if (/combo/.test(searchable)) return "🍔";
+
+  return emojiBySlug[category.slug] ?? "🍽️";
+}
+
 export default function CategoryGrid({
   categories,
 }: CategoryGridProps) {
@@ -79,8 +93,7 @@ export default function CategoryGrid({
             className="flex min-h-[105px] flex-col items-center justify-center rounded-2xl border border-brand-border bg-white p-3 text-center shadow-sm transition hover:-translate-y-0.5 hover:border-brand-secondary"
           >
             <span className="text-3xl">
-              {emojiBySlug[category.slug] ??
-                "🍽️"}
+              {categoryEmoji(category)}
             </span>
 
             <span className="mt-3 text-xs font-bold text-brand-foreground sm:text-sm">
