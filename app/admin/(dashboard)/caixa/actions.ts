@@ -7,6 +7,10 @@ import {
   requireAdminPermission,
   requireAnyAdminPermission,
 } from "@/lib/admin-auth";
+import { createFoodCatalogProductRepository } from "@/lib/food-catalog/repository";
+import { priceConfiguredCatalogItem } from "@/lib/food-catalog/pricing";
+import { buildPersistableOrderItemSnapshot } from "@/lib/food-catalog/snapshot";
+import { CatalogPricingError } from "@/lib/food-catalog/types";
 import {
   isPaymentMethod,
   type PaymentMethod,
@@ -46,6 +50,10 @@ export type CashierSaleInput = {
   notes?: string;
   items: Array<{
     productId: string;
+    catalogVersion: number;
+    variantId?: string | null;
+    optionIds?: string[];
+    itemNotes?: string | null;
     quantity: number;
   }>;
   payments: Array<{
@@ -73,6 +81,7 @@ export type CashierSaleResult =
   | {
       success: false;
       error: string;
+      code?: "CATALOG_REVIEW_REQUIRED";
     };
 
 function revalidateCashier() {
@@ -182,9 +191,21 @@ export async function createCashierSale(
     input.items.some(
       (item) =>
         !uuidPattern.test(String(item.productId ?? "")) ||
+        !Number.isSafeInteger(item.catalogVersion) ||
+        item.catalogVersion < 1 ||
+        (item.variantId != null &&
+          !uuidPattern.test(String(item.variantId))) ||
+        !Array.isArray(item.optionIds ?? []) ||
+        (item.optionIds?.length ?? 0) > 50 ||
+        (item.optionIds ?? []).some(
+          (optionId) => !uuidPattern.test(String(optionId))
+        ) ||
+        new Set(item.optionIds ?? []).size !==
+          (item.optionIds?.length ?? 0) ||
+        String(item.itemNotes ?? "").trim().length > 300 ||
         !Number.isInteger(item.quantity) ||
         item.quantity < 1 ||
-        item.quantity > 1000
+        item.quantity > 999
     )
   ) {
     return {
@@ -246,19 +267,95 @@ export async function createCashierSale(
     };
   }
 
+  const catalogRepository =
+    createFoodCatalogProductRepository(access.supabase);
+  let pricedItems: Awaited<
+    ReturnType<typeof priceConfiguredCatalogItem>
+  >[];
+
+  try {
+    pricedItems = await Promise.all(
+      input.items.map((item) =>
+        priceConfiguredCatalogItem(catalogRepository, {
+          productId: item.productId,
+          variantId: item.variantId ?? null,
+          optionIds: item.optionIds ?? [],
+          itemNotes: item.itemNotes ?? null,
+          quantity: item.quantity,
+        })
+      )
+    );
+  } catch (pricingError) {
+    if (pricingError instanceof CatalogPricingError) {
+      return {
+        success: false,
+        code: "CATALOG_REVIEW_REQUIRED",
+        error:
+          "Este item foi alterado ou ficou indisponível. Atualize o caixa e revise a venda.",
+      };
+    }
+
+    console.error("Erro ao revalidar catálogo no caixa:", pricingError);
+    return {
+      success: false,
+      error: "Não foi possível conferir os itens da venda.",
+    };
+  }
+
+  if (
+    pricedItems.some(
+      (item, index) =>
+        item.catalogVersion !== input.items[index].catalogVersion
+    )
+  ) {
+    return {
+      success: false,
+      code: "CATALOG_REVIEW_REQUIRED",
+      error:
+        "O preço ou a configuração de um item mudou. Revise a venda antes de finalizar.",
+    };
+  }
+
+  const authoritativeTotal = Number(
+    pricedItems
+      .reduce((sum, item) => sum + item.itemTotal, 0)
+      .toFixed(2)
+  );
+  const paidTotal = Number(
+    normalizedPayments
+      .reduce((sum, payment) => sum + payment.amount, 0)
+      .toFixed(2)
+  );
+
+  if (Math.abs(paidTotal - authoritativeTotal) >= 0.005) {
+    return {
+      success: false,
+      code: "CATALOG_REVIEW_REQUIRED",
+      error:
+        "O total da venda mudou. Revise os itens e as formas de pagamento.",
+    };
+  }
+
+  const snapshots = pricedItems.map((item) => {
+    const snapshot = buildPersistableOrderItemSnapshot(item);
+
+    return {
+      catalog_version: item.catalogVersion,
+      ...snapshot.item,
+      options: snapshot.options,
+    };
+  });
+
   const change = normalizedPayments.reduce(
     (sum, payment) => sum + (payment.changeAmount ?? 0),
     0
   );
   const { data, error } = await access.supabase.rpc(
-    "create_cashier_sale",
+    "create_configured_cashier_sale",
     {
       p_cash_session_id: input.cashSessionId,
       p_cashier_reference: input.reference,
-      p_items: input.items.map((item) => ({
-        product_id: item.productId,
-        quantity: item.quantity,
-      })),
+      p_items: snapshots,
       p_payments: normalizedPayments.map((payment) => ({
         method: payment.method,
         amount: payment.amount,
@@ -277,11 +374,16 @@ export async function createCashierSale(
     return {
       success: false,
       error:
-        error?.message.includes("não estão disponíveis")
-          ? "Um ou mais produtos ficaram indisponíveis. Atualize o caixa."
+        error?.message.includes("CATALOG_CHANGED")
+          ? "O catálogo mudou. Atualize o caixa e revise a venda."
+          : error?.message.includes("não estão disponíveis")
+            ? "Um ou mais produtos ficaram indisponíveis. Atualize o caixa."
           : error?.message.includes("não está aberto")
             ? "Este caixa não está mais aberto. Atualize a página."
             : "Não foi possível concluir a venda.",
+      ...(error?.message.includes("CATALOG_CHANGED")
+        ? { code: "CATALOG_REVIEW_REQUIRED" as const }
+        : {}),
     };
   }
 

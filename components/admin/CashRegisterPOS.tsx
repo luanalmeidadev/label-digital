@@ -26,13 +26,20 @@ import {
   createCashierSale,
   openCashSession,
 } from "@/app/admin/(dashboard)/caixa/actions";
+import CashierProductConfiguratorDialog from "@/components/admin/CashierProductConfiguratorDialog";
+import {
+  createSimpleCartItem,
+  getCatalogStartingPrice,
+  isConfigurableProduct,
+  MAX_CART_ITEM_QUANTITY,
+  mergeCartItem,
+  type CartCatalogProduct,
+  type CartItem,
+} from "@/lib/cart";
 import { createClientRequestId } from "@/lib/client-request-id";
 import type { PaymentMethod } from "@/lib/payment-method";
 
-type CashProduct = {
-  id: string;
-  name: string;
-  price: number;
+export type CashProduct = CartCatalogProduct & {
   categoryName: string;
 };
 
@@ -156,7 +163,7 @@ export default function CashRegisterPOS({
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [cart, setCart] = useState<Record<string, number>>({});
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [customerName, setCustomerName] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] =
@@ -199,9 +206,8 @@ export default function CashRegisterPOS({
     return [...groups.entries()];
   }, [filteredProducts]);
 
-  const cartProducts = products.filter((product) => cart[product.id]);
-  const total = cartProducts.reduce(
-    (sum, product) => sum + product.price * cart[product.id],
+  const total = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
     0
   );
   const selectedPayments = splitPayment
@@ -235,18 +241,28 @@ export default function CashRegisterPOS({
       (Number.isFinite(parsedCashReceived) &&
         parsedCashReceived >= cashAmount));
 
-  function changeQuantity(productId: string, delta: number) {
+  function addSimpleProduct(product: CashProduct) {
+    setCart((current) =>
+      mergeCartItem(current, createSimpleCartItem(product))
+    );
+  }
+
+  function addConfiguredProduct(item: CartItem) {
+    setCart((current) => mergeCartItem(current, item));
+  }
+
+  function changeQuantity(lineKey: string, delta: number) {
     setCart((current) => {
-      const nextQuantity = Math.max((current[productId] ?? 0) + delta, 0);
-      const next = { ...current };
+      return current.flatMap((item) => {
+        if (item.lineKey !== lineKey) return [item];
 
-      if (nextQuantity === 0) {
-        delete next[productId];
-      } else {
-        next[productId] = nextQuantity;
-      }
+        const quantity = Math.min(
+          MAX_CART_ITEM_QUANTITY,
+          Math.max(0, item.quantity + delta)
+        );
 
-      return next;
+        return quantity > 0 ? [{ ...item, quantity }] : [];
+      });
     });
   }
 
@@ -262,9 +278,13 @@ export default function CashRegisterPOS({
         reference,
         customerName,
         notes,
-        items: cartProducts.map((product) => ({
-          productId: product.id,
-          quantity: cart[product.id],
+        items: cart.map((item) => ({
+          productId: item.id,
+          catalogVersion: item.catalogVersion,
+          variantId: item.variant?.id ?? null,
+          optionIds: item.options.map((option) => option.id),
+          itemNotes: item.itemNotes,
+          quantity: item.quantity,
         })),
         payments: selectedPayments.map((payment) => ({
           method: payment.method,
@@ -276,11 +296,14 @@ export default function CashRegisterPOS({
 
       if (!result.success) {
         setError(result.error);
+        if (result.code === "CATALOG_REVIEW_REQUIRED") {
+          router.refresh();
+        }
         return;
       }
 
       setLastSale(result);
-      setCart({});
+      setCart([]);
       setCustomerName("");
       setNotes("");
       setPaymentMethod("pix");
@@ -377,24 +400,39 @@ export default function CashRegisterPOS({
                       {category}
                     </h3>
                     <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                      {categoryProducts.map((product) => (
-                        <button
-                          key={product.id}
-                          type="button"
-                          onClick={() => changeQuantity(product.id, 1)}
-                          className="rounded-2xl border border-brand-border p-4 text-left transition hover:border-brand-secondary hover:bg-brand-background"
-                        >
-                          <p className="font-bold text-brand-foreground">{product.name}</p>
-                          <div className="mt-3 flex items-center justify-between gap-3">
-                            <span className="text-sm font-bold text-brand-primary">
-                              {formatCurrency(product.price)}
-                            </span>
-                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary text-brand-primary-foreground">
-                              <Plus size={16} />
-                            </span>
-                          </div>
-                        </button>
-                      ))}
+                      {categoryProducts.map((product) =>
+                        isConfigurableProduct(product.configuration) ? (
+                          <CashierProductConfiguratorDialog
+                            key={product.id}
+                            product={product}
+                            onAdd={addConfiguredProduct}
+                          />
+                        ) : (
+                          <button
+                            key={product.id}
+                            type="button"
+                            onClick={() => addSimpleProduct(product)}
+                            className="rounded-2xl border border-brand-border p-4 text-left transition hover:border-brand-secondary hover:bg-brand-background"
+                          >
+                            <p className="font-bold text-brand-foreground">
+                              {product.name}
+                            </p>
+                            <div className="mt-3 flex items-center justify-between gap-3">
+                              <span className="text-sm font-bold text-brand-primary">
+                                {formatCurrency(
+                                  getCatalogStartingPrice(
+                                    product.price,
+                                    product.configuration
+                                  )
+                                )}
+                              </span>
+                              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary text-brand-primary-foreground">
+                                <Plus size={16} />
+                              </span>
+                            </div>
+                          </button>
+                        )
+                      )}
                     </div>
                   </div>
                 ))}
@@ -415,31 +453,57 @@ export default function CashRegisterPOS({
             <div>
               <h2 className="font-bold text-brand-foreground">Venda atual</h2>
               <p className="text-xs text-brand-muted-foreground">
-                {cartProducts.reduce((sum, product) => sum + cart[product.id], 0)} item(ns)
+                {cart.reduce((sum, item) => sum + item.quantity, 0)} item(ns)
               </p>
             </div>
           </div>
 
-          {cartProducts.length > 0 ? (
+          {cart.length > 0 ? (
             <div className="divide-y divide-brand-border">
-              {cartProducts.map((product) => (
-                <div key={product.id} className="p-4">
+              {cart.map((item) => (
+                <div key={item.lineKey} className="p-4">
                   <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-bold text-brand-foreground">{product.name}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-brand-foreground">
+                        {item.name}
+                      </p>
+                      {item.variant && (
+                        <p className="mt-1 text-xs font-semibold text-brand-muted-foreground">
+                          {item.variant.name}
+                        </p>
+                      )}
+                      {item.options.length > 0 && (
+                        <ul className="mt-1 space-y-0.5 text-xs text-brand-muted-foreground">
+                          {item.options.map((option) => (
+                            <li key={`${item.lineKey}-${option.id}`}>
+                              {option.presentationMode === "addition"
+                                ? "+ "
+                                : option.presentationMode === "removal"
+                                  ? "− "
+                                  : `${option.groupName}: `}
+                              {option.name}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                      {item.itemNotes && (
+                        <p className="mt-1 text-xs italic text-brand-muted-foreground">
+                          Obs: {item.itemNotes}
+                        </p>
+                      )}
                       <p className="mt-1 text-xs text-brand-muted-foreground">
-                        {formatCurrency(product.price)} cada
+                        {formatCurrency(item.price)} cada
                       </p>
                     </div>
                     <button
                       type="button"
-                      aria-label={`Remover ${product.name}`}
+                      aria-label={`Remover ${item.name}`}
                       onClick={() =>
-                        setCart((current) => {
-                          const next = { ...current };
-                          delete next[product.id];
-                          return next;
-                        })
+                        setCart((current) =>
+                          current.filter(
+                            (candidate) => candidate.lineKey !== item.lineKey
+                          )
+                        )
                       }
                       className="text-red-600"
                     >
@@ -450,24 +514,24 @@ export default function CashRegisterPOS({
                     <div className="flex items-center rounded-xl border border-brand-border">
                       <button
                         type="button"
-                        onClick={() => changeQuantity(product.id, -1)}
+                        onClick={() => changeQuantity(item.lineKey, -1)}
                         className="flex h-9 w-9 items-center justify-center text-brand-primary"
                       >
                         <Minus size={15} />
                       </button>
                       <span className="min-w-9 text-center text-sm font-bold">
-                        {cart[product.id]}
+                        {item.quantity}
                       </span>
                       <button
                         type="button"
-                        onClick={() => changeQuantity(product.id, 1)}
+                        onClick={() => changeQuantity(item.lineKey, 1)}
                         className="flex h-9 w-9 items-center justify-center text-brand-primary"
                       >
                         <Plus size={15} />
                       </button>
                     </div>
                     <p className="font-bold text-brand-foreground">
-                      {formatCurrency(product.price * cart[product.id])}
+                      {formatCurrency(item.price * item.quantity)}
                     </p>
                   </div>
                 </div>

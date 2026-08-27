@@ -14,6 +14,7 @@ import {
   affectsPhysicalCash,
   calculateExpectedCash,
 } from "@/lib/cash-register";
+import { getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
 import {
   isPaymentMethod,
   type PaymentMethod,
@@ -48,7 +49,9 @@ export default async function CaixaPage() {
       .maybeSingle(),
     access.supabase
       .from("products")
-      .select("id, name, price, available, sort_order, categories(name, sort_order)")
+      .select(
+        "id, name, price, image_url, catalog_version, pricing_mode, available, sort_order, categories(name, sort_order)"
+      )
       .eq("active", true)
       .order("sort_order"),
     access.supabase
@@ -103,7 +106,12 @@ export default async function CaixaPage() {
     openerName = opener?.name ?? "Usuário administrativo";
   }
 
-  const products = (productsResult.data ?? []).map((product) => {
+  const productRows = productsResult.data ?? [];
+  const catalogConfigurations = await getFoodCatalogConfigurations(
+    access.supabase,
+    productRows.map((product) => product.id)
+  );
+  const products = productRows.map((product) => {
     const category = Array.isArray(product.categories)
       ? product.categories[0]
       : product.categories;
@@ -112,8 +120,15 @@ export default async function CaixaPage() {
       id: product.id,
       name: product.name,
       price: Number(product.price),
+      image_url: product.image_url,
+      catalogVersion: Number(product.catalog_version),
       available: product.available,
       categoryName: category?.name ?? "Sem categoria",
+      configuration: catalogConfigurations[product.id] ?? {
+        pricingMode: product.pricing_mode,
+        variants: [],
+        optionGroups: [],
+      },
     };
   });
   const todaySales = salesResult.data ?? [];
