@@ -71,7 +71,7 @@ describe("isolamento do runner de manifesto", () => {
     ).toBe(false);
     expect(
       isCompatiblePlatformDemoHtml(
-        '<html data-installation-slug="brasa-burger"><body>Brasa Burger X-Bacon</body></html>',
+        '<html data-installation-slug="brasa-burger"><body>Catálogo definido pelo preset</body></html>',
         manifest
       )
     ).toBe(true);

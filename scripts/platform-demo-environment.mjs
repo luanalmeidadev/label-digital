@@ -43,5 +43,5 @@ export function isCompatiblePlatformDemoHtml(html, manifest) {
   const installationMarker =
     `data-installation-slug="${manifest.business.slug}"`;
 
-  return html.includes(installationMarker) && html.includes("X-Bacon");
+  return html.includes(installationMarker);
 }
