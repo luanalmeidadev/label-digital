@@ -35,6 +35,10 @@ npm run demo:burger
 
 O runner injeta URLs e chaves do Supabase local no processo, seleciona `demo-burger` e inicia a aplicação em `http://127.0.0.1:3100`. Ele não lê uma URL remota como fallback.
 
+Para personalizar esta mesma base com um manifesto exportado pela Platform,
+use o fluxo descrito em `docs/PLATFORM_DEMO_MANIFEST.md`. O manifesto troca a
+identidade pública, mas reutiliza este catálogo e os mesmos módulos.
+
 ## Validar
 
 ```bash

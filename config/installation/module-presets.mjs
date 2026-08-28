@@ -35,11 +35,12 @@ const installationModulesByPreset = Object.freeze({
 });
 
 /**
- * @param {{ requestedPreset?: string | null, nodeEnv?: string }} [options]
+ * @param {{ requestedPreset?: string | null, nodeEnv?: string, allowDemoPreset?: boolean }} [options]
  */
 export function resolveInstallationModuleFlags({
   requestedPreset,
   nodeEnv = process.env.NODE_ENV,
+  allowDemoPreset = false,
 } = {}) {
   const presetId = requestedPreset?.trim() || "label";
 
@@ -47,7 +48,11 @@ export function resolveInstallationModuleFlags({
     throw new Error(`Installation preset desconhecido: ${presetId}.`);
   }
 
-  if (nodeEnv === "production" && presetId !== "label") {
+  if (
+    nodeEnv === "production" &&
+    presetId !== "label" &&
+    !allowDemoPreset
+  ) {
     throw new Error(
       "Presets de demonstração não podem ser selecionados em produção."
     );

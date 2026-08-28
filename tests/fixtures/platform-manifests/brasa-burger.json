@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-08-28T12:00:00.000Z",
+  "business": {
+    "name": "Brasa Burger",
+    "slug": "brasa-burger",
+    "segment": "hamburgueria",
+    "preset": "demo-burger"
+  },
+  "theme": {
+    "primary": "#155EEF",
+    "secondary": "#0E9384"
+  },
+  "contact": {
+    "whatsapp": "5511990000000",
+    "email": "contato@brasa-burger.example",
+    "instagram": "@brasa_burger_demo"
+  },
+  "location": {
+    "address": "Rua das Brasas, 250",
+    "city": "Florianópolis",
+    "state": "SC"
+  }
+}
+

@@ -111,6 +111,32 @@ explicitamente qualquer preset diferente de `label` quando `NODE_ENV` é
 `production`, portanto uma build de produção não pode selecionar o demo por
 engano. Não existe seletor no painel administrativo.
 
+## Manifesto de demonstração da Platform
+
+O Core também pode receber o contrato público versionado que a Label Digital
+Platform exporta. O fluxo usa o mesmo resolvedor de instalação:
+
+```text
+defaults do Core < preset conhecido < overrides permitidos do manifesto
+```
+
+O manifesto não substitui o preset e não pode declarar módulos, catálogo,
+secrets, variáveis, comandos, SQL ou caminhos do sistema. Ele altera somente
+nome, slug, duas cores de marca, contatos e localização. Assets continuam no
+preset porque a versão 1 atualmente emitida pela Platform não inclui logo; isso
+evita download de arquivo remoto arbitrário e mantém um fallback seguro.
+
+`config/installation/platform-manifest.mjs` contém a validação runtime e
+`config/installation/platform-manifest.d.mts` descreve o contrato tipado.
+`config/installation/platform-manifest-profile.ts` aplica a lista fechada de
+overrides, e `config/installation/resolve.ts` continua sendo a única camada que
+produz o Installation Profile efetivo.
+
+O manifesto só é aceito em desenvolvimento, testes ou em modo local explícito
+com URL do Supabase apontando para `localhost`/`127.0.0.1`. Uma execução normal
+de produção o rejeita. O procedimento completo e o comando estão documentados
+em `docs/PLATFORM_DEMO_MANIFEST.md`.
+
 ## Módulo de encomendas
 
 Encomendas é o primeiro módulo declarativo que passou a ser respeitado pelo
