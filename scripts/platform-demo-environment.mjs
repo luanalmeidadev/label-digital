@@ -37,3 +37,11 @@ export function createPlatformDemoEnvironment(baseEnvironment, manifest) {
   return environment;
 }
 
+export function isCompatiblePlatformDemoHtml(html, manifest) {
+  if (typeof html !== "string") return false;
+
+  const installationMarker =
+    `data-installation-slug="${manifest.business.slug}"`;
+
+  return html.includes(installationMarker) && html.includes("X-Bacon");
+}

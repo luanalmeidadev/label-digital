@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { parsePlatformDemoManifest } from "@/config/installation/platform-manifest.mjs";
-import { createPlatformDemoEnvironment } from "../../scripts/platform-demo-environment.mjs";
+import {
+  createPlatformDemoEnvironment,
+  isCompatiblePlatformDemoHtml,
+} from "../../scripts/platform-demo-environment.mjs";
 
 const manifest = parsePlatformDemoManifest({
   schemaVersion: 1,
@@ -58,5 +61,19 @@ describe("isolamento do runner de manifesto", () => {
       )
     ).toThrow("não é local");
   });
-});
 
+  it("não reutiliza servidor do preset base por correspondência parcial do nome", () => {
+    expect(
+      isCompatiblePlatformDemoHtml(
+        '<html data-installation-slug="brasa-burger-demo"><body>Brasa Burger Demo X-Bacon</body></html>',
+        manifest
+      )
+    ).toBe(false);
+    expect(
+      isCompatiblePlatformDemoHtml(
+        '<html data-installation-slug="brasa-burger"><body>Brasa Burger X-Bacon</body></html>',
+        manifest
+      )
+    ).toBe(true);
+  });
+});

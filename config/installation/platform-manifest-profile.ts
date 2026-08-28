@@ -1,18 +1,21 @@
 import type { PlatformDemoManifest } from "@/config/installation/platform-manifest.mjs";
-import type { PublicInstallationProfile } from "@/config/installation/types";
+import type {
+  FoodBusinessSegment,
+  PublicInstallationProfile,
+} from "@/config/installation/types";
 import { defineInstallationProfile } from "@/config/installation/validate";
 
-function replaceIdentity(
-  value: string,
-  preset: PublicInstallationProfile,
-  businessName: string
-) {
-  return value
-    .split(preset.identity.name)
-    .join(businessName)
-    .split(preset.identity.shortName)
-    .join(businessName);
-}
+const segmentSeoTitles: Record<FoodBusinessSegment, string> = {
+  confectionery: "Confeitaria artesanal",
+  hamburger: "Burgers artesanais",
+  "snack-bar": "Lanches artesanais",
+  "meal-prep": "Refeições preparadas",
+  pizzeria: "Pizzas artesanais",
+  restaurant: "Restaurante",
+  cafe: "Cafeteria",
+  "acai-ice-cream": "Açaí e sorvetes",
+  other: "Cardápio digital",
+};
 
 function parseHex(color: string) {
   return {
@@ -92,7 +95,8 @@ export function applyPlatformDemoManifest(
   const state = manifest.location.state ?? preset.address.state;
   const oldLocality = `${preset.address.city}/${preset.address.state}`;
   const newLocality = `${city}/${state}`;
-  const replace = (value: string) => replaceIdentity(value, preset, name);
+  const seoSegmentTitle = segmentSeoTitles[preset.identity.businessSegment];
+  const seoTitle = `${name} | ${seoSegmentTitle}`;
 
   return defineInstallationProfile({
     ...preset,
@@ -124,29 +128,24 @@ export function applyPlatformDemoManifest(
     },
     seo: {
       ...preset.seo,
-      title: replace(preset.seo.title),
-      titleTemplate: replace(preset.seo.titleTemplate),
-      description: replace(preset.seo.description),
-      keywords: preset.seo.keywords.map(replace),
+      title: seoTitle,
+      titleTemplate: `%s | ${name}`,
       siteName: name,
-      manifestDescription: replace(preset.seo.manifestDescription),
+      manifestDescription: `Cardápio digital de ${name}.`,
       openGraph: {
         ...preset.seo.openGraph,
-        title: replace(preset.seo.openGraph.title),
-        description: replace(preset.seo.openGraph.description),
+        title: seoTitle,
         image: {
           ...preset.seo.openGraph.image,
-          alt: replace(preset.seo.openGraph.image.alt),
-          description: replace(preset.seo.openGraph.image.description),
+          alt: `${name} — cardápio digital`,
           footerItems: preset.seo.openGraph.image.footerItems.map((item) =>
-            replace(item).split(oldLocality).join(newLocality)
+            item === oldLocality ? newLocality : item
           ),
         },
       },
       twitter: {
         ...preset.seo.twitter,
-        title: replace(preset.seo.twitter.title),
-        description: replace(preset.seo.twitter.description),
+        title: seoTitle,
       },
     },
     publicContent: {
@@ -167,4 +166,3 @@ export function applyPlatformDemoManifest(
     },
   });
 }
-

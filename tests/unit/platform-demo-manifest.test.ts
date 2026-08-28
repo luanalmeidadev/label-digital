@@ -151,6 +151,7 @@ describe("manifesto externo da Label Digital Platform", () => {
     expect(effective.seo.title).toContain("Brasa Burger");
     expect(effective.seo.title).not.toContain("Brasa Burger Demo");
     expect(effective.legal.controllerName).toBe("Brasa Burger");
+    expect(JSON.stringify(effective)).not.toContain("Brasa Burger Demo");
   });
 
   it("mantém La'Bel e o demo base intactos quando não há manifesto", () => {
@@ -163,6 +164,10 @@ describe("manifesto externo da Label Digital Platform", () => {
         nodeEnv: "test",
       })
     ).toBe(demoBurgerInstallationPreset);
+    expect(demoBurgerInstallationPreset.identity.name).toBe(
+      "Brasa Burger Demo"
+    );
+    expect(labelInstallationPreset.identity.name).toBe("La'Bel Confeitaria");
   });
 
   it("bloqueia manifesto em produção normal e divergência de preset", () => {

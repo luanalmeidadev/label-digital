@@ -39,6 +39,7 @@ export default function RootLayout({
     <html
       lang={installation.regionalization.locale}
       data-installation-preset={installation.preset.id}
+      data-installation-slug={installation.identity.slug}
       style={installationThemeStyle}
       className={cn("font-sans", geist.variable)}
     >

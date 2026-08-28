@@ -19,8 +19,8 @@ suite("demo personalizada por manifesto da Platform", () => {
     await page.setViewportSize({ width: 1440, height: 1000 });
     await page.goto("/");
 
-    await expect(page.getByText("Brasa Burger").first()).toBeVisible();
-    await expect(page.getByText("Brasa Burger Demo")).toHaveCount(0);
+    await expect(page.getByText("Brasa Burger", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("Brasa Burger Demo", { exact: true })).toHaveCount(0);
     await expect(page.getByText(/La'Bel|Confeitaria/i)).toHaveCount(0);
     await expect(page.getByRole("heading", { name: "Hambúrgueres" })).toBeVisible();
     await expect(page.getByText("X-Bacon", { exact: true }).first()).toBeVisible();
@@ -66,4 +66,3 @@ suite("demo personalizada por manifesto da Platform", () => {
     });
   });
 });
-

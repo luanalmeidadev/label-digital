@@ -4,7 +4,10 @@ import { spawnSync } from "node:child_process";
 
 import { parsePlatformDemoManifestJson } from "../config/installation/platform-manifest.mjs";
 import { getDemoBurgerEnvironment } from "./demo-burger-environment.mjs";
-import { createPlatformDemoEnvironment } from "./platform-demo-environment.mjs";
+import {
+  createPlatformDemoEnvironment,
+  isCompatiblePlatformDemoHtml,
+} from "./platform-demo-environment.mjs";
 import { seedDemoBurger } from "./seed-demo-burger.mjs";
 
 const manifestArgument = process.argv[2];
@@ -63,11 +66,7 @@ if (mode === "visual") {
     });
     const html = await response.text();
 
-    if (
-      response.ok &&
-      html.includes(manifest.business.name) &&
-      html.includes("X-Bacon")
-    ) {
+    if (response.ok && isCompatiblePlatformDemoHtml(html, manifest)) {
       environment.PLAYWRIGHT_BASE_URL = "http://localhost:3000";
     }
   } catch {
