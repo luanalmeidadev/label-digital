@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  demo-postgres:
+    image: postgres:15-alpine
+    container_name: label-demo-postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_root_password
+    ports:
+      - "5433:5432" # Use 5433 to not conflict with Supabase local 5432
+    volumes:
+      - demo_db_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    command: ["postgres", "-c", "max_connections=500"]
+
+volumes:
+  demo_db_data:

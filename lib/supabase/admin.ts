@@ -4,6 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 
 export function createSupabaseAdminClient() {
   const supabaseUrl =
+    process.env.SUPABASE_SERVER_URL ||
     process.env.NEXT_PUBLIC_SUPABASE_URL;
 
   const serviceRoleKey =
@@ -11,7 +12,7 @@ export function createSupabaseAdminClient() {
 
   if (!supabaseUrl) {
     throw new Error(
-      "NEXT_PUBLIC_SUPABASE_URL não configurada."
+      "NEXT_PUBLIC_SUPABASE_URL (ou SUPABASE_SERVER_URL) não configurada."
     );
   }
 

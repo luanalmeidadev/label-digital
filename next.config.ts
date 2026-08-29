@@ -25,6 +25,7 @@ if (process.env.VERCEL_ENV) {
 }
 
 const nextConfig: NextConfig = {
+  output: process.env.BUILD_STANDALONE === "true" ? "standalone" : undefined,
   experimental: {
     serverActions: {
       bodySizeLimit: "6mb",
