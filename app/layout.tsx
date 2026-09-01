@@ -10,6 +10,7 @@ import {
 } from "@/lib/installation-presentation";
 import { cn } from "@/lib/utils";
 import { getSiteUrl } from "@/lib/site-url";
+import { generateSupabaseEnvScript } from "@/lib/supabase/env-injector";
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -46,7 +47,7 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.__SUPABASE_ENV = { url: "${process.env['NEXT_PUBLIC_' + 'SUPABASE_URL']}", key: "${process.env['NEXT_PUBLIC_' + 'SUPABASE_ANON_KEY']}" };`,
+            __html: generateSupabaseEnvScript(),
           }}
         />
       </head>
