@@ -43,6 +43,13 @@ export default function RootLayout({
       style={installationThemeStyle}
       className={cn("font-sans", geist.variable)}
     >
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `window.__SUPABASE_ENV = { url: "${process.env['NEXT_PUBLIC_' + 'SUPABASE_URL']}", key: "${process.env['NEXT_PUBLIC_' + 'SUPABASE_ANON_KEY']}" };`,
+          }}
+        />
+      </head>
       <body className={archivo.variable}>
         {isHomologation && (
           <div
