@@ -4,6 +4,7 @@ import { spawn, spawnSync } from "node:child_process";
 
 import { parsePlatformDemoManifestJson } from "../config/installation/platform-manifest.mjs";
 import { getDemoBurgerEnvironment } from "./demo-burger-environment.mjs";
+import { getDemoPizzariaEnvironment } from "./demo-pizzaria-environment.mjs";
 import {
   assertDemoPortAvailable,
   assertLocalDemoInvocation,
@@ -16,9 +17,11 @@ import {
 } from "./local-demo-runtime.mjs";
 import { createPlatformDemoEnvironment } from "./platform-demo-environment.mjs";
 import { seedDemoBurger } from "./seed-demo-burger.mjs";
+import { seedDemoPizzaria } from "./seed-demo-pizzaria.mjs";
 
 const seedByPreset = Object.freeze({
   "demo-burger": seedDemoBurger,
+  "demo-pizzaria": seedDemoPizzaria,
 });
 
 function loadManifest(manifestPath) {
@@ -216,7 +219,7 @@ async function main() {
 
     await seed({ reset: !options.reset && options.mode !== "serve" });
     const environment = createPlatformDemoEnvironment(
-      getDemoBurgerEnvironment(),
+      descriptor.preset === "demo-pizzaria" ? getDemoPizzariaEnvironment() : getDemoBurgerEnvironment(),
       manifest
     );
     environment.SITE_URL = descriptor.url;

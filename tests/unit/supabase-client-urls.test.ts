@@ -40,7 +40,7 @@ describe("Supabase Admin Client URL Precedence", () => {
     process.env.SUPABASE_SERVER_URL = "http://internal-host:32002";
     process.env.NEXT_PUBLIC_SUPABASE_URL = "http://public-host:32002";
 
-    const client: any = createSupabaseAdminClient();
+    const client = createSupabaseAdminClient() as unknown as { url: string };
     expect(client.url).toBe("http://internal-host:32002");
   });
 
@@ -48,7 +48,7 @@ describe("Supabase Admin Client URL Precedence", () => {
     delete process.env.SUPABASE_SERVER_URL;
     process.env.NEXT_PUBLIC_SUPABASE_URL = "http://public-host:32002";
 
-    const client: any = createSupabaseAdminClient();
+    const client = createSupabaseAdminClient() as unknown as { url: string };
     expect(client.url).toBe("http://public-host:32002");
   });
 
@@ -77,7 +77,7 @@ describe("Supabase Server Client URL Precedence", () => {
     process.env.SUPABASE_SERVER_URL = "http://internal-host:32002";
     process.env.NEXT_PUBLIC_SUPABASE_URL = "http://public-host:32002";
 
-    const client: any = await createSupabaseServerClient();
+    const client = (await createSupabaseServerClient()) as unknown as { url: string };
     expect(client.url).toBe("http://internal-host:32002");
   });
 
@@ -85,7 +85,7 @@ describe("Supabase Server Client URL Precedence", () => {
     delete process.env.SUPABASE_SERVER_URL;
     process.env.NEXT_PUBLIC_SUPABASE_URL = "http://public-host:32002";
 
-    const client: any = await createSupabaseServerClient();
+    const client = (await createSupabaseServerClient()) as unknown as { url: string };
     expect(client.url).toBe("http://public-host:32002");
   });
 });

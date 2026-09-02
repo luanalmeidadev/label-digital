@@ -1,6 +1,19 @@
+import { headers } from 'next/headers';
+
 export function generateSupabaseEnvScript(): string {
-  const url = process.env['NEXT_PUBLIC_' + 'SUPABASE_URL'] || '';
-  const key = process.env['NEXT_PUBLIC_' + 'SUPABASE_ANON_KEY'] || '';
+  // Call headers() to opt out of static generation. This ensures the environment
+  // variables are read at runtime for every request, preventing build-time mocks from being baked in.
+  headers();
+
+  // Use opaque reference to process.env to bypass Next.js build-time inlining
+  // of NEXT_PUBLIC_* variables.
+  const getEnv = (name: string) => {
+    const envObj = process['env'];
+    return envObj[name] || '';
+  };
+
+  const url = getEnv('NEXT_PUBLIC_SUPABASE_URL');
+  const key = getEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
   
   if (key) {
     try {
@@ -11,7 +24,7 @@ export function generateSupabaseEnvScript(): string {
           return `window.__SUPABASE_ENV = { error: "security_violation_service_role" };`;
         }
       }
-    } catch (e) {
+    } catch {
       // ignore
     }
   }

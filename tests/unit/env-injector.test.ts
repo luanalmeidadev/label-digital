@@ -1,4 +1,10 @@
-import { expect, test, describe, afterEach } from 'vitest';
+import { expect, test, describe, afterEach, vi } from 'vitest';
+
+// Mock next/headers since it throws outside a Next.js request scope
+vi.mock('next/headers', () => ({
+  headers: vi.fn(),
+}));
+
 import { generateSupabaseEnvScript } from '../../lib/supabase/env-injector';
 
 describe('Supabase Env Injector Security', () => {

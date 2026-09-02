@@ -7,8 +7,8 @@ export type PlatformDemoManifest = Readonly<{
   business: Readonly<{
     name: string;
     slug: string;
-    segment: "hamburgueria";
-    preset: "demo-burger";
+    segment: "hamburgueria" | "pizzaria";
+    preset: "demo-burger" | "demo-pizzaria";
   }>;
   theme: Readonly<{
     primary: string;

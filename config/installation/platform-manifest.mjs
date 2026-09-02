@@ -2,6 +2,7 @@ export const PLATFORM_DEMO_MANIFEST_SCHEMA_VERSION = 1;
 
 const PLATFORM_MANIFEST_PRESET_SEGMENTS = Object.freeze({
   "demo-burger": Object.freeze(["hamburgueria"]),
+  "demo-pizzaria": Object.freeze(["pizzaria"]),
 });
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;

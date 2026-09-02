@@ -21,6 +21,8 @@ COPY . .
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV BUILD_STANDALONE=true
+ENV NEXT_PUBLIC_SUPABASE_URL="http://mock-url-for-build.local"
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY="mock-anon-key-for-build"
 
 # Ignore typescript/eslint errors during build to ensure it produces the runtime for the POC
 # Ideally we run quality checks before building, so the build itself shouldn't fail.
@@ -52,6 +54,7 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 # server.js is created by next build from the standalone output
 # https://nextjs.org/docs/pages/api-reference/next-config-js/output

@@ -1,6 +1,7 @@
 export const installationPresetIds = Object.freeze([
   "label",
   "demo-burger",
+  "demo-pizzaria",
 ]);
 
 export const labelInstallationModules = Object.freeze({
@@ -29,9 +30,23 @@ export const demoBurgerInstallationModules = Object.freeze({
   adminAudit: true,
 });
 
+export const demoPizzariaInstallationModules = Object.freeze({
+  preorders: false,
+  preorderSchedule: false,
+  delivery: true,
+  pickup: true,
+  cashRegister: true,
+  financial: true,
+  reports: true,
+  tracking: true,
+  advancedUsers: true,
+  adminAudit: true,
+});
+
 const installationModulesByPreset = Object.freeze({
   label: labelInstallationModules,
   "demo-burger": demoBurgerInstallationModules,
+  "demo-pizzaria": demoPizzariaInstallationModules,
 });
 
 /**

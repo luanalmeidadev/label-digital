@@ -1,5 +1,6 @@
 import type { PublicInstallationProfile } from "@/config/installation/types";
 import { demoBurgerInstallationPreset } from "@/config/installation/presets/demo-burger";
+import { demoPizzariaInstallationPreset } from "@/config/installation/presets/demo-pizzaria";
 import { labelInstallationPreset } from "@/config/installation/presets/label";
 import {
   parsePlatformDemoManifestJson,
@@ -12,7 +13,7 @@ import {
 } from "@/config/installation/module-presets.mjs";
 
 export type InstallationPresetId =
-  "label" | "demo-burger";
+  "label" | "demo-burger" | "demo-pizzaria";
 
 const installationPresets: Record<
   InstallationPresetId,
@@ -20,6 +21,7 @@ const installationPresets: Record<
 > = {
   label: labelInstallationPreset,
   "demo-burger": demoBurgerInstallationPreset,
+  "demo-pizzaria": demoPizzariaInstallationPreset,
 };
 
 type ResolveInstallationPresetOptions = {
@@ -84,6 +86,7 @@ export function resolveInstallationPreset({
     publicSupabaseUrl,
     now,
   };
+  console.log("resolveInstallationPreset options:", JSON.stringify(options));
   const manifest = readManifest(requestedManifest, options);
   const presetId = manifest?.business.preset ?? requestedPreset?.trim() ?? "label";
 

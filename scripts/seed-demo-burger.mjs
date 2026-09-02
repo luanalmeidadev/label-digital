@@ -421,7 +421,15 @@ async function seedOperationalDemo(client, adminId) {
 }
 
 export async function seedDemoBurger({ reset = false } = {}) {
-  const { apiUrl, serviceRoleKey } = getLocalSupabaseEnvironment();
+  let apiUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  let serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!apiUrl || !serviceRoleKey) {
+    const env = getLocalSupabaseEnvironment();
+    apiUrl = env.apiUrl;
+    serviceRoleKey = env.serviceRoleKey;
+  }
+
   const client = createClient(apiUrl, serviceRoleKey, {
     auth: { autoRefreshToken: false, persistSession: false },
   });

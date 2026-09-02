@@ -14,7 +14,7 @@ import { getPublicInstallationProfile } from "@/config/installation/public";
 import { buildStoreSchemaOrg } from "@/lib/installation-presentation";
 import { getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
 import type { FoodCatalogConfiguration } from "@/lib/food-catalog/types";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
 import {
   buildInstagramUrl,
@@ -26,7 +26,7 @@ import { getSiteUrl } from "@/lib/site-url";
 export default async function Home() {
   const installation = getPublicInstallationProfile();
   const supabase =
-    await createSupabaseServerClient();
+    createSupabasePublicServerClient();
 
   const [
     categoriesResult,
