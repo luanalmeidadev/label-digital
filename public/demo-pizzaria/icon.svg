@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title">
+  <title id="title">Ícone Brasa Burger Demo</title>
+  <rect width="512" height="512" rx="112" fill="#1F4D3A"/>
+  <g fill="none" stroke="#F4A340" stroke-width="28" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M91 233c13-82 75-132 165-132s152 50 165 132H91Z"/>
+    <path d="M74 277h364"/>
+    <path d="M105 318h302c-10 61-58 93-151 93s-141-32-151-93Z"/>
+  </g>
+  <g fill="#FFFFFF">
+    <circle cx="178" cy="172" r="9"/>
+    <circle cx="256" cy="145" r="9"/>
+    <circle cx="334" cy="172" r="9"/>
+  </g>
+</svg>
