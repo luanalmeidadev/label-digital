@@ -1,12 +1,17 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 200" role="img" aria-labelledby="title">
-  <title id="title">Brasa Burger Demo</title>
-  <g fill="none" stroke="#1F4D3A" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M38 91c6-34 32-57 68-57s62 23 68 57H38Z"/>
-    <path d="M31 108h150"/>
-    <path d="M43 127h126c-4 28-25 43-63 43s-59-15-63-43Z"/>
-    <path d="M71 68h1M106 57h1M141 68h1"/>
-  </g>
-  <text x="210" y="96" fill="#1F4D3A" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="800">BRASA</text>
-  <text x="210" y="145" fill="#F4A340" font-family="Arial, Helvetica, sans-serif" font-size="44" font-weight="800">BURGER</text>
-  <text x="212" y="172" fill="#725F54" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="5">DEMO</text>
+<svg width="460" height="180" viewBox="0 0 460 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <title>Bella Napoli</title>
+
+  <!-- Pizza -->
+  <path d="M34 132L91 35L148 132H34Z" stroke="#1F4D3A" stroke-width="8" stroke-linejoin="round"></path>
+  <path d="M47 111C72 121 108 121 135 111" stroke="#1F4D3A" stroke-width="8" stroke-linecap="round"></path>
+  <circle cx="88" cy="76" r="7" fill="#F4A340"></circle>
+  <circle cx="112" cy="97" r="7" fill="#F4A340"></circle>
+  <circle cx="72" cy="101" r="6" fill="#F4A340"></circle>
+
+  <!-- Name -->
+  <text x="178" y="88" fill="#1F4D3A" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="800">BELLA</text>
+
+  <text x="178" y="133" fill="#F4A340" font-family="Arial, Helvetica, sans-serif" font-size="43" font-weight="800">NAPOLI</text>
+
+  <text x="181" y="154" fill="#1F4D3A" font-family="Arial, Helvetica, sans-serif" font-size="12" font-weight="700" letter-spacing="5">PIZZARIA</text>
 </svg>
