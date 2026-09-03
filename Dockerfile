@@ -26,7 +26,7 @@ ENV NEXT_PUBLIC_SUPABASE_ANON_KEY="mock-anon-key-for-build"
 
 # Ignore typescript/eslint errors during build to ensure it produces the runtime for the POC
 # Ideally we run quality checks before building, so the build itself shouldn't fail.
-RUN npm run build
+RUN npx next build --webpack
 
 # Production image, copy all the files and run next
 FROM base AS runner
