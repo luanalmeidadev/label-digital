@@ -39,9 +39,11 @@ const installation = getPublicInstallationProfile();
 function ProductCard({
   product,
   whatsapp,
+  isDemo,
 }: {
   product: PreorderProduct;
   whatsapp: string;
+  isDemo: boolean;
 }) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
@@ -122,7 +124,7 @@ function ProductCard({
           phone={whatsapp}
           product={product}
           className="mt-6 w-full"
-          isDemo={Boolean(storeSettings.isDemo)}
+          isDemo={isDemo}
         />
       </div>
     </article>
@@ -351,6 +353,7 @@ export default async function EncomendasPage() {
                       key={product.name}
                       product={product}
                       whatsapp={whatsapp}
+                      isDemo={Boolean(storeSettings.isDemo)}
                     />
                   )
                 )}
