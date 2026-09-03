@@ -27,6 +27,7 @@ export type PublicStoreSettings = {
   };
   deliveryCities: string[];
   businessHours: PublicBusinessHour[];
+  isDemo?: boolean;
 };
 
 const fallbackBusinessHours: PublicBusinessHour[] = [
@@ -59,6 +60,7 @@ function buildPresetStoreSettings(
     },
     deliveryCities: [address.city],
     businessHours: fallbackBusinessHours,
+    isDemo: true,
   };
 }
 

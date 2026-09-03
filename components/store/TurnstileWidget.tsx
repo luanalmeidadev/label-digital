@@ -11,6 +11,7 @@ type TurnstileWidgetProps = {
   action: "daily_order" | "preorder";
   onTokenChange: (token: string) => void;
   resetKey: number;
+  isDemo?: boolean;
 };
 
 type TurnstileApi = {
@@ -135,8 +136,12 @@ export default function TurnstileWidget({
   action,
   onTokenChange,
   resetKey,
+  isDemo,
 }: TurnstileWidgetProps) {
-  if (process.env.NODE_ENV !== "production") {
+  if (
+    process.env.NODE_ENV !== "production" ||
+    isDemo
+  ) {
     return (
       <DevelopmentSecurityCheck
         onTokenChange={onTokenChange}

@@ -1098,7 +1098,7 @@ export default function CheckoutDrawer({
 
                     <p className="mt-1 text-xs leading-5 text-brand-muted-foreground">
                       Retirar na{" "}
-                      {installation.identity.shortName}.
+                      {storeSettings.storeName}.
                     </p>
                   </button>
                   )}
@@ -1776,6 +1776,7 @@ export default function CheckoutDrawer({
                 resetKey={
                   turnstileResetKey
                 }
+                isDemo={storeSettings.isDemo}
               />
 
               {orderError && (

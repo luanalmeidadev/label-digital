@@ -122,6 +122,7 @@ function ProductCard({
           phone={whatsapp}
           product={product}
           className="mt-6 w-full"
+          isDemo={Boolean(storeSettings.isDemo)}
         />
       </div>
     </article>
@@ -201,6 +202,7 @@ export default async function EncomendasPage() {
                 phone={whatsapp}
                 label="Pedido personalizado"
                 className="border border-white/15 bg-white/10 hover:bg-white/20"
+                isDemo={Boolean(storeSettings.isDemo)}
               />
             </div>
           </div>
@@ -376,6 +378,7 @@ export default async function EncomendasPage() {
             phone={whatsapp}
             label="Pedir orçamento personalizado"
             className="w-full px-6 sm:w-auto"
+            isDemo={Boolean(storeSettings.isDemo)}
           />
         </div>
       </section>

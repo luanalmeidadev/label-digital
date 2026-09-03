@@ -393,7 +393,10 @@ export async function verifyTurnstileToken(
   expectedAction: "daily_order" | "preorder",
   remoteIp: string
 ) {
-  if (process.env.NODE_ENV !== "production") {
+  if (
+    process.env.NODE_ENV !== "production" ||
+    process.env.NEXT_PUBLIC_INSTALLATION_DEMO_MODE === "local"
+  ) {
     if (token === developmentTurnstileToken) {
       return { success: true as const };
     }

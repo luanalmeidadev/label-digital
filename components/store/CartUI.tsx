@@ -18,12 +18,19 @@ type View =
   | "checkout";
 
 export type StoreCheckoutSettings = {
+  storeName: string;
   whatsapp: string;
   pickupEnabled: boolean;
   deliveryEnabled: boolean;
   pickupAddress: string;
+  address: {
+    city: string;
+    state: string;
+    street: string;
+  };
   deliveryCities: string[];
   businessHours: StoreBusinessHour[];
+  isDemo: boolean;
 };
 
 export default function CartUI({

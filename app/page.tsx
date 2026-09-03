@@ -212,12 +212,15 @@ export default async function Home() {
 
         <CartUI
           storeSettings={{
+            storeName: storeSettings.storeName,
             whatsapp: storeSettings.whatsapp,
             pickupEnabled: storeSettings.pickupEnabled,
             deliveryEnabled: storeSettings.deliveryEnabled,
             pickupAddress: storeSettings.pickupAddress,
+            address: storeSettings.address,
             deliveryCities: storeSettings.deliveryCities,
             businessHours: storeSettings.businessHours,
+            isDemo: Boolean(storeSettings.isDemo),
           }}
         />
       </main>

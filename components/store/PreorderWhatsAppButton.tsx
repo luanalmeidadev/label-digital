@@ -65,6 +65,7 @@ type PreorderWhatsAppButtonProps = {
   product?: RequestProduct;
   label?: string;
   className?: string;
+  isDemo?: boolean;
 };
 
 type FulfillmentType =
@@ -197,6 +198,7 @@ export default function PreorderWhatsAppButton({
   product,
   label = "Quero encomendar",
   className = "",
+  isDemo,
 }: PreorderWhatsAppButtonProps) {
   const leadTimeDays =
     product?.leadTimeDays ?? 2;
@@ -975,12 +977,9 @@ export default function PreorderWhatsAppButton({
 
           <TurnstileWidget
             action="preorder"
-            onTokenChange={
-              setTurnstileToken
-            }
-            resetKey={
-              turnstileResetKey
-            }
+            onTokenChange={setTurnstileToken}
+            resetKey={turnstileResetKey}
+            isDemo={isDemo}
           />
 
           {error && (
