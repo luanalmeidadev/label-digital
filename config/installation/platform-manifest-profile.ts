@@ -167,6 +167,15 @@ export function applyPlatformDemoManifest(
       hero: {
         ...preset.publicContent.hero,
         eyebrow: name,
+        ...(manifest.contact.whatsapp
+          ? {}
+          : {
+              description:
+                preset.publicContent.hero.description.replace(
+                  / e continue o atendimento pelo WhatsApp/,
+                  ""
+                ),
+            }),
       },
     },
     legal: {

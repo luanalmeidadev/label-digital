@@ -192,6 +192,32 @@ describe("manifesto externo da Label Digital Platform", () => {
     });
   });
 
+  it("neutraliza referência a WhatsApp no hero quando manifesto não fornece WhatsApp", () => {
+    const manifest = cloneFixture();
+    delete nested(manifest, "contact").whatsapp;
+
+    const effective = resolveInstallationPreset({
+      requestedPreset: "demo-burger",
+      requestedManifest: JSON.stringify(manifest),
+      nodeEnv: "test",
+    });
+
+    expect(effective.publicContent.hero.description).not.toMatch(/WhatsApp/i);
+    expect(effective.publicContent.hero.description).toBe(
+      "Escolha seu burger, monte o pedido."
+    );
+  });
+
+  it("preserva referência a WhatsApp no hero quando manifesto fornece WhatsApp", () => {
+    const effective = resolveInstallationPreset({
+      requestedPreset: "demo-burger",
+      requestedManifest: fixtureJson,
+      nodeEnv: "test",
+    });
+
+    expect(effective.publicContent.hero.description).toMatch(/WhatsApp/i);
+  });
+
   it("não herda localidade do preset quando o manifesto fornece location vazio ou parcial", () => {
     const manifest = cloneFixture();
     delete nested(manifest, "location").city;
