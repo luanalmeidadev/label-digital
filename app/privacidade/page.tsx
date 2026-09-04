@@ -56,8 +56,10 @@ export default function PrivacyPage() {
               1. Quem é responsável
             </h2>
             <p className="mt-2">
-              {legal.controllerName}, localizada em {legal.locality.city}/
-              {legal.locality.state}, é responsável pelas decisões sobre os dados utilizados
+              {legal.controllerName}
+              {legal.locality.city && legal.locality.state
+                ? `, localizada em ${legal.locality.city}/${legal.locality.state},`
+                : ""} é responsável pelas decisões sobre os dados utilizados
               para atender os pedidos realizados neste site.
             </p>
           </section>

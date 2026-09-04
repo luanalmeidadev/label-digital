@@ -191,7 +191,7 @@ export type InstallationProfile = {
 
 export type PublicInstallationProfile = Omit<
   InstallationProfile,
-  "identity" | "contact" | "address"
+  "identity" | "contact" | "address" | "legal"
 > & {
   readonly identity: Omit<InstallationProfile["identity"], "assets"> & {
     readonly assets: Omit<InstallationProfile["identity"]["assets"], "logos"> & {
@@ -212,5 +212,14 @@ export type PublicInstallationProfile = Omit<
     readonly number: string | null;
     readonly city: string | null;
     readonly state: string | null;
+  };
+  readonly legal: Omit<InstallationProfile["legal"], "locality"> & {
+    readonly locality: Omit<
+      InstallationProfile["legal"]["locality"],
+      "city" | "state"
+    > & {
+      readonly city: string | null;
+      readonly state: string | null;
+    };
   };
 };

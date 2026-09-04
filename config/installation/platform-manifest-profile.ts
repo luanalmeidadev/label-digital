@@ -174,8 +174,8 @@ export function applyPlatformDemoManifest(
       controllerName: name,
       locality: {
         ...preset.legal.locality,
-        city: city ?? "",
-        state: state ?? "",
+        city: city ?? null,
+        state: state ?? null,
       },
     },
   });

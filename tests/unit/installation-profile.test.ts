@@ -8,7 +8,7 @@ import { brand } from "@/config/brand";
 import { getPublicInstallationProfile } from "@/config/installation/public";
 import { demoBurgerInstallationPreset } from "@/config/installation/presets/demo-burger";
 import { labelInstallationPreset } from "@/config/installation/presets/label";
-import { validateInstallationProfile } from "@/config/installation/validate";
+import { validateInstallationProfile, definePublicInstallationProfile } from "@/config/installation/validate";
 import { storeConfig } from "@/config/store";
 
 function cloneAsRecord() {
@@ -200,6 +200,59 @@ describe("Installation Profile", () => {
     );
     expect(serializedProfile).not.toMatch(
       /service_role|secret_key|auth_token|password/
+    );
+  });
+
+  it("definePublicInstallationProfile aceita whatsapp e address como null no runtime público", () => {
+    const invalidProfile = cloneAsRecord();
+    const contact = nestedRecord(invalidProfile, "contact");
+    const address = nestedRecord(invalidProfile, "address");
+    const legal = nestedRecord(invalidProfile, "legal");
+    const locality = nestedRecord(legal, "locality");
+    
+    contact.whatsapp = null;
+    address.street = null;
+    address.number = null;
+    address.city = null;
+    address.state = null;
+    locality.city = null;
+    locality.state = null;
+
+    // deve passar sem erro
+    expect(() => definePublicInstallationProfile(invalidProfile as Parameters<typeof definePublicInstallationProfile>[0])).not.toThrow();
+  });
+
+  it("validateInstallationProfile comum rejeita whatsapp e address null", () => {
+    const invalidProfile = cloneAsRecord();
+    const contact = nestedRecord(invalidProfile, "contact");
+    const address = nestedRecord(invalidProfile, "address");
+    const legal = nestedRecord(invalidProfile, "legal");
+    const locality = nestedRecord(legal, "locality");
+    
+    contact.whatsapp = null;
+    address.street = null;
+    locality.city = null;
+    locality.state = null;
+
+    const validation = validateInstallationProfile(invalidProfile);
+    expect(validation.valid).toBe(false);
+    expect(validation.errors).toEqual(
+      expect.arrayContaining([
+        "contact.whatsapp é obrigatório.",
+        "address.street é obrigatório.",
+        "legal.locality.city é obrigatório.",
+        "legal.locality.state é obrigatório.",
+      ])
+    );
+  });
+
+  it("outro campo obrigatório qualquer continua sendo rejeitado mesmo no runtime público", () => {
+    const invalidProfile = cloneAsRecord();
+    const identity = nestedRecord(invalidProfile, "identity");
+    identity.name = null;
+
+    expect(() => definePublicInstallationProfile(invalidProfile as Parameters<typeof definePublicInstallationProfile>[0])).toThrow(
+      "Perfil de instalação inválido:\n- identity.name é obrigatório."
     );
   });
 

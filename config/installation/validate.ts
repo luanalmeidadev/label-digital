@@ -165,7 +165,7 @@ export function validateInstallationProfile(
   profile: unknown,
   options?: {
     allowNullableLogos?: boolean;
-    allowNullableContactAndAddress?: boolean;
+    allowNullableContactLocationAndAddress?: boolean;
   }
 ): InstallationProfileValidation {
   const errors: string[] = [];
@@ -189,7 +189,7 @@ export function validateInstallationProfile(
     const value = getValue(profile, path);
 
     if (
-      options?.allowNullableContactAndAddress === true &&
+      options?.allowNullableContactLocationAndAddress === true &&
       value === null &&
       [
         "contact.whatsapp",
@@ -197,6 +197,8 @@ export function validateInstallationProfile(
         "address.number",
         "address.city",
         "address.state",
+        "legal.locality.city",
+        "legal.locality.state",
       ].includes(path)
     ) {
       continue;
@@ -463,7 +465,7 @@ export function definePublicInstallationProfile<
 >(profile: Profile): Profile {
   const validation = validateInstallationProfile(profile, {
     allowNullableLogos: true,
-    allowNullableContactAndAddress: true,
+    allowNullableContactLocationAndAddress: true,
   });
 
   if (!validation.valid) {

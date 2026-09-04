@@ -192,6 +192,40 @@ describe("manifesto externo da Label Digital Platform", () => {
     });
   });
 
+  it("não herda localidade do preset quando o manifesto fornece location vazio ou parcial", () => {
+    const manifest = cloneFixture();
+    delete nested(manifest, "location").city;
+    delete nested(manifest, "location").state;
+
+    const effective = resolveInstallationPreset({
+      requestedPreset: "demo-burger",
+      requestedManifest: JSON.stringify(manifest),
+      nodeEnv: "test",
+    });
+
+    expect(effective.legal.locality).toMatchObject({
+      city: null,
+      state: null,
+    });
+  });
+
+  it("preserva city/state quando o manifesto os fornece explicitamente", () => {
+    const manifest = cloneFixture();
+    nested(manifest, "location").city = "São Paulo";
+    nested(manifest, "location").state = "SP";
+
+    const effective = resolveInstallationPreset({
+      requestedPreset: "demo-burger",
+      requestedManifest: JSON.stringify(manifest),
+      nodeEnv: "test",
+    });
+
+    expect(effective.legal.locality).toMatchObject({
+      city: "São Paulo",
+      state: "SP",
+    });
+  });
+
   it("produz runtime com logo personalizada quando manifesto fornece logo", () => {
     const manifest = cloneFixture();
     nested(manifest, "business").logo = "https://example.com/logo.svg";
