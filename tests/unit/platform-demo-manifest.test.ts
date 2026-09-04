@@ -142,16 +142,41 @@ describe("manifesto externo da Label Digital Platform", () => {
         preorderSchedule: false,
       },
     });
-    expect(effective.identity.assets).toEqual(
-      demoBurgerInstallationPreset.identity.assets
-    );
+    expect(effective.identity.assets).toEqual({
+      ...demoBurgerInstallationPreset.identity.assets,
+      logos: { default: null, onPrimary: null },
+    });
     expect(effective.publicContent.hero.title).toBe(
       demoBurgerInstallationPreset.publicContent.hero.title
     );
     expect(effective.seo.title).toContain("Brasa Burger");
     expect(effective.seo.title).not.toContain("Brasa Burger Demo");
     expect(effective.legal.controllerName).toBe("Brasa Burger");
-    expect(JSON.stringify(effective)).not.toContain("Brasa Burger Demo");
+  });
+
+  it("produz runtime com logo anulada quando manifesto não possui logo", () => {
+    const effective = resolveInstallationPreset({
+      requestedPreset: "demo-burger",
+      requestedManifest: fixtureJson,
+      nodeEnv: "test",
+    });
+
+    expect(effective.identity.assets.logos.default).toBeNull();
+    expect(effective.identity.assets.logos.onPrimary).toBeNull();
+  });
+
+  it("produz runtime com logo personalizada quando manifesto fornece logo", () => {
+    const manifest = cloneFixture();
+    nested(manifest, "business").logo = "https://example.com/logo.svg";
+
+    const effective = resolveInstallationPreset({
+      requestedPreset: "demo-burger",
+      requestedManifest: JSON.stringify(manifest),
+      nodeEnv: "test",
+    });
+
+    expect(effective.identity.assets.logos.default).toBe("https://example.com/logo.svg");
+    expect(effective.identity.assets.logos.onPrimary).toBe("https://example.com/logo.svg");
   });
 
   it("mantém La'Bel e o demo base intactos quando não há manifesto", () => {

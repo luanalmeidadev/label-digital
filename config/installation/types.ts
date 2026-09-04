@@ -189,4 +189,13 @@ export type InstallationProfile = {
   readonly modules: InstallationModules;
 };
 
-export type PublicInstallationProfile = InstallationProfile;
+export type PublicInstallationProfile = Omit<InstallationProfile, "identity"> & {
+  readonly identity: Omit<InstallationProfile["identity"], "assets"> & {
+    readonly assets: Omit<InstallationProfile["identity"]["assets"], "logos"> & {
+      readonly logos: {
+        readonly default: string | null;
+        readonly onPrimary: string | null;
+      };
+    };
+  };
+};

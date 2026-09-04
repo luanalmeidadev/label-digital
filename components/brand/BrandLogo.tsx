@@ -25,9 +25,27 @@ export default function BrandLogo({
   eager?: boolean;
   className?: string;
 }) {
+  const logo = installation.identity.assets.logos.onPrimary;
+
+  if (!logo) {
+    return (
+      <div
+        className={cn(
+          "flex items-center font-bold tracking-tight text-foreground",
+          logoSizes[variant],
+          className
+        )}
+      >
+        <span className="truncate text-lg sm:text-xl">
+          {installation.identity.name}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <Image
-      src={installation.identity.assets.logos.onPrimary}
+      src={logo}
       alt={installation.identity.name}
       width={260}
       height={100}

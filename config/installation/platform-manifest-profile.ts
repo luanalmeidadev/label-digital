@@ -3,7 +3,7 @@ import type {
   FoodBusinessSegment,
   PublicInstallationProfile,
 } from "@/config/installation/types";
-import { defineInstallationProfile } from "@/config/installation/validate";
+import { definePublicInstallationProfile } from "@/config/installation/validate";
 
 const segmentSeoTitles: Record<FoodBusinessSegment, string> = {
   confectionery: "Confeitaria artesanal",
@@ -98,13 +98,20 @@ export function applyPlatformDemoManifest(
   const seoSegmentTitle = segmentSeoTitles[preset.identity.businessSegment];
   const seoTitle = `${name} | ${seoSegmentTitle}`;
 
-  return defineInstallationProfile({
+  return definePublicInstallationProfile({
     ...preset,
     identity: {
       ...preset.identity,
       name,
       shortName: name,
       slug: manifest.business.slug,
+      assets: {
+        ...preset.identity.assets,
+        logos: {
+          default: manifest.business.logo || null,
+          onPrimary: manifest.business.logo || null,
+        },
+      },
     },
     theme: {
       ...preset.theme,

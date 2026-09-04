@@ -4,6 +4,7 @@ import {
   installationModuleKeys,
   schemaOrgTypes,
   type InstallationProfile,
+  type PublicInstallationProfile,
 } from "@/config/installation/types";
 
 export type InstallationProfileValidation = {
@@ -17,8 +18,6 @@ const requiredStringPaths = [
   "identity.shortName",
   "identity.slug",
   "identity.businessSegment",
-  "identity.assets.logos.default",
-  "identity.assets.logos.onPrimary",
   "identity.assets.icon",
   "identity.assets.brandIcons.default",
   "identity.assets.brandIcons.onPrimary",
@@ -163,7 +162,8 @@ function isValidTimeZone(value: string) {
 }
 
 export function validateInstallationProfile(
-  profile: unknown
+  profile: unknown,
+  options?: { allowNullableLogos?: boolean }
 ): InstallationProfileValidation {
   const errors: string[] = [];
 
@@ -193,6 +193,21 @@ export function validateInstallationProfile(
     const value = getValue(profile, path);
     if (value !== null && (typeof value !== "string" || !value.trim())) {
       errors.push(`${path} deve ser nulo ou um texto não vazio.`);
+    }
+  }
+
+  const logoPaths = [
+    "identity.assets.logos.default",
+    "identity.assets.logos.onPrimary",
+  ] as const;
+
+  for (const path of logoPaths) {
+    const value = getValue(profile, path);
+    if (options?.allowNullableLogos === true && value === null) {
+      continue;
+    }
+    if (typeof value !== "string" || value.trim().length === 0) {
+      errors.push(`${path} é obrigatório.`);
     }
   }
 
@@ -228,6 +243,20 @@ export function validateInstallationProfile(
 
   for (const path of assetPaths) {
     const asset = getValue(profile, path);
+    const isLogo =
+      path === "identity.assets.logos.default" ||
+      path === "identity.assets.logos.onPrimary";
+
+    if (isLogo) {
+      if (options?.allowNullableLogos === true && asset === null) {
+        continue;
+      }
+      if (typeof asset !== "string" || asset.trim().length === 0) {
+        // Erro de "obrigatório" já foi emitido no loop anterior para logos nulas ou vazias
+        continue;
+      }
+    }
+
     if (typeof asset !== "string" || !isValidAssetPath(asset)) {
       errors.push(`${path} deve ser um caminho público ou uma URL HTTPS.`);
     }
@@ -401,6 +430,22 @@ export function defineInstallationProfile<
   const Profile extends InstallationProfile,
 >(profile: Profile): Profile {
   const validation = validateInstallationProfile(profile);
+
+  if (!validation.valid) {
+    throw new Error(
+      `Perfil de instalação inválido:\n- ${validation.errors.join("\n- ")}`
+    );
+  }
+
+  return deepFreeze(profile);
+}
+
+export function definePublicInstallationProfile<
+  const Profile extends PublicInstallationProfile,
+>(profile: Profile): Profile {
+  const validation = validateInstallationProfile(profile, {
+    allowNullableLogos: true,
+  });
 
   if (!validation.valid) {
     throw new Error(

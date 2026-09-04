@@ -156,7 +156,7 @@ export function parsePlatformDemoManifest(input, options = {}) {
   const business = assertRecord(manifest.business, "business");
   assertKnownKeys(
     business,
-    ["name", "slug", "segment", "preset"],
+    ["name", "slug", "segment", "preset", "logo"],
     "business"
   );
   const businessName = readString(business, "name", "business.name", {
@@ -176,6 +176,12 @@ export function parsePlatformDemoManifest(input, options = {}) {
     "preset",
     "business.preset",
     { maxLength: 80 }
+  );
+  const businessLogo = readOptionalString(
+    business,
+    "logo",
+    "business.logo",
+    200
   );
 
   if (!SLUG_PATTERN.test(businessSlug)) {
@@ -267,6 +273,7 @@ export function parsePlatformDemoManifest(input, options = {}) {
       slug: businessSlug,
       segment: businessSegment,
       preset: businessPreset,
+      ...(businessLogo ? { logo: businessLogo } : {}),
     },
     theme: { primary, secondary },
     contact: {

@@ -110,6 +110,25 @@ describe("Installation Profile", () => {
     expect(validation.errors).toContain("identity.name é obrigatório.");
   });
 
+  it("rejeita preset base sem logo", () => {
+    const invalidProfile = cloneAsRecord();
+    const identity = nestedRecord(invalidProfile, "identity");
+    const assets = nestedRecord(identity, "assets");
+    const logos = nestedRecord(assets, "logos");
+
+    logos.default = null;
+    logos.onPrimary = null;
+
+    const validation = validateInstallationProfile(invalidProfile);
+    expect(validation.valid).toBe(false);
+    expect(validation.errors).toEqual(
+      expect.arrayContaining([
+        "identity.assets.logos.default é obrigatório.",
+        "identity.assets.logos.onPrimary é obrigatório.",
+      ])
+    );
+  });
+
   it("rejeita cores, assets e regionalização inválidos", () => {
     const invalidProfile = cloneAsRecord();
     const theme = nestedRecord(invalidProfile, "theme");
@@ -209,7 +228,7 @@ describe("Installation Profile", () => {
     const publicAssets = [
       labelInstallationPreset.identity.assets,
       demoBurgerInstallationPreset.identity.assets,
-    ].flatMap((assets) => [
+    ].flatMap((assets) => ([
       assets.logos.default,
       assets.logos.onPrimary,
       assets.brandIcons.default,
@@ -217,7 +236,7 @@ describe("Installation Profile", () => {
       assets.monograms.default,
       assets.monograms.onPrimary,
       ...(assets.icon.startsWith("/demo-burger") ? [assets.icon] : []),
-    ]);
+    ]).filter((asset) => typeof asset === "string") as string[]);
 
     await Promise.all(
       publicAssets.map((asset) =>
