@@ -44,7 +44,7 @@ function ProductCard({
   locale,
 }: {
   product: PreorderProduct;
-  whatsapp: string;
+  whatsapp: string | null;
   isDemo: boolean;
   storeShortName: string;
   locale: string;

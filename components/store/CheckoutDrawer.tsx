@@ -787,23 +787,21 @@ export default function CheckoutDrawer({
          * =====================================
          */
 
-        const storeWhatsAppDigits = storeSettings.whatsapp.replace(/\D/g, "");
+        const storeWhatsAppDigits = storeSettings.whatsapp?.replace(/\D/g, "");
         const whatsappNumber =
-          storeWhatsAppDigits.length === 10 || storeWhatsAppDigits.length === 11
-            ? `55${storeWhatsAppDigits}`
-            : storeWhatsAppDigits;
+          storeWhatsAppDigits
+            ? storeWhatsAppDigits.length === 10 || storeWhatsAppDigits.length === 11
+              ? `55${storeWhatsAppDigits}`
+              : storeWhatsAppDigits
+            : null;
 
-        const whatsappAppUrl =
-          buildWhatsAppAppUrl(
-            whatsappNumber,
-            message
-          );
+        const whatsappAppUrl = whatsappNumber
+          ? buildWhatsAppAppUrl(whatsappNumber, message)
+          : null;
 
-        const whatsappWebUrl =
-          buildWhatsAppShortUrl(
-            whatsappNumber,
-            message
-          );
+        const whatsappWebUrl = whatsappNumber
+          ? buildWhatsAppShortUrl(whatsappNumber, message)
+          : null;
 
         /*
          * Pedido criado.
@@ -820,15 +818,17 @@ export default function CheckoutDrawer({
             navigator.userAgent
           );
 
-        if (isMobile) {
-          window.location.href =
-            whatsappAppUrl;
-        } else {
-          window.open(
-            whatsappWebUrl,
-            "_blank",
-            "noopener,noreferrer"
-          );
+        if (whatsappAppUrl && whatsappWebUrl) {
+          if (isMobile) {
+            window.location.href =
+              whatsappAppUrl;
+          } else {
+            window.open(
+              whatsappWebUrl,
+              "_blank",
+              "noopener,noreferrer"
+            );
+          }
         }
 
         onClose();

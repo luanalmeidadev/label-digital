@@ -189,7 +189,10 @@ export type InstallationProfile = {
   readonly modules: InstallationModules;
 };
 
-export type PublicInstallationProfile = Omit<InstallationProfile, "identity"> & {
+export type PublicInstallationProfile = Omit<
+  InstallationProfile,
+  "identity" | "contact" | "address"
+> & {
   readonly identity: Omit<InstallationProfile["identity"], "assets"> & {
     readonly assets: Omit<InstallationProfile["identity"]["assets"], "logos"> & {
       readonly logos: {
@@ -197,5 +200,17 @@ export type PublicInstallationProfile = Omit<InstallationProfile, "identity"> & 
         readonly onPrimary: string | null;
       };
     };
+  };
+  readonly contact: Omit<InstallationProfile["contact"], "whatsapp"> & {
+    readonly whatsapp: string | null;
+  };
+  readonly address: Omit<
+    InstallationProfile["address"],
+    "street" | "number" | "city" | "state"
+  > & {
+    readonly street: string | null;
+    readonly number: string | null;
+    readonly city: string | null;
+    readonly state: string | null;
   };
 };

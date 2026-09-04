@@ -65,8 +65,11 @@ export function isAllowedOrderStatusTransition(
 }
 
 export function normalizeWhatsAppPhone(
-  phone: string
+  phone: string | null
 ) {
+  if (!phone) {
+    return "";
+  }
   const digits = phone.replace(/\D/g, "");
 
   if (

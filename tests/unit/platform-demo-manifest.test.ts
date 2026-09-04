@@ -124,7 +124,15 @@ describe("manifesto externo da Label Digital Platform", () => {
       },
       theme: {
         primary: "#155EEF",
+        onPrimary: "#FFFFFF",
+        primaryHover: "#114DC4",
         accent: "#0E9384",
+        background: "#FFFFFF",
+        surface: "#FFFFFF",
+        mutedSurface: "#F4F4F5",
+        text: "#18181B",
+        mutedText: "#71717A",
+        border: "#E4E4E7",
       },
       contact: {
         whatsapp: "5511990000000",
@@ -163,6 +171,25 @@ describe("manifesto externo da Label Digital Platform", () => {
 
     expect(effective.identity.assets.logos.default).toBeNull();
     expect(effective.identity.assets.logos.onPrimary).toBeNull();
+  });
+
+  it("não herda dados de contato específicos do preset quando o manifesto não os fornece", () => {
+    const manifest = cloneFixture();
+    delete nested(manifest, "contact").whatsapp;
+    delete nested(manifest, "contact").email;
+    delete nested(manifest, "contact").instagram;
+
+    const effective = resolveInstallationPreset({
+      requestedPreset: "demo-burger",
+      requestedManifest: JSON.stringify(manifest),
+      nodeEnv: "test",
+    });
+
+    expect(effective.contact).toMatchObject({
+      whatsapp: null,
+      email: null,
+      instagram: null,
+    });
   });
 
   it("produz runtime com logo personalizada quando manifesto fornece logo", () => {

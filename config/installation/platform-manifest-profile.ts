@@ -62,13 +62,12 @@ function primaryHover(primary: string) {
 }
 
 function resolveAddress(
-  address: string | undefined,
-  preset: PublicInstallationProfile
+  address: string | undefined
 ) {
   if (!address) {
     return {
-      street: preset.address.street,
-      number: preset.address.number,
+      street: null,
+      number: null,
     };
   }
 
@@ -90,11 +89,11 @@ export function applyPlatformDemoManifest(
   manifest: PlatformDemoManifest
 ): PublicInstallationProfile {
   const name = manifest.business.name;
-  const address = resolveAddress(manifest.location.address, preset);
-  const city = manifest.location.city ?? preset.address.city;
-  const state = manifest.location.state ?? preset.address.state;
+  const address = resolveAddress(manifest.location.address);
+  const city = manifest.location.city ?? null;
+  const state = manifest.location.state ?? null;
   const oldLocality = `${preset.address.city}/${preset.address.state}`;
-  const newLocality = `${city}/${state}`;
+  const newLocality = city && state ? `${city}/${state}` : "";
   const seoSegmentTitle = segmentSeoTitles[preset.identity.businessSegment];
   const seoTitle = `${name} | ${seoSegmentTitle}`;
 
@@ -119,13 +118,19 @@ export function applyPlatformDemoManifest(
       onPrimary: readableForeground(manifest.theme.primary),
       primaryHover: primaryHover(manifest.theme.primary),
       accent: manifest.theme.secondary,
+      background: "#FFFFFF",
+      surface: "#FFFFFF",
+      mutedSurface: "#F4F4F5",
+      text: "#18181B",
+      mutedText: "#71717A",
+      border: "#E4E4E7",
     },
     contact: {
       ...preset.contact,
-      whatsapp: manifest.contact.whatsapp ?? preset.contact.whatsapp,
-      phone: manifest.contact.whatsapp ?? preset.contact.phone,
-      email: manifest.contact.email ?? preset.contact.email,
-      instagram: manifest.contact.instagram ?? preset.contact.instagram,
+      whatsapp: manifest.contact.whatsapp ?? null,
+      phone: manifest.contact.whatsapp ?? null,
+      email: manifest.contact.email ?? null,
+      instagram: manifest.contact.instagram ?? null,
     },
     address: {
       ...preset.address,
@@ -145,9 +150,11 @@ export function applyPlatformDemoManifest(
         image: {
           ...preset.seo.openGraph.image,
           alt: `${name} — cardápio digital`,
-          footerItems: preset.seo.openGraph.image.footerItems.map((item) =>
-            item === oldLocality ? newLocality : item
-          ),
+          footerItems: preset.seo.openGraph.image.footerItems
+            .map((item) =>
+              item === oldLocality ? (city && state ? newLocality : "") : item
+            )
+            .filter(Boolean),
         },
       },
       twitter: {
@@ -167,8 +174,8 @@ export function applyPlatformDemoManifest(
       controllerName: name,
       locality: {
         ...preset.legal.locality,
-        city,
-        state,
+        city: city ?? "",
+        state: state ?? "",
       },
     },
   });

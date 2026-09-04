@@ -163,7 +163,10 @@ function isValidTimeZone(value: string) {
 
 export function validateInstallationProfile(
   profile: unknown,
-  options?: { allowNullableLogos?: boolean }
+  options?: {
+    allowNullableLogos?: boolean;
+    allowNullableContactAndAddress?: boolean;
+  }
 ): InstallationProfileValidation {
   const errors: string[] = [];
 
@@ -184,6 +187,21 @@ export function validateInstallationProfile(
 
   for (const path of requiredStringPaths) {
     const value = getValue(profile, path);
+
+    if (
+      options?.allowNullableContactAndAddress === true &&
+      value === null &&
+      [
+        "contact.whatsapp",
+        "address.street",
+        "address.number",
+        "address.city",
+        "address.state",
+      ].includes(path)
+    ) {
+      continue;
+    }
+
     if (typeof value !== "string" || value.trim().length === 0) {
       errors.push(`${path} é obrigatório.`);
     }
@@ -445,6 +463,7 @@ export function definePublicInstallationProfile<
 >(profile: Profile): Profile {
   const validation = validateInstallationProfile(profile, {
     allowNullableLogos: true,
+    allowNullableContactAndAddress: true,
   });
 
   if (!validation.valid) {

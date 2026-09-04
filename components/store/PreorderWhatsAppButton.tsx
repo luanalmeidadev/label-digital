@@ -59,7 +59,7 @@ type RequestProduct = Pick<
 >;
 
 type PreorderWhatsAppButtonProps = {
-  phone: string;
+  phone: string | null;
   storeShortName: string;
   locale: string;
   product?: RequestProduct;
@@ -242,6 +242,8 @@ export default function PreorderWhatsAppButton({
     useState(0);
   const idempotencyKeyRef = useRef("");
 
+  const normalizedStorePhone = normalizeWhatsAppPhone(phone);
+
   const minimumDate = useMemo(
     () => getMinimumDate(leadTimeDays),
     [leadTimeDays]
@@ -336,8 +338,6 @@ export default function PreorderWhatsAppButton({
     event.preventDefault();
     setError("");
 
-    const normalizedStorePhone =
-      normalizeWhatsAppPhone(phone);
     const normalizedCustomerPhone =
       normalizeWhatsAppPhone(customerPhone);
     const parsedQuantity = Number(quantity);
@@ -415,7 +415,7 @@ export default function PreorderWhatsAppButton({
       return;
     }
 
-    if (!normalizedStorePhone) {
+    if (!normalizedStorePhone && !isDemo) {
       setError(
         "O WhatsApp da loja não está configurado."
       );
@@ -438,7 +438,7 @@ export default function PreorderWhatsAppButton({
       /Android|iPhone|iPad|iPod/i.test(
         navigator.userAgent
       );
-    const whatsappWindow = isMobile
+    const whatsappWindow = isMobile || !normalizedStorePhone
       ? null
       : window.open("about:blank", "_blank");
 
@@ -556,25 +556,27 @@ export default function PreorderWhatsAppButton({
       locale,
     });
 
-    if (isMobile) {
-      window.location.href = buildWhatsAppAppUrl(
-        normalizedStorePhone,
-        message
-      );
-      setSaving(false);
-      return;
-    }
+    if (normalizedStorePhone) {
+      if (isMobile) {
+        window.location.href = buildWhatsAppAppUrl(
+          normalizedStorePhone,
+          message
+        );
+        setSaving(false);
+        return;
+      }
 
-    if (whatsappWindow) {
-      whatsappWindow.location.href = buildWhatsAppWebUrl(
-        normalizedStorePhone,
-        message
-      );
-    } else {
-      window.location.href = buildWhatsAppShortUrl(
-        normalizedStorePhone,
-        message
-      );
+      if (whatsappWindow) {
+        whatsappWindow.location.href = buildWhatsAppWebUrl(
+          normalizedStorePhone,
+          message
+        );
+      } else {
+        window.location.href = buildWhatsAppShortUrl(
+          normalizedStorePhone,
+          message
+        );
+      }
     }
 
     setSaving(false);
@@ -1022,7 +1024,9 @@ export default function PreorderWhatsAppButton({
             <MessageCircle size={18} />
             {saving
               ? "Registrando encomenda..."
-              : "Registrar e enviar pelo WhatsApp"}
+              : normalizedStorePhone || !isDemo
+                ? "Registrar e enviar pelo WhatsApp"
+                : "Registrar encomenda (Modo Demo)"}
           </button>
         </form>
       </DialogContent>

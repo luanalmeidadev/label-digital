@@ -14,16 +14,16 @@ export type PublicBusinessHour = {
 
 export type PublicStoreSettings = {
   storeName: string;
-  whatsapp: string;
+  whatsapp: string | null;
   instagram: string | null;
   pickupEnabled: boolean;
   deliveryEnabled: boolean;
   pickupAddress: string;
   address: {
-    street: string;
-    number: string;
-    city: string;
-    state: string;
+    street: string | null;
+    number: string | null;
+    city: string | null;
+    state: string | null;
   };
   deliveryCities: string[];
   businessHours: PublicBusinessHour[];
@@ -51,14 +51,14 @@ function buildPresetStoreSettings(
     instagram: contact.instagram,
     pickupEnabled: modules.pickup,
     deliveryEnabled: modules.delivery,
-    pickupAddress: `${address.street}, ${address.number} — ${address.city}/${address.state}`,
+    pickupAddress: address.street ? `${address.street}, ${address.number} — ${address.city}/${address.state}` : "",
     address: {
       street: address.street,
       number: address.number,
       city: address.city,
       state: address.state,
     },
-    deliveryCities: [address.city],
+    deliveryCities: address.city ? [address.city] : [],
     businessHours: fallbackBusinessHours,
     isDemo: true,
   };

@@ -91,12 +91,12 @@ type StoreSchemaInput = {
   installation: PublicInstallationProfile;
   siteUrl: URL;
   storeName: string;
-  whatsapp: string;
+  whatsapp: string | null;
   address: {
-    street: string;
-    number: string;
-    city: string;
-    state: string;
+    street: string | null;
+    number: string | null;
+    city: string | null;
+    state: string | null;
   };
   deliveryCities: readonly string[];
   businessHours: readonly SchemaBusinessHour[];
@@ -128,13 +128,13 @@ export function buildStoreSchemaOrg({
     "@type": installation.seo.schemaOrgType,
     name: storeName,
     url: siteUrl.toString(),
-    telephone: whatsapp,
+    telephone: whatsapp ?? undefined,
     image: new URL("/opengraph-image", siteUrl).toString(),
     address: {
       "@type": "PostalAddress",
-      streetAddress: `${address.street}, ${address.number}`,
-      addressLocality: address.city,
-      addressRegion: address.state,
+      streetAddress: address.street ? `${address.street}, ${address.number}` : undefined,
+      addressLocality: address.city ?? undefined,
+      addressRegion: address.state ?? undefined,
       addressCountry: installation.address.country,
     },
     areaServed: [...deliveryCities],

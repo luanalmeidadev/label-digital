@@ -21,14 +21,15 @@ export type StoreCheckoutSettings = {
   storeName: string;
   storeShortName: string;
   locale: string;
-  whatsapp: string;
+  whatsapp: string | null;
   pickupEnabled: boolean;
   deliveryEnabled: boolean;
   pickupAddress: string;
   address: {
-    city: string;
-    state: string;
-    street: string;
+    city: string | null;
+    state: string | null;
+    street: string | null;
+    number?: string | null;
   };
   deliveryCities: string[];
   businessHours: StoreBusinessHour[];
