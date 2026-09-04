@@ -178,7 +178,7 @@ export default async function OrderTrackingPage({
             className="inline-flex"
             aria-label={`Voltar ao cardápio da ${displayShortName}`}
           >
-            <BrandLogo variant="order" eager />
+            <BrandLogo variant="order" eager storeName={installation.identity.name} logoUrl={installation.identity.assets.logos.onPrimary} />
           </Link>
 
           <p className="mt-5 text-xs font-bold uppercase tracking-[0.2em] text-[#F7E8DA]">

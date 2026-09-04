@@ -1,9 +1,6 @@
 import Image from "next/image";
 
-import { getPublicInstallationProfile } from "@/config/installation/public";
 import { cn } from "@/lib/utils";
-
-const installation = getPublicInstallationProfile();
 
 const logoSizes = {
   header:
@@ -17,17 +14,19 @@ const logoSizes = {
 } as const;
 
 export default function BrandLogo({
+  storeName,
+  logoUrl,
   variant = "header",
   eager = false,
   className,
 }: {
+  storeName: string;
+  logoUrl?: string | null;
   variant?: keyof typeof logoSizes;
   eager?: boolean;
   className?: string;
 }) {
-  const logo = installation.identity.assets.logos.onPrimary;
-
-  if (!logo) {
+  if (!logoUrl) {
     return (
       <div
         className={cn(
@@ -37,7 +36,7 @@ export default function BrandLogo({
         )}
       >
         <span className="truncate text-lg sm:text-xl">
-          {installation.identity.name}
+          {storeName}
         </span>
       </div>
     );
@@ -45,8 +44,8 @@ export default function BrandLogo({
 
   return (
     <Image
-      src={logo}
-      alt={installation.identity.name}
+      src={logoUrl}
+      alt={storeName}
       width={260}
       height={100}
       loading={eager ? "eager" : "lazy"}

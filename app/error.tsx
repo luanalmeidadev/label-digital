@@ -1,14 +1,9 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect } from "react";
-import { RefreshCw } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 import * as Sentry from "@sentry/nextjs";
-
-import { getPublicInstallationProfile } from "@/config/installation/public";
-
-const installation = getPublicInstallationProfile();
 
 export default function ErrorPage({
   error,
@@ -25,15 +20,8 @@ export default function ErrorPage({
   return (
     <main className="flex min-h-screen items-center justify-center bg-brand-background px-5 py-12">
       <section className="w-full max-w-lg rounded-3xl border border-brand-border bg-white p-7 text-center shadow-sm sm:p-10">
-        <div className="relative mx-auto h-[107px] w-[100px]">
-          <Image
-            src={installation.identity.assets.monograms.default}
-            alt={installation.identity.name}
-            fill
-            sizes="100px"
-            className="object-contain"
-            priority
-          />
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-500">
+          <AlertTriangle size={32} />
         </div>
 
         <p className="mt-6 text-xs font-bold uppercase tracking-[0.18em] text-brand-primary">

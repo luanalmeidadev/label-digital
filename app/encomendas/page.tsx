@@ -40,10 +40,14 @@ function ProductCard({
   product,
   whatsapp,
   isDemo,
+  storeShortName,
+  locale,
 }: {
   product: PreorderProduct;
   whatsapp: string;
   isDemo: boolean;
+  storeShortName: string;
+  locale: string;
 }) {
   return (
     <article className="group flex h-full flex-col overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
@@ -125,6 +129,8 @@ function ProductCard({
           product={product}
           className="mt-6 w-full"
           isDemo={isDemo}
+          storeShortName={storeShortName}
+          locale={locale}
         />
       </div>
     </article>
@@ -147,6 +153,7 @@ export default async function EncomendasPage() {
     storeSettings.instagram
   );
   const instagramUrl = buildInstagramUrl(storeSettings.instagram);
+  const isDemo = Boolean(storeSettings.isDemo);
 
   return (
     <main className="min-h-screen bg-brand-background">
@@ -157,7 +164,7 @@ export default async function EncomendasPage() {
             href="/"
             aria-label="Voltar para o cardápio do dia"
           >
-            <BrandLogo eager />
+            <BrandLogo eager storeName={installation.identity.name} logoUrl={installation.identity.assets.logos.onPrimary} />
           </Link>
 
           <Link
@@ -204,7 +211,9 @@ export default async function EncomendasPage() {
                 phone={whatsapp}
                 label="Pedido personalizado"
                 className="border border-white/15 bg-white/10 hover:bg-white/20"
-                isDemo={Boolean(storeSettings.isDemo)}
+                isDemo={isDemo}
+                storeShortName={installation.identity.shortName}
+                locale={installation.regionalization.locale}
               />
             </div>
           </div>
@@ -353,7 +362,9 @@ export default async function EncomendasPage() {
                       key={product.name}
                       product={product}
                       whatsapp={whatsapp}
-                      isDemo={Boolean(storeSettings.isDemo)}
+                      isDemo={isDemo}
+                      storeShortName={installation.identity.shortName}
+                      locale={installation.regionalization.locale}
                     />
                   )
                 )}
@@ -382,13 +393,15 @@ export default async function EncomendasPage() {
             label="Pedir orçamento personalizado"
             className="w-full px-6 sm:w-auto"
             isDemo={Boolean(storeSettings.isDemo)}
+            storeShortName={installation.identity.shortName}
+            locale={installation.regionalization.locale}
           />
         </div>
       </section>
 
       <footer className="bg-brand-foreground text-white">
         <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-9 sm:flex-row sm:items-center sm:justify-between">
-          <BrandLogo variant="footer" />
+          <BrandLogo variant="footer" storeName={installation.identity.name} logoUrl={installation.identity.assets.logos.onPrimary} />
 
           <div className="flex flex-col gap-3 text-sm text-white/75 sm:flex-row sm:items-center sm:gap-6">
             {instagramHandle && instagramUrl && (

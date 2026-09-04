@@ -27,7 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import TurnstileWidget from "@/components/store/TurnstileWidget";
-import { getPublicInstallationProfile } from "@/config/installation/public";
+
 import { createClientRequestId } from "@/lib/client-request-id";
 import { normalizeWhatsAppPhone } from "@/lib/order-status";
 import type { PreorderProduct } from "@/lib/preorder-menu";
@@ -42,8 +42,6 @@ import {
   buildWhatsAppShortUrl,
   buildWhatsAppWebUrl,
 } from "@/lib/whatsapp-link";
-
-const installation = getPublicInstallationProfile();
 
 type RequestProduct = Pick<
   PreorderProduct,
@@ -62,6 +60,8 @@ type RequestProduct = Pick<
 
 type PreorderWhatsAppButtonProps = {
   phone: string;
+  storeShortName: string;
+  locale: string;
   product?: RequestProduct;
   label?: string;
   className?: string;
@@ -124,7 +124,7 @@ function formatPhone(value: string) {
   return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
 }
 
-function buildPreorderMessage({
+function buildWhatsAppMessage({
   requestNumber,
   customerName,
   customerPhone,
@@ -138,6 +138,8 @@ function buildPreorderMessage({
   fulfillmentType,
   deliveryAddress,
   notes,
+  storeShortName,
+  locale,
 }: {
   requestNumber: string;
   customerName: string;
@@ -152,11 +154,13 @@ function buildPreorderMessage({
   fulfillmentType: FulfillmentType;
   deliveryAddress: string;
   notes: string;
+  storeShortName: string;
+  locale: string;
 }) {
   return [
-    `\u{1F370} *SOLICITAÇÃO DE ENCOMENDA - ${installation.identity.shortName
+    `\u{1F370} *SOLICITAÇÃO DE ENCOMENDA - ${storeShortName
       .replaceAll("'", "’")
-      .toLocaleUpperCase(installation.regionalization.locale)}*`,
+      .toLocaleUpperCase(locale)}*`,
     "",
     `*Código:* ${requestNumber}`,
     `*Cliente:* ${customerName}`,
@@ -195,6 +199,8 @@ function buildPreorderMessage({
 
 export default function PreorderWhatsAppButton({
   phone,
+  storeShortName,
+  locale,
   product,
   label = "Quero encomendar",
   className = "",
@@ -522,7 +528,7 @@ export default function PreorderWhatsAppButton({
     idempotencyKeyRef.current = "";
     setTurnstileToken("");
 
-    const message = buildPreorderMessage({
+    const message = buildWhatsAppMessage({
       requestNumber: result.requestNumber,
       customerName: customerName.trim(),
       customerPhone,
@@ -546,6 +552,8 @@ export default function PreorderWhatsAppButton({
       deliveryAddress:
         deliveryAddress.trim(),
       notes,
+      storeShortName,
+      locale,
     });
 
     if (isMobile) {

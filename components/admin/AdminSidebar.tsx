@@ -40,6 +40,14 @@ type MenuItem = {
   module?: InstallationModuleKey;
 };
 
+type AdminSidebarProps = {
+  permissions: AdminPermission[];
+  role: AdminRole;
+  name: string;
+  storeName: string;
+  logoUrl?: string | null;
+};
+
 const menuSections: Array<{
   label: string;
   items: MenuItem[];
@@ -147,11 +155,9 @@ export default function AdminSidebar({
   permissions,
   role,
   name,
-}: {
-  permissions: AdminPermission[];
-  role: AdminRole;
-  name: string;
-}) {
+  storeName,
+  logoUrl,
+}: AdminSidebarProps) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -256,7 +262,7 @@ export default function AdminSidebar({
       <aside className="hidden h-screen w-64 shrink-0 border-r border-white/10 bg-brand-primary print:hidden lg:sticky lg:top-0 lg:block">
         <div className="flex h-full flex-col px-4 py-6">
           <div className="mb-8 px-3">
-            <BrandLogo variant="sidebar" eager />
+            <BrandLogo variant="sidebar" eager storeName={storeName} logoUrl={logoUrl} />
 
             <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-brand-secondary">
               {role === "admin"
@@ -283,7 +289,7 @@ export default function AdminSidebar({
       ===================================== */}
 
       <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b border-brand-border bg-brand-primary px-4 print:hidden lg:hidden">
-        <BrandLogo variant="mobile" eager />
+        <BrandLogo variant="mobile" eager storeName={storeName} logoUrl={logoUrl} />
 
         <button
           type="button"
@@ -315,7 +321,7 @@ export default function AdminSidebar({
           <aside className="relative z-10 flex h-full w-[84%] max-w-xs flex-col bg-brand-primary px-4 py-5 shadow-2xl">
             <div className="mb-7 flex items-start justify-between gap-4 px-2">
               <div>
-                <BrandLogo variant="drawer" eager />
+                <BrandLogo variant="drawer" eager storeName={storeName} logoUrl={logoUrl} />
 
                 <p className="mt-3 text-xs font-bold uppercase tracking-[0.18em] text-brand-secondary">
                   {role === "admin"

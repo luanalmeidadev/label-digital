@@ -19,6 +19,8 @@ type View =
 
 export type StoreCheckoutSettings = {
   storeName: string;
+  storeShortName: string;
+  locale: string;
   whatsapp: string;
   pickupEnabled: boolean;
   deliveryEnabled: boolean;

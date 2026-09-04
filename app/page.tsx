@@ -152,7 +152,7 @@ export default async function Home() {
       />
       <StoreRealtimeRefresh />
       <main className="min-h-screen bg-brand-background">
-        <Header />
+        <Header storeName={installation.identity.name} logoUrl={installation.identity.assets.logos.onPrimary} />
         <Hero
           storeName={storeSettings.storeName}
           businessHours={storeSettings.businessHours}
@@ -188,7 +188,7 @@ export default async function Home() {
 
         <footer className="mt-16 bg-brand-foreground text-white">
           <div className="mx-auto flex max-w-6xl flex-col gap-6 px-5 py-9 sm:flex-row sm:items-center sm:justify-between">
-            <BrandLogo variant="footer" />
+            <BrandLogo variant="footer" storeName={installation.identity.name} logoUrl={installation.identity.assets.logos.onPrimary} />
             <div className="flex flex-col gap-3 text-sm text-white/75 sm:flex-row sm:items-center sm:gap-6">
               {instagramHandle && instagramUrl && (
                 <a
@@ -213,6 +213,8 @@ export default async function Home() {
         <CartUI
           storeSettings={{
             storeName: storeSettings.storeName,
+            storeShortName: installation.identity.shortName,
+            locale: installation.regionalization.locale,
             whatsapp: storeSettings.whatsapp,
             pickupEnabled: storeSettings.pickupEnabled,
             deliveryEnabled: storeSettings.deliveryEnabled,

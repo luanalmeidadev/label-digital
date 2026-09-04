@@ -27,7 +27,7 @@ export default function PrivacyPage() {
     <main className="min-h-screen bg-brand-background">
       <header className="bg-brand-primary">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-5 px-5 py-5">
-          <BrandLogo variant="header" eager />
+          <BrandLogo variant="header" eager storeName={installation.identity.name} logoUrl={installation.identity.assets.logos.onPrimary} />
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-white/20"

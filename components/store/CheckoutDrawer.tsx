@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 
 import { createOrder } from "@/app/store/checkout/actions";
-import { getPublicInstallationProfile } from "@/config/installation/public";
+
 import { createClientRequestId } from "@/lib/client-request-id";
 import { buildOrderItemsWhatsAppText } from "@/lib/order-item-display";
 import {
@@ -39,8 +39,6 @@ import type { StoreCheckoutSettings } from "./CartUI";
 
 import { useCart } from "./CartProvider";
 import TurnstileWidget from "./TurnstileWidget";
-
-const installation = getPublicInstallationProfile();
 
 export type FulfillmentType =
   | "pickup"
@@ -702,10 +700,10 @@ export default function CheckoutDrawer({
          */
 
         const message = [
-          `\u{1F370} *${installation.identity.name.toLocaleUpperCase(
-            installation.regionalization.locale
+          `\u{1F370} *${storeSettings.storeName.toLocaleUpperCase(
+            storeSettings.locale
           )}*`,
-
+          "",
           `*Pedido #${result.orderNumber}*`,
 
           "",
@@ -1150,7 +1148,7 @@ export default function CheckoutDrawer({
                   !storeSettings.deliveryEnabled && (
                     <p className="mt-4 rounded-2xl bg-amber-50 p-4 text-sm font-semibold text-amber-800">
                       Os pedidos estão temporariamente indisponíveis. Entre em
-                      contato com a {installation.identity.shortName} para mais informações.
+                      contato com a {storeSettings.storeShortName} para mais informações.
                     </p>
                   )}
 

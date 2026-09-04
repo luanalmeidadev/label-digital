@@ -5,13 +5,19 @@ import { ShoppingBag } from "lucide-react";
 import BrandLogo from "@/components/brand/BrandLogo";
 import { useCart } from "./CartProvider";
 
-export default function Header() {
+export default function Header({
+  storeName,
+  logoUrl,
+}: {
+  storeName: string;
+  logoUrl?: string | null;
+}) {
   const { totalItems } = useCart();
 
   return (
     <header className="bg-brand-primary">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-        <BrandLogo eager />
+        <BrandLogo storeName={storeName} logoUrl={logoUrl} eager />
 
         <button
           type="button"

@@ -4,10 +4,6 @@ import { useEffect } from "react";
 import Link from "next/link";
 import * as Sentry from "@sentry/nextjs";
 
-import { getPublicInstallationProfile } from "@/config/installation/public";
-
-const installation = getPublicInstallationProfile();
-
 export default function GlobalError({
   error,
   retry,
@@ -21,7 +17,7 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang={installation.regionalization.locale}>
+    <html lang="pt-BR">
       <body
         style={{
           margin: 0,
@@ -30,7 +26,7 @@ export default function GlobalError({
           fontFamily: "Arial, Helvetica, sans-serif",
         }}
       >
-        <title>Algo deu errado | {installation.identity.name}</title>
+        <title>Algo deu errado</title>
         <main
           style={{
             minHeight: "100vh",
@@ -53,18 +49,6 @@ export default function GlobalError({
               boxShadow: "0 8px 30px rgba(36, 27, 25, 0.06)",
             }}
           >
-            <p
-              style={{
-                margin: 0,
-                color: "#8B0000",
-                fontSize: 14,
-                fontWeight: 800,
-                letterSpacing: "0.16em",
-                textTransform: "uppercase",
-              }}
-            >
-              {installation.identity.name}
-            </p>
             <h1 style={{ margin: "18px 0 0", fontSize: 28 }}>
               Não foi possível abrir esta página
             </h1>
