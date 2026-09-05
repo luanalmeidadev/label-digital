@@ -270,7 +270,7 @@ export async function createOrder(
       new Date()
     );
 
-    if (!storeStatus.isOpen) {
+    if (!storeStatus.isOpen && process.env.NEXT_PUBLIC_INSTALLATION_DEMO_MODE !== "local") {
       return {
         success: false,
         error: `A loja está fechada agora. ${storeStatus.detail}. Seu carrinho continua salvo.`,

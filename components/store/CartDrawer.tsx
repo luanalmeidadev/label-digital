@@ -19,6 +19,7 @@ type CartDrawerProps = {
   onClose: () => void;
   onContinue: () => void;
   storeStatus: StoreOpenStatus | null;
+  isDemo: boolean;
 };
 
 function formatCurrency(value: number) {
@@ -33,6 +34,7 @@ export default function CartDrawer({
   onClose,
   onContinue,
   storeStatus,
+  isDemo,
 }: CartDrawerProps) {
   const {
     items,
@@ -271,10 +273,10 @@ export default function CartDrawer({
             <button
               type="button"
               onClick={onContinue}
-              disabled={!storeStatus?.isOpen}
+              disabled={!storeStatus?.isOpen && !isDemo}
               className="mt-4 h-12 w-full rounded-xl bg-brand-primary text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:bg-[#B9ACA8]"
             >
-              {storeStatus?.isOpen
+              {storeStatus?.isOpen || isDemo
                 ? "Continuar pedido"
                 : storeStatus
                   ? "Carrinho salvo — loja fechada"

@@ -81,6 +81,7 @@ export default function CartUI({
           setView("checkout")
         }
         storeStatus={storeStatus}
+        isDemo={storeSettings.isDemo}
       />
 
       <CheckoutDrawer

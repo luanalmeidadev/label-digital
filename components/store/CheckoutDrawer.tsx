@@ -478,7 +478,7 @@ export default function CheckoutDrawer({
       return;
     }
 
-    if (!storeStatus?.isOpen) {
+    if (!storeStatus?.isOpen && !storeSettings.isDemo) {
       setOrderError(
         storeStatus
           ? `A loja está fechada agora. ${storeStatus.detail}. Seu carrinho continua salvo.`
@@ -1806,7 +1806,7 @@ export default function CheckoutDrawer({
                 disabled={
                   isPending ||
                   !turnstileToken ||
-                  !storeStatus?.isOpen ||
+                  (!storeStatus?.isOpen && !storeSettings.isDemo) ||
                   !paymentValid
                 }
                 className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-primary text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
@@ -1823,7 +1823,7 @@ export default function CheckoutDrawer({
                     Criando
                     pedido...
                   </>
-                ) : !storeStatus?.isOpen ? (
+                ) : (!storeStatus?.isOpen && !storeSettings.isDemo) ? (
                   "Carrinho salvo — loja fechada"
                 ) : (
                   "Enviar pedido pelo WhatsApp"
