@@ -38,9 +38,7 @@ test("respeita a disponibilidade do módulo de encomendas", async ({
   }
 });
 
-test("expõe o estado de saúde do sistema", async ({ request }) => {
+test("protege o estado de saúde do sistema (requer secret)", async ({ request }) => {
   const response = await request.get("/api/health");
-
-  expect(response.status()).toBe(200);
-  await expect(response.json()).resolves.toEqual({ status: "ok" });
+  expect(response.status()).toBe(401);
 });
