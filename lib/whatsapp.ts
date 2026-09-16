@@ -24,6 +24,7 @@ type WhatsAppOrder = {
   customerName: string;
   phone: string;
 
+
   orderType: "pickup" | "delivery";
 
   address?: string;
@@ -31,6 +32,9 @@ type WhatsAppOrder = {
   items: WhatsAppItem[];
 
   subtotal: number;
+
+  couponCode?: string | null;
+  discountAmount?: number | null;
 
   deliveryFee?: number;
 
@@ -98,7 +102,11 @@ ${items}
 -----------------------
 
 Subtotal: ${currency(order.subtotal)}
-Taxa de entrega: ${currency(order.deliveryFee ?? 0)}
+${
+  order.discountAmount && order.discountAmount > 0
+    ? `Cupom ${order.couponCode}: -${currency(order.discountAmount)}\n`
+    : ""
+}Taxa de entrega: ${currency(order.deliveryFee ?? 0)}
 
 \u{1F4B0} Total: ${currency(order.total)}
 

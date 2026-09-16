@@ -19,6 +19,7 @@ import {
   Tags,
   Truck,
   Users,
+  Ticket,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -129,6 +130,17 @@ const menuSections: Array<{
         href: "/admin/relatorios",
         icon: BarChart3,
         permission: "billing",
+      },
+    ],
+  },
+  {
+    label: "Marketing",
+    items: [
+      {
+        label: "Cupons",
+        href: "/admin/cupons",
+        icon: Ticket,
+        adminOnly: true,
       },
     ],
   },

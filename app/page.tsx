@@ -221,6 +221,7 @@ export default async function Home() {
             pickupAddress: storeSettings.pickupAddress,
             address: storeSettings.address,
             deliveryCities: storeSettings.deliveryCities,
+            deliveryZones: storeSettings.deliveryZones,
             businessHours: storeSettings.businessHours,
             isDemo: Boolean(storeSettings.isDemo),
           }}

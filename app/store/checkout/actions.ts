@@ -68,6 +68,7 @@ type CreateOrderInput = {
   items: CheckoutItem[];
 
   notes?: string;
+  couponCode?: string | null;
 };
 
 type CreateOrderResult =
@@ -170,7 +171,10 @@ function isCreateOrderInput(value: unknown): value is CreateOrderInput {
           typeof item.itemNotes === "string") &&
         typeof item.quantity === "number" &&
         Number.isFinite(item.quantity)
-    )
+    ) &&
+    (value.couponCode === undefined ||
+      value.couponCode === null ||
+      typeof value.couponCode === "string")
   );
 }
 
@@ -452,6 +456,55 @@ export async function createOrder(
       0
     );
 
+    /*
+     * =========================================
+     * 3.5. VALIDAR E APLICAR CUPOM
+     * =========================================
+     */
+
+    let finalCouponCode: string | null = null;
+    let finalDiscountAmount = 0;
+
+    if (typeof input.couponCode === "string" && input.couponCode.trim()) {
+      const normalizedCode = input.couponCode.trim().toUpperCase();
+
+      if (!/^[A-Z0-9_-]{1,20}$/.test(normalizedCode)) {
+        return {
+          success: false,
+          error: "Cupom inválido ou expirado.",
+        };
+      }
+
+      const { data: coupon, error: couponError } = await supabase
+        .from("coupons")
+        .select("id, discount_percent, expires_at, active")
+        .eq("code", normalizedCode)
+        .maybeSingle();
+
+      if (couponError) {
+        console.error("Erro ao validar cupom na finalização:", couponError);
+        return {
+          success: false,
+          error: "Não foi possível validar o cupom. Tente novamente.",
+        };
+      }
+
+      if (
+        !coupon ||
+        !coupon.active ||
+        (coupon.expires_at && new Date(coupon.expires_at).getTime() < Date.now())
+      ) {
+        return {
+          success: false,
+          error: "Cupom inválido ou expirado.",
+        };
+      }
+
+      finalCouponCode = normalizedCode;
+      const discountPercent = Number(coupon.discount_percent);
+      finalDiscountAmount = Math.round((subtotal * discountPercent) / 100 * 100) / 100;
+    }
+
     const orderItems = pricedItems.map((item) => {
       const snapshot = buildPersistableOrderItemSnapshot(item);
 
@@ -584,6 +637,7 @@ export async function createOrder(
             JSON.stringify(first).localeCompare(JSON.stringify(second))
           ),
         notes,
+        couponCode: input.couponCode ? input.couponCode.trim().toUpperCase() : null,
       });
 
     const previousRequest =
@@ -758,14 +812,30 @@ export async function createOrder(
           resolvedAddress.city
         );
 
-      const zone =
+      const neighborhoodNormalized =
+        normalizeText(
+          resolvedAddress.neighborhood
+        );
+
+      let zone =
         zones?.find(
           (item) =>
             normalizeText(
               item.neighborhood
             ) ===
-            cityNormalized
+            neighborhoodNormalized
         );
+
+      if (!zone) {
+        zone =
+          zones?.find(
+            (item) =>
+              normalizeText(
+                item.neighborhood
+              ) ===
+              cityNormalized
+          );
+      }
 
       if (!zone) {
         return {
@@ -1102,7 +1172,7 @@ export async function createOrder(
      */
 
     const total =
-      subtotal + deliveryFee;
+      Math.max(0, subtotal - finalDiscountAmount) + deliveryFee;
 
     if (
       !validateCashChange(
@@ -1128,6 +1198,7 @@ export async function createOrder(
       p_delivery_fee: deliveryFee,
       p_notes: notes || null,
       p_items: orderItems,
+      p_coupon_code: finalCouponCode,
     });
 
     const order = Array.isArray(createdOrders)
@@ -1218,5 +1289,73 @@ export async function createOrder(
       error:
         "Ocorreu um erro ao criar o pedido.",
     };
+  }
+}
+
+/*
+ * =========================================
+ * VALIDAR CUPOM PARA PREVIEW
+ * =========================================
+ */
+
+export type ValidateCouponResult =
+  | {
+      valid: true;
+      code: string;
+      discountPercent: number;
+      discountAmount: number;
+    }
+  | {
+      valid: false;
+      error: string;
+    };
+
+export async function validateCouponForCheckout(
+  code: string,
+  currentSubtotal: number
+): Promise<ValidateCouponResult> {
+  try {
+    if (!code || typeof code !== "string" || !code.trim()) {
+      return { valid: false, error: "Cupom inválido ou expirado." };
+    }
+
+    const normalizedCode = code.trim().toUpperCase();
+
+    if (!/^[A-Z0-9_-]{1,20}$/.test(normalizedCode)) {
+      return { valid: false, error: "Cupom inválido ou expirado." };
+    }
+
+    const supabase = createSupabaseAdminClient();
+    const { data: coupon, error } = await supabase
+      .from("coupons")
+      .select("discount_percent, expires_at, active")
+      .eq("code", normalizedCode)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Erro ao verificar cupom para preview:", error);
+      return { valid: false, error: "Não foi possível validar o cupom no momento." };
+    }
+
+    if (
+      !coupon ||
+      !coupon.active ||
+      (coupon.expires_at && new Date(coupon.expires_at).getTime() < Date.now())
+    ) {
+      return { valid: false, error: "Cupom inválido ou expirado." };
+    }
+
+    const discountPercent = Number(coupon.discount_percent);
+    const discountAmount = Math.round((currentSubtotal * discountPercent) / 100 * 100) / 100;
+
+    return {
+      valid: true,
+      code: normalizedCode,
+      discountPercent,
+      discountAmount,
+    };
+  } catch (err) {
+    console.error("Erro inesperado ao validar cupom para preview:", err);
+    return { valid: false, error: "Ocorreu um erro ao validar o cupom." };
   }
 }

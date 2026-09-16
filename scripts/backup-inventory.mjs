@@ -6,6 +6,7 @@ export const applicationTables = Object.freeze([
   "product_options",
   "customers",
   "addresses",
+  "coupons",
   "orders",
   "order_items",
   "order_item_options",

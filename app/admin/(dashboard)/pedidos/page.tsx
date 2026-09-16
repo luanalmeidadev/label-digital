@@ -87,6 +87,9 @@ export default async function PedidosPage() {
         subtotal,
         delivery_fee,
         total,
+        coupon_code,
+        discount_amount,
+        discount_percent,
         notes,
         created_at,
 
@@ -437,6 +440,19 @@ export default async function PedidosPage() {
                               Number(
                                 order.total
                               ),
+
+                            coupon_code:
+                              order.coupon_code,
+
+                            discount_amount:
+                              order.discount_amount !== null
+                                ? Number(order.discount_amount)
+                                : null,
+
+                            discount_percent:
+                              order.discount_percent !== null
+                                ? Number(order.discount_percent)
+                                : null,
 
                             notes:
                               order.notes,

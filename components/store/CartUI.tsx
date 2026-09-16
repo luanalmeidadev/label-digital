@@ -32,6 +32,11 @@ export type StoreCheckoutSettings = {
     number?: string | null;
   };
   deliveryCities: string[];
+  deliveryZones: {
+    neighborhood: string;
+    delivery_fee: number;
+    fee_type: "fixed" | "consult";
+  }[];
   businessHours: StoreBusinessHour[];
   isDemo: boolean;
 };

@@ -39,6 +39,7 @@ import type { StoreCheckoutSettings } from "./CartUI";
 
 import { useCart } from "./CartProvider";
 import TurnstileWidget from "./TurnstileWidget";
+import CheckoutCouponSection, { type AppliedCoupon } from "./CheckoutCouponSection";
 
 export type FulfillmentType =
   | "pickup"
@@ -103,16 +104,21 @@ function normalizeCity(value: string) {
     .trim();
 }
 
-function isSupportedCity(
+function matchDeliveryZone(
   city: string,
-  deliveryCities: string[]
+  neighborhood: string,
+  deliveryZones: StoreCheckoutSettings["deliveryZones"]
 ) {
-  const normalized =
-    normalizeCity(city);
+  const cityNormalized = normalizeCity(city);
+  const neighborhoodNormalized = normalizeCity(neighborhood);
 
-  return deliveryCities.some(
-    (deliveryCity) => normalizeCity(deliveryCity) === normalized
-  );
+  let zone = deliveryZones.find((z) => normalizeCity(z.neighborhood) === neighborhoodNormalized);
+
+  if (!zone) {
+    zone = deliveryZones.find((z) => normalizeCity(z.neighborhood) === cityNormalized);
+  }
+
+  return zone || null;
 }
 
 export default function CheckoutDrawer({
@@ -234,6 +240,13 @@ export default function CheckoutDrawer({
     boolean | null
   >(null);
 
+  const [
+    matchedZone,
+    setMatchedZone,
+  ] = useState<
+    StoreCheckoutSettings["deliveryZones"][0] | null
+  >(null);
+
   /*
    * =========================================
    * PEDIDO
@@ -260,6 +273,13 @@ export default function CheckoutDrawer({
   const idempotencyKeyRef =
     useRef("");
 
+  /*
+   * =========================================
+   * CUPOM
+   * =========================================
+   */
+
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
   /*
    * =========================================
@@ -292,6 +312,20 @@ export default function CheckoutDrawer({
   const deliveryAddressValid =
     newAddressValid;
 
+  const deliveryFee =
+    fulfillmentType === "delivery" &&
+    matchedZone?.fee_type === "fixed"
+      ? matchedZone.delivery_fee
+      : 0;
+
+  const visualTotal =
+    Math.max(
+      0,
+      subtotal -
+        (appliedCoupon?.discountAmount ??
+          0)
+    ) + deliveryFee;
+
   const parsedCashChangeFor = Number(
     cashChangeFor.replace(",", ".")
   );
@@ -300,7 +334,7 @@ export default function CheckoutDrawer({
     (paymentMethod !== "cash" ||
       !needsChange ||
       (Number.isFinite(parsedCashChangeFor) &&
-        parsedCashChangeFor >= subtotal));
+        parsedCashChangeFor >= visualTotal));
 
   /*
    * =========================================
@@ -376,17 +410,17 @@ export default function CheckoutDrawer({
         data.uf ?? ""
       );
 
-      const supported =
-        isSupportedCity(
+      const zone =
+        matchDeliveryZone(
           resolvedCity,
-          storeSettings.deliveryCities
+          data.bairro ?? "",
+          storeSettings.deliveryZones || []
         );
 
-      setCitySupported(
-        supported
-      );
+      setMatchedZone(zone);
+      setCitySupported(!!zone);
 
-      if (!supported) {
+      if (!zone) {
         setCepError(
           storeSettings.deliveryCities.length > 0
             ? `No momento realizamos entregas somente em ${new Intl.ListFormat(
@@ -588,6 +622,9 @@ export default function CheckoutDrawer({
                   item.quantity,
               })
             ),
+
+            couponCode:
+              appliedCoupon?.code ?? null,
           });
         } catch {
           setOrderError(
@@ -749,6 +786,10 @@ export default function CheckoutDrawer({
           `Produtos: ${formatCurrency(
             subtotal
           )}`,
+
+          appliedCoupon
+            ? `Cupom ${appliedCoupon.code} (${appliedCoupon.discountPercent}%): -${formatCurrency(appliedCoupon.discountAmount)}`
+            : null,
 
           fulfillmentType ===
           "delivery"
@@ -1554,7 +1595,7 @@ export default function CheckoutDrawer({
                       </p>
 
                       <p className="mt-1 text-sm font-bold text-brand-primary">
-                        A consultar
+                        {matchedZone?.fee_type === "fixed" ? formatCurrency(matchedZone.delivery_fee) : "A consultar"}
                       </p>
                     </div>
                   </>
@@ -1644,13 +1685,13 @@ export default function CheckoutDrawer({
                         <span className="mb-2 block text-xs font-bold text-brand-muted-foreground">
                           Troco para quanto?
                         </span>
-                        <div className="flex h-11 items-center rounded-xl border border-[#E6DDD6] bg-white px-3 focus-within:border-brand-primary">
+                        <div className="flex h-11 items-center rounded-xl border border-brand-border bg-white px-3 focus-within:border-brand-primary">
                           <span className="mr-2 text-sm font-bold text-brand-muted-foreground">
                             R$
                           </span>
                           <input
                             type="number"
-                            min={subtotal}
+                            min={visualTotal}
                             step="0.01"
                             inputMode="decimal"
                             value={cashChangeFor}
@@ -1686,6 +1727,14 @@ export default function CheckoutDrawer({
                   </span>
                 </div>
 
+                {items.length > 0 && (
+                  <CheckoutCouponSection
+                    subtotal={subtotal}
+                    open={open}
+                    onCouponResolved={setAppliedCoupon}
+                  />
+                )}
+
                 {fulfillmentType ===
                   "delivery" && (
                   <div className="mt-3 flex justify-between gap-4">
@@ -1694,20 +1743,18 @@ export default function CheckoutDrawer({
                     </span>
 
                     <span className="text-sm font-bold text-brand-primary">
-                      A consultar
+                      {matchedZone?.fee_type === "fixed" ? formatCurrency(matchedZone.delivery_fee) : "A consultar"}
                     </span>
                   </div>
                 )}
 
                 <div className="mt-4 flex justify-between gap-4 border-t border-brand-border pt-4">
                   <span className="font-bold text-brand-foreground">
-                    Subtotal
+                    Total
                   </span>
 
                   <span className="text-xl font-bold text-brand-primary">
-                    {formatCurrency(
-                      subtotal
-                    )}
+                    {formatCurrency(visualTotal)}
                   </span>
                 </div>
               </section>

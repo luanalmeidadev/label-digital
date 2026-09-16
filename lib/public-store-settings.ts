@@ -26,6 +26,11 @@ export type PublicStoreSettings = {
     state: string | null;
   };
   deliveryCities: string[];
+  deliveryZones: {
+    neighborhood: string;
+    delivery_fee: number;
+    fee_type: "fixed" | "consult";
+  }[];
   businessHours: PublicBusinessHour[];
   isDemo?: boolean;
 };
@@ -58,36 +63,41 @@ function buildPresetStoreSettings(
       city: address.city,
       state: address.state,
     },
-    deliveryCities: address.city ? [address.city] : [],
+    deliveryCities: [...storeConfig.deliveryCities],
+    deliveryZones: storeConfig.deliveryCities.map((city) => ({
+      neighborhood: city,
+      delivery_fee: 0,
+      fee_type: "consult",
+    })),
     businessHours: fallbackBusinessHours,
     isDemo: true,
   };
 }
 
-function resolveAddress(settings?: {
-  address_street: string | null;
-  address_number: string | null;
-  address_city: string | null;
-  address_state: string | null;
-}) {
+function resolveAddress(
+  fallback: PublicStoreSettings["address"],
+  settings?: {
+    address_street: string | null;
+    address_number: string | null;
+    address_city: string | null;
+    address_state: string | null;
+  }
+) {
   const street =
-    settings?.address_street?.trim() || storeConfig.address.street;
+    settings?.address_street?.trim() || fallback.street;
   const number =
-    settings?.address_number?.trim() || storeConfig.address.number;
+    settings?.address_number?.trim() || fallback.number;
   const city =
-    settings?.address_city?.trim() || storeConfig.address.city;
+    settings?.address_city?.trim() || fallback.city;
   const state =
-    settings?.address_state?.trim() || storeConfig.address.state;
+    settings?.address_state?.trim() || fallback.state;
 
   return { street, number, city, state };
 }
 
 export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
   const installation = getPublicInstallationProfile();
-
-  if (installation.preset.id !== "label") {
-    return buildPresetStoreSettings(installation);
-  }
+  const presetFallback = buildPresetStoreSettings(installation);
 
   const supabase = createSupabaseAdminClient();
 
@@ -113,7 +123,7 @@ export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
       .order("weekday"),
     supabase
       .from("delivery_zones")
-      .select("neighborhood")
+      .select("neighborhood, delivery_fee, fee_type")
       .eq("active", true)
       .order("neighborhood"),
   ]);
@@ -139,8 +149,12 @@ export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
     );
   }
 
+  if (!settingsResult.data && installation.preset.id !== "label") {
+    return presetFallback;
+  }
+
   const settings = settingsResult.data;
-  const address = resolveAddress(settings ?? undefined);
+  const address = resolveAddress(presetFallback.address, settings ?? undefined);
   const businessHours =
     hoursResult.data && hoursResult.data.length > 0
       ? hoursResult.data.map((hour) => ({
@@ -149,22 +163,33 @@ export async function getPublicStoreSettings(): Promise<PublicStoreSettings> {
           opensAt: hour.opens_at?.slice(0, 5) ?? null,
           closesAt: hour.closes_at?.slice(0, 5) ?? null,
         }))
-      : fallbackBusinessHours;
+      : presetFallback.businessHours;
   const deliveryCities =
-    zonesResult.error
-      ? [...storeConfig.deliveryCities]
-      : (zonesResult.data ?? []).map((zone) => zone.neighborhood);
+    zonesResult.error || !zonesResult.data || zonesResult.data.length === 0
+      ? presetFallback.deliveryCities
+      : zonesResult.data.map((zone) => zone.neighborhood);
+
+  const deliveryZones =
+    zonesResult.error || !zonesResult.data || zonesResult.data.length === 0
+      ? presetFallback.deliveryZones
+      : zonesResult.data.map((zone) => ({
+          neighborhood: zone.neighborhood,
+          delivery_fee: Number(zone.delivery_fee) || 0,
+          fee_type: (zone.fee_type as "fixed" | "consult") ?? "consult",
+        }));
 
   return {
-    storeName: settings?.store_name?.trim() || storeConfig.name,
-    whatsapp: settings?.whatsapp?.trim() || storeConfig.whatsapp,
-    instagram: settings?.instagram?.trim() || storeConfig.instagram,
-    pickupEnabled: settings?.pickup_enabled ?? storeConfig.orderTypes.pickup,
+    storeName: settings?.store_name?.trim() || presetFallback.storeName,
+    whatsapp: settings?.whatsapp?.trim() || presetFallback.whatsapp,
+    instagram: settings?.instagram?.trim() || presetFallback.instagram,
+    pickupEnabled: settings?.pickup_enabled ?? presetFallback.pickupEnabled,
     deliveryEnabled:
-      settings?.delivery_enabled ?? storeConfig.orderTypes.delivery,
-    pickupAddress: `${address.street}, ${address.number} — ${address.city}/${address.state}`,
+      settings?.delivery_enabled ?? presetFallback.deliveryEnabled,
+    pickupAddress: address.street ? `${address.street}, ${address.number} — ${address.city}/${address.state}` : "",
     address,
     deliveryCities,
+    deliveryZones,
     businessHours,
+    isDemo: presetFallback.isDemo,
   };
 }

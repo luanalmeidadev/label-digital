@@ -52,6 +52,9 @@ type OrderDetailsDialogProps = {
     subtotal: number;
     delivery_fee: number;
     total: number;
+    coupon_code?: string | null;
+    discount_amount?: number | null;
+    discount_percent?: number | null;
 
     notes: string | null;
     created_at: string;
@@ -507,6 +510,20 @@ export default function OrderDetailsDialog({
                   )}
                 </span>
               </div>
+
+              {order.discount_amount && order.discount_amount > 0 ? (
+                <div className="flex justify-between gap-4 text-sm">
+                  <span className="text-brand-muted-foreground">
+                    Cupom {order.coupon_code} {order.discount_percent ? `(${order.discount_percent}%)` : ""}
+                  </span>
+
+                  <span className="font-bold text-green-600">
+                    -{formatCurrency(
+                      Number(order.discount_amount)
+                    )}
+                  </span>
+                </div>
+              ) : null}
 
               <div className="flex justify-between gap-4 text-sm">
                 <span className="text-brand-muted-foreground">
