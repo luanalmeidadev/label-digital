@@ -17,6 +17,7 @@ import {
 
 import WhatsAppStatusButton from "@/components/admin/WhatsAppStatusButton";
 import OrderItemSnapshotDetails from "@/components/orders/OrderItemSnapshotDetails";
+import { normalizeOrderItemSnapshot } from "@/lib/order-item-display";
 import {
   Dialog,
   DialogContent,
@@ -77,11 +78,9 @@ type OrderDetailsDialogProps = {
     items: OrderItem[];
   };
 
-  updateStatusAction: (
-    formData: FormData
-  ) => Promise<UpdateOrderStatusResult>;
+  updateStatusAction: (formData: FormData) => Promise<UpdateOrderStatusResult>;
   cancelSaleAction: (
-    formData: FormData
+    formData: FormData,
   ) => Promise<{ success: boolean; error?: string }>;
 };
 
@@ -97,13 +96,10 @@ const statusLabels: Record<string, string> = {
 
 const statusClasses: Record<string, string> = {
   created: "bg-gray-100 text-gray-700",
-  sent_to_whatsapp:
-    "bg-emerald-100 text-emerald-700",
+  sent_to_whatsapp: "bg-emerald-100 text-emerald-700",
   confirmed: "bg-blue-100 text-blue-700",
-  out_for_delivery:
-    "bg-orange-100 text-orange-700",
-  ready_for_pickup:
-    "bg-amber-100 text-amber-700",
+  out_for_delivery: "bg-orange-100 text-orange-700",
+  ready_for_pickup: "bg-amber-100 text-amber-700",
   completed: "bg-green-100 text-green-700",
   cancelled: "bg-red-100 text-red-700",
 };
@@ -115,10 +111,7 @@ function formatCurrency(value: number) {
   }).format(value);
 }
 
-function getNextStatus(
-  status: string,
-  orderType: string
-) {
+function getNextStatus(status: string, orderType: string) {
   if (status === "created") {
     return {
       status: "sent_to_whatsapp",
@@ -135,10 +128,7 @@ function getNextStatus(
     };
   }
 
-  if (
-    status === "confirmed" &&
-    orderType === "delivery"
-  ) {
+  if (status === "confirmed" && orderType === "delivery") {
     return {
       status: "out_for_delivery",
       label: "Marcar como saiu para entrega",
@@ -146,10 +136,7 @@ function getNextStatus(
     };
   }
 
-  if (
-    status === "confirmed" &&
-    orderType === "pickup"
-  ) {
+  if (status === "confirmed" && orderType === "pickup") {
     return {
       status: "ready_for_pickup",
       label: "Marcar como pronto para retirada",
@@ -157,10 +144,7 @@ function getNextStatus(
     };
   }
 
-  if (
-    status === "out_for_delivery" ||
-    status === "ready_for_pickup"
-  ) {
+  if (status === "out_for_delivery" || status === "ready_for_pickup") {
     return {
       status: "completed",
       label: "Finalizar pedido",
@@ -180,28 +164,19 @@ export default function OrderDetailsDialog({
 }: OrderDetailsDialogProps) {
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [actionError, setActionError] =
-    useState("");
+  const [actionError, setActionError] = useState("");
   const [notification, setNotification] =
-    useState<OrderStatusNotification | null>(
-      null
-    );
+    useState<OrderStatusNotification | null>(null);
   const [showRefund, setShowRefund] = useState(false);
   const [refundReason, setRefundReason] = useState("");
   const [refundPending, setRefundPending] = useState(false);
 
-  const nextStatus = getNextStatus(
-    order.status,
-    order.order_type
-  );
+  const nextStatus = getNextStatus(order.status, order.order_type);
 
-  const locked =
-    order.status === "completed" ||
-    order.status === "cancelled";
+  const locked = order.status === "completed" || order.status === "cancelled";
 
   const currentNotification =
-    order.customer?.phone &&
-    isNotifiableOrderStatus(order.status)
+    order.customer?.phone && isNotifiableOrderStatus(order.status)
       ? {
           orderId: order.id,
           trackingToken,
@@ -242,9 +217,7 @@ export default function OrderDetailsDialog({
       const result = await cancelSaleAction(formData);
 
       if (!result.success) {
-        setActionError(
-          result.error ?? "Não foi possível estornar a venda."
-        );
+        setActionError(result.error ?? "Não foi possível estornar a venda.");
         return;
       }
 
@@ -256,9 +229,7 @@ export default function OrderDetailsDialog({
     }
   }
 
-  async function changeStatus(
-    status: string
-  ) {
+  async function changeStatus(status: string) {
     try {
       setSaving(true);
       setActionError("");
@@ -268,8 +239,7 @@ export default function OrderDetailsDialog({
       formData.set("id", order.id);
       formData.set("status", status);
 
-      const result =
-        await updateStatusAction(formData);
+      const result = await updateStatusAction(formData);
 
       if (result.error) {
         setActionError(result.error);
@@ -288,7 +258,7 @@ export default function OrderDetailsDialog({
       setActionError(
         error instanceof Error
           ? error.message
-          : "Não foi possível atualizar o pedido."
+          : "Não foi possível atualizar o pedido.",
       );
     } finally {
       setSaving(false);
@@ -296,10 +266,7 @@ export default function OrderDetailsDialog({
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={handleOpenChange}
-    >
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           <button
@@ -314,18 +281,14 @@ export default function OrderDetailsDialog({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <div className="flex flex-wrap items-center gap-3">
-            <DialogTitle>
-              Pedido #{order.order_number}
-            </DialogTitle>
+            <DialogTitle>Pedido #{order.order_number}</DialogTitle>
 
             <span
               className={`rounded-full px-3 py-1 text-xs font-bold ${
-                statusClasses[order.status] ??
-                "bg-gray-100 text-gray-700"
+                statusClasses[order.status] ?? "bg-gray-100 text-gray-700"
               }`}
             >
-              {statusLabels[order.status] ??
-                order.status}
+              {statusLabels[order.status] ?? order.status}
             </span>
 
             {order.sales_channel === "cashier" && (
@@ -342,8 +305,7 @@ export default function OrderDetailsDialog({
           </div>
 
           <DialogDescription>
-            Consulte os dados e acompanhe o
-            andamento do pedido.
+            Consulte os dados e acompanhe o andamento do pedido.
           </DialogDescription>
         </DialogHeader>
 
@@ -354,16 +316,13 @@ export default function OrderDetailsDialog({
               <div className="flex items-center gap-2 text-brand-primary">
                 <User size={18} />
 
-                <p className="text-sm font-bold">
-                  Cliente
-                </p>
+                <p className="text-sm font-bold">Cliente</p>
               </div>
 
               <p className="mt-3 font-bold text-brand-foreground">
                 {order.customer
                   ? `${order.customer.first_name} ${order.customer.last_name}`
-                  : order.cashier_customer_name ||
-                    "Cliente não identificado"}
+                  : order.cashier_customer_name || "Cliente não identificado"}
               </p>
 
               {order.customer && (
@@ -378,9 +337,7 @@ export default function OrderDetailsDialog({
               <div className="flex items-center gap-2 text-brand-primary">
                 <MapPin size={18} />
 
-                <p className="text-sm font-bold">
-                  Recebimento
-                </p>
+                <p className="text-sm font-bold">Recebimento</p>
               </div>
 
               <p className="mt-3 font-bold text-brand-foreground">
@@ -389,31 +346,22 @@ export default function OrderDetailsDialog({
                   : "Retirada na loja"}
               </p>
 
-              {order.order_type ===
-                "delivery" &&
-                order.address && (
-                  <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
-                    {order.address.street},{" "}
-                    {order.address.number}
-
-                    {order.address.complement
-                      ? ` - ${order.address.complement}`
-                      : ""}
-
-                    <br />
-
-                    {order.address.neighborhood} -{" "}
-                    {order.address.city}
-
-                    {order.address.reference && (
-                      <>
-                        <br />
-                        Referência:{" "}
-                        {order.address.reference}
-                      </>
-                    )}
-                  </p>
-                )}
+              {order.order_type === "delivery" && order.address && (
+                <p className="mt-2 text-sm leading-6 text-brand-muted-foreground">
+                  {order.address.street}, {order.address.number}
+                  {order.address.complement
+                    ? ` - ${order.address.complement}`
+                    : ""}
+                  <br />
+                  {order.address.neighborhood} - {order.address.city}
+                  {order.address.reference && (
+                    <>
+                      <br />
+                      Referência: {order.address.reference}
+                    </>
+                  )}
+                </p>
+              )}
             </div>
           </section>
 
@@ -447,35 +395,28 @@ export default function OrderDetailsDialog({
             <div className="flex items-center gap-2 border-b border-brand-border p-4 text-brand-primary">
               <ClipboardList size={18} />
 
-              <p className="text-sm font-bold">
-                Itens do pedido
-              </p>
+              <p className="text-sm font-bold">Itens do pedido</p>
             </div>
 
             <div className="divide-y divide-brand-border">
               {order.items.map((item) => {
-                const itemTotal =
-                  Number(item.unit_price) *
-                  item.quantity;
+                const snapshot = normalizeOrderItemSnapshot(item);
+                const hasDiscount =
+                  snapshot.manualDiscountAmount !== null &&
+                  snapshot.manualDiscountAmount > 0;
 
                 return (
                   <div
                     key={item.id}
                     className="flex items-start justify-between gap-4 p-4"
                   >
-                    <div>
+                    <div className="flex-1">
                       <p className="font-bold text-brand-foreground">
-                        {item.quantity}x{" "}
-                        {item.product_name}
+                        {snapshot.quantity}x {snapshot.productName}
                       </p>
 
                       <p className="mt-1 text-xs text-brand-muted-foreground">
-                        {formatCurrency(
-                          Number(
-                            item.unit_price
-                          )
-                        )}{" "}
-                        cada
+                        {formatCurrency(snapshot.unitPrice)} cada
                       </p>
 
                       <OrderItemSnapshotDetails
@@ -483,13 +424,46 @@ export default function OrderDetailsDialog({
                         formatCurrency={formatCurrency}
                         showPriceBreakdown
                       />
+
+                      {hasDiscount && (
+                        <div className="mt-3 rounded-lg border border-brand-border bg-gray-50/50 p-3 text-xs">
+                          <div className="flex justify-between text-brand-muted-foreground">
+                            <span>Preço bruto da linha</span>
+                            <span>
+                              {formatCurrency(
+                                snapshot.unitPrice * snapshot.quantity,
+                              )}
+                            </span>
+                          </div>
+                          <div className="flex justify-between text-red-600 mt-1">
+                            <span>
+                              Desconto manual{" "}
+                              {snapshot.manualDiscountType === "percent"
+                                ? `(${snapshot.manualDiscountValue}%)`
+                                : "(R$)"}
+                            </span>
+                            <span>
+                              -{formatCurrency(snapshot.manualDiscountAmount!)}
+                            </span>
+                          </div>
+                          {snapshot.manualDiscountReason && (
+                            <div className="mt-1 text-brand-muted-foreground">
+                              Motivo: {snapshot.manualDiscountReason}
+                            </div>
+                          )}
+                          <div className="flex justify-between font-bold text-brand-foreground mt-2 border-t border-brand-border pt-2">
+                            <span>Total do item</span>
+                            <span>{formatCurrency(snapshot.itemTotal)}</span>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
-                    <p className="font-bold text-brand-foreground">
-                      {formatCurrency(
-                        itemTotal
-                      )}
-                    </p>
+                    {!hasDiscount && (
+                      <p className="font-bold text-brand-foreground shrink-0">
+                        {formatCurrency(snapshot.itemTotal)}
+                      </p>
+                    )}
                   </div>
                 );
               })}
@@ -500,27 +474,47 @@ export default function OrderDetailsDialog({
           <section className="rounded-2xl bg-[#FFF7F5] p-5">
             <div className="space-y-3">
               <div className="flex justify-between gap-4 text-sm">
-                <span className="text-brand-muted-foreground">
-                  Subtotal
-                </span>
+                <span className="text-brand-muted-foreground">Subtotal</span>
 
                 <span className="font-bold text-brand-foreground">
-                  {formatCurrency(
-                    Number(order.subtotal)
-                  )}
+                  {formatCurrency(Number(order.subtotal))}
                 </span>
               </div>
+
+              {(() => {
+                const manualDiscountsTotal = order.items.reduce(
+                  (sum, item) => sum + Number(item.manual_discount_amount || 0),
+                  0,
+                );
+
+                if (manualDiscountsTotal > 0) {
+                  return (
+                    <div className="flex justify-between gap-4 text-sm">
+                      <span className="text-brand-muted-foreground">
+                        Descontos manuais
+                      </span>
+
+                      <span className="font-bold text-red-600">
+                        -{formatCurrency(manualDiscountsTotal)}
+                      </span>
+                    </div>
+                  );
+                }
+
+                return null;
+              })()}
 
               {order.discount_amount && order.discount_amount > 0 ? (
                 <div className="flex justify-between gap-4 text-sm">
                   <span className="text-brand-muted-foreground">
-                    Cupom {order.coupon_code} {order.discount_percent ? `(${order.discount_percent}%)` : ""}
+                    Cupom {order.coupon_code}{" "}
+                    {order.discount_percent
+                      ? `(${order.discount_percent}%)`
+                      : ""}
                   </span>
 
                   <span className="font-bold text-green-600">
-                    -{formatCurrency(
-                      Number(order.discount_amount)
-                    )}
+                    -{formatCurrency(Number(order.discount_amount))}
                   </span>
                 </div>
               ) : null}
@@ -531,24 +525,16 @@ export default function OrderDetailsDialog({
                 </span>
 
                 <span className="font-bold text-brand-foreground">
-                  {formatCurrency(
-                    Number(
-                      order.delivery_fee
-                    )
-                  )}
+                  {formatCurrency(Number(order.delivery_fee))}
                 </span>
               </div>
 
               <div className="border-t border-[#E8D9D2] pt-3">
                 <div className="flex justify-between gap-4">
-                  <span className="font-bold text-brand-foreground">
-                    Total
-                  </span>
+                  <span className="font-bold text-brand-foreground">Total</span>
 
                   <span className="text-xl font-bold text-brand-primary">
-                    {formatCurrency(
-                      Number(order.total)
-                    )}
+                    {formatCurrency(Number(order.total))}
                   </span>
                 </div>
               </div>
@@ -571,10 +557,7 @@ export default function OrderDetailsDialog({
           {/* CONTROLE DE STATUS */}
           <section className="rounded-2xl border border-brand-border p-5">
             <div className="flex items-center gap-2">
-              <PackageCheck
-                size={18}
-                className="text-brand-primary"
-              />
+              <PackageCheck size={18} className="text-brand-primary" />
 
               <p className="font-bold text-brand-foreground">
                 Andamento do pedido
@@ -630,8 +613,8 @@ export default function OrderDetailsDialog({
                     </p>
 
                     <p className="mt-1 text-sm text-green-600">
-                      Este pedido já está contabilizado
-                      no faturamento realizado.
+                      Este pedido já está contabilizado no faturamento
+                      realizado.
                     </p>
                   </div>
                 </div>
@@ -670,7 +653,9 @@ export default function OrderDetailsDialog({
                     <div className="mt-3 flex flex-wrap gap-2">
                       <button
                         type="button"
-                        disabled={refundPending || refundReason.trim().length < 3}
+                        disabled={
+                          refundPending || refundReason.trim().length < 3
+                        }
                         onClick={cancelAndRefund}
                         className="rounded-xl bg-red-700 px-4 py-2.5 text-xs font-bold text-white disabled:opacity-50"
                       >
@@ -697,19 +682,13 @@ export default function OrderDetailsDialog({
             {order.status === "cancelled" && (
               <div className="mt-4 rounded-xl border border-red-100 bg-red-50 p-4">
                 <div className="flex items-start gap-3">
-                  <XCircle
-                    size={20}
-                    className="mt-0.5 shrink-0 text-red-600"
-                  />
+                  <XCircle size={20} className="mt-0.5 shrink-0 text-red-600" />
 
                   <div>
-                    <p className="font-bold text-red-700">
-                      Pedido cancelado
-                    </p>
+                    <p className="font-bold text-red-700">Pedido cancelado</p>
 
                     <p className="mt-1 text-sm text-red-600">
-                      Este pedido não entra no
-                      faturamento.
+                      Este pedido não entra no faturamento.
                     </p>
 
                     {order.cancellation_reason && (
@@ -722,9 +701,7 @@ export default function OrderDetailsDialog({
               </div>
             )}
 
-            {!notification &&
-              !locked &&
-              nextStatus && (
+            {!notification && !locked && nextStatus && (
               <div className="mt-4">
                 <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-brand-muted-foreground">
                   Próxima etapa
@@ -733,32 +710,21 @@ export default function OrderDetailsDialog({
                 <button
                   type="button"
                   disabled={saving}
-                  onClick={() =>
-                    changeStatus(
-                      nextStatus.status
-                    )
-                  }
+                  onClick={() => changeStatus(nextStatus.status)}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand-primary px-5 py-3.5 text-sm font-bold text-brand-primary-foreground transition hover:bg-brand-primary-hover disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <nextStatus.icon size={18} />
 
-                  {saving
-                    ? "Atualizando..."
-                    : nextStatus.label}
+                  {saving ? "Atualizando..." : nextStatus.label}
                 </button>
               </div>
             )}
 
-            {!notification &&
-              currentNotification && (
-                <div className="mt-4">
-                  <WhatsAppStatusButton
-                    notification={
-                      currentNotification
-                    }
-                  />
-                </div>
-              )}
+            {!notification && currentNotification && (
+              <div className="mt-4">
+                <WhatsAppStatusButton notification={currentNotification} />
+              </div>
+            )}
 
             {!notification && !locked && (
               <div className="mt-4 border-t border-brand-border pt-4">
@@ -766,15 +732,12 @@ export default function OrderDetailsDialog({
                   type="button"
                   disabled={saving}
                   onClick={() => {
-                    const confirmCancel =
-                      window.confirm(
-                        "Tem certeza que deseja cancelar este pedido?"
-                      );
+                    const confirmCancel = window.confirm(
+                      "Tem certeza que deseja cancelar este pedido?",
+                    );
 
                     if (confirmCancel) {
-                      changeStatus(
-                        "cancelled"
-                      );
+                      changeStatus("cancelled");
                     }
                   }}
                   className="flex items-center gap-2 text-sm font-bold text-red-600 transition hover:text-red-700 disabled:opacity-50"

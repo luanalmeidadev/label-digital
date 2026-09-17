@@ -22,6 +22,10 @@ export type OrderItemSnapshotInput = {
   item_notes?: string | null;
   configuration_signature?: string | null;
   order_item_options?: OrderItemOptionSnapshotInput[] | null;
+  manual_discount_type?: string | null;
+  manual_discount_value?: number | string | null;
+  manual_discount_amount?: number | string | null;
+  manual_discount_reason?: string | null;
 };
 
 export type OrderItemOptionSnapshotView = {
@@ -48,9 +52,16 @@ export type OrderItemSnapshotView = {
   configurationSignature: string | null;
   options: OrderItemOptionSnapshotView[];
   hasConfiguration: boolean;
+  manualDiscountType: "fixed" | "percent" | null;
+  manualDiscountValue: number | null;
+  manualDiscountAmount: number | null;
+  manualDiscountReason: string | null;
 };
 
-function toFiniteNumber(value: number | string | null | undefined, fallback = 0) {
+function toFiniteNumber(
+  value: number | string | null | undefined,
+  fallback = 0,
+) {
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
@@ -69,7 +80,7 @@ function normalizeOptionalText(value: string | null | undefined) {
 }
 
 export function normalizeOrderItemSnapshot(
-  item: OrderItemSnapshotInput
+  item: OrderItemSnapshotInput,
 ): OrderItemSnapshotView {
   const quantity = Math.max(0, Math.trunc(toFiniteNumber(item.quantity)));
   const unitPrice = Math.max(0, toFiniteNumber(item.unit_price));
@@ -85,24 +96,52 @@ export function normalizeOrderItemSnapshot(
       optionName: option.option_name.trim(),
       presentationMode: normalizePresentationMode(option.presentation_mode),
       priceDelta: Math.max(0, toFiniteNumber(option.price_delta)),
-      groupSortOrder: Math.max(0, Math.trunc(toFiniteNumber(option.group_sort_order))),
-      optionSortOrder: Math.max(0, Math.trunc(toFiniteNumber(option.option_sort_order))),
+      groupSortOrder: Math.max(
+        0,
+        Math.trunc(toFiniteNumber(option.group_sort_order)),
+      ),
+      optionSortOrder: Math.max(
+        0,
+        Math.trunc(toFiniteNumber(option.option_sort_order)),
+      ),
     }))
     .sort(
       (left, right) =>
         left.groupSortOrder - right.groupSortOrder ||
         left.optionSortOrder - right.optionSortOrder ||
-        left.optionName.localeCompare(right.optionName, "pt-BR")
+        left.optionName.localeCompare(right.optionName, "pt-BR"),
     );
   const variantName = normalizeOptionalText(item.variant_name);
   const itemNotes = normalizeOptionalText(item.item_notes);
+
+  const manualDiscountType =
+    item.manual_discount_type === "fixed" ||
+    item.manual_discount_type === "percent"
+      ? item.manual_discount_type
+      : null;
+  const manualDiscountValue =
+    item.manual_discount_value === null ||
+    item.manual_discount_value === undefined
+      ? null
+      : Math.max(0, toFiniteNumber(item.manual_discount_value));
+  const manualDiscountAmount =
+    item.manual_discount_amount === null ||
+    item.manual_discount_amount === undefined
+      ? null
+      : Math.max(0, toFiniteNumber(item.manual_discount_amount));
+  const manualDiscountReason = normalizeOptionalText(
+    item.manual_discount_reason,
+  );
+
+  const grossTotal = unitPrice * quantity;
+  const itemTotal = Math.max(0, grossTotal - (manualDiscountAmount ?? 0));
 
   return {
     id: item.id,
     productName: item.product_name,
     quantity,
     unitPrice,
-    itemTotal: unitPrice * quantity,
+    itemTotal,
     variantName,
     baseUnitPrice,
     optionsUnitPrice: Math.max(0, toFiniteNumber(item.options_unit_price)),
@@ -110,6 +149,10 @@ export function normalizeOrderItemSnapshot(
     configurationSignature: normalizeOptionalText(item.configuration_signature),
     options,
     hasConfiguration: Boolean(variantName || itemNotes || options.length > 0),
+    manualDiscountType,
+    manualDiscountValue,
+    manualDiscountAmount,
+    manualDiscountReason,
   };
 }
 
@@ -127,7 +170,7 @@ export function getOrderItemOptionLabel(option: OrderItemOptionSnapshotView) {
 
 export function buildOrderItemWhatsAppLines(
   item: OrderItemSnapshotInput,
-  formatCurrency: (value: number) => string
+  formatCurrency: (value: number) => string,
 ) {
   const snapshot = normalizeOrderItemSnapshot(item);
   const lines = [
@@ -151,7 +194,7 @@ export function buildOrderItemWhatsAppLines(
 
 export function buildOrderItemsWhatsAppText(
   items: readonly OrderItemSnapshotInput[],
-  formatCurrency: (value: number) => string
+  formatCurrency: (value: number) => string,
 ) {
   return items
     .map((item) => buildOrderItemWhatsAppLines(item, formatCurrency).join("\n"))

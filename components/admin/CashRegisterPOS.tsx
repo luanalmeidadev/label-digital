@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  type FormEvent,
-  useMemo,
-  useState,
-  useTransition,
-} from "react";
+import { type FormEvent, useMemo, useState, useTransition } from "react";
 import {
   Banknote,
   CheckCircle2,
@@ -19,6 +14,7 @@ import {
   QrCode,
   Search,
   ShoppingCart,
+  Tag,
   Trash2,
 } from "lucide-react";
 
@@ -26,6 +22,7 @@ import {
   createCashierSale,
   openCashSession,
 } from "@/app/admin/(dashboard)/caixa/actions";
+import CashierManualDiscountDialog from "@/components/admin/CashierManualDiscountDialog";
 import CashierProductConfiguratorDialog from "@/components/admin/CashierProductConfiguratorDialog";
 import {
   createSimpleCartItem,
@@ -41,6 +38,14 @@ import type { PaymentMethod } from "@/lib/payment-method";
 
 export type CashProduct = CartCatalogProduct & {
   categoryName: string;
+};
+
+export type CashierCartItem = CartItem & {
+  manualDiscount?: {
+    type: "fixed" | "percent";
+    value: number;
+    reason?: string;
+  };
 };
 
 type OpenSession = {
@@ -118,9 +123,13 @@ function OpenCashForm() {
 
       <form onSubmit={handleSubmit} className="p-5 sm:p-6">
         <label className="block max-w-sm">
-          <span className="text-sm font-bold text-[#49352C]">Saldo inicial</span>
+          <span className="text-sm font-bold text-[#49352C]">
+            Saldo inicial
+          </span>
           <div className="mt-2 flex h-12 items-center rounded-xl border border-[#DDD3CB] px-4 focus-within:border-brand-primary">
-            <span className="mr-3 text-sm font-bold text-brand-muted-foreground">R$</span>
+            <span className="mr-3 text-sm font-bold text-brand-muted-foreground">
+              R$
+            </span>
             <input
               name="opening_balance"
               type="number"
@@ -163,22 +172,23 @@ export default function CashRegisterPOS({
 }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CashierCartItem[]>([]);
   const [customerName, setCustomerName] = useState("");
   const [notes, setNotes] = useState("");
-  const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("pix");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("pix");
   const [splitPayment, setSplitPayment] = useState(false);
-  const [paymentAmounts, setPaymentAmounts] = useState<
-    Record<PaymentMethod, string>
-  >(emptyPaymentAmounts);
+  const [paymentAmounts, setPaymentAmounts] =
+    useState<Record<PaymentMethod, string>>(emptyPaymentAmounts);
   const [cashReceived, setCashReceived] = useState("");
-  const [reference, setReference] = useState(() =>
-    createClientRequestId()
-  );
+  const [reference, setReference] = useState(() => createClientRequestId());
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [lastSale, setLastSale] = useState<SaleResult | null>(null);
+  const [discountingLineKey, setDiscountingLineKey] = useState<string | null>(
+    null,
+  );
+  const discountingItem =
+    cart.find((item) => item.lineKey === discountingLineKey) ?? null;
 
   const filteredProducts = useMemo(() => {
     const normalized = query.trim().toLocaleLowerCase("pt-BR");
@@ -189,7 +199,7 @@ export default function CashRegisterPOS({
             product.name.toLocaleLowerCase("pt-BR").includes(normalized) ||
             product.categoryName
               .toLocaleLowerCase("pt-BR")
-              .includes(normalized)
+              .includes(normalized),
         )
       : products;
   }, [products, query]);
@@ -206,15 +216,27 @@ export default function CashRegisterPOS({
     return [...groups.entries()];
   }, [filteredProducts]);
 
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const total = cart.reduce((sum, item) => {
+    const gross = item.price * item.quantity;
+    let discountAmount = 0;
+    if (item.manualDiscount && item.manualDiscount.value > 0) {
+      if (
+        item.manualDiscount.type === "percent" &&
+        item.manualDiscount.value <= 100
+      ) {
+        discountAmount = gross * (item.manualDiscount.value / 100);
+      } else if (
+        item.manualDiscount.type === "fixed" &&
+        item.manualDiscount.value <= gross
+      ) {
+        discountAmount = item.manualDiscount.value;
+      }
+    }
+    return sum + Math.max(0, gross - discountAmount);
+  }, 0);
   const selectedPayments = splitPayment
     ? paymentOptions.flatMap((method) => {
-        const amount = Number(
-          paymentAmounts[method.id].replace(",", ".")
-        );
+        const amount = Number(paymentAmounts[method.id].replace(",", "."));
 
         return Number.isFinite(amount) && amount > 0
           ? [{ method: method.id, amount }]
@@ -223,11 +245,10 @@ export default function CashRegisterPOS({
     : [{ method: paymentMethod, amount: total }];
   const paymentTotal = selectedPayments.reduce(
     (sum, payment) => sum + payment.amount,
-    0
+    0,
   );
   const cashAmount =
-    selectedPayments.find((payment) => payment.method === "cash")
-      ?.amount ?? 0;
+    selectedPayments.find((payment) => payment.method === "cash")?.amount ?? 0;
   const parsedCashReceived = Number(cashReceived.replace(",", "."));
   const change =
     cashAmount > 0 && Number.isFinite(parsedCashReceived)
@@ -242,13 +263,17 @@ export default function CashRegisterPOS({
         parsedCashReceived >= cashAmount));
 
   function addSimpleProduct(product: CashProduct) {
-    setCart((current) =>
-      mergeCartItem(current, createSimpleCartItem(product))
+    setCart(
+      (current) =>
+        mergeCartItem(
+          current,
+          createSimpleCartItem(product),
+        ) as CashierCartItem[],
     );
   }
 
   function addConfiguredProduct(item: CartItem) {
-    setCart((current) => mergeCartItem(current, item));
+    setCart((current) => mergeCartItem(current, item) as CashierCartItem[]);
   }
 
   function changeQuantity(lineKey: string, delta: number) {
@@ -258,12 +283,27 @@ export default function CashRegisterPOS({
 
         const quantity = Math.min(
           MAX_CART_ITEM_QUANTITY,
-          Math.max(0, item.quantity + delta)
+          Math.max(0, item.quantity + delta),
         );
 
         return quantity > 0 ? [{ ...item, quantity }] : [];
       });
     });
+  }
+
+  function handleApplyDiscount(discount: {
+    type: "fixed" | "percent";
+    value: number;
+    reason?: string;
+  }) {
+    if (!discountingLineKey) return;
+    setCart((current) =>
+      current.map((item) =>
+        item.lineKey === discountingLineKey
+          ? { ...item, manualDiscount: discount }
+          : item,
+      ),
+    );
   }
 
   function finishSale() {
@@ -285,12 +325,12 @@ export default function CashRegisterPOS({
           optionIds: item.options.map((option) => option.id),
           itemNotes: item.itemNotes,
           quantity: item.quantity,
+          manualDiscount: item.manualDiscount,
         })),
         payments: selectedPayments.map((payment) => ({
           method: payment.method,
           amount: Number(payment.amount.toFixed(2)),
-          tenderedAmount:
-            payment.method === "cash" ? parsedCashReceived : null,
+          tenderedAmount: payment.method === "cash" ? parsedCashReceived : null,
         })),
       });
 
@@ -326,7 +366,8 @@ export default function CashRegisterPOS({
           <div>
             <p className="font-bold text-emerald-800">Caixa aberto</p>
             <p className="mt-1 text-xs text-emerald-700">
-              Aberto por {session.openedBy} · Saldo inicial {formatCurrency(session.openingBalance)}
+              Aberto por {session.openedBy} · Saldo inicial{" "}
+              {formatCurrency(session.openingBalance)}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -347,7 +388,10 @@ export default function CashRegisterPOS({
         <section className="mt-5 rounded-2xl border border-emerald-200 bg-white p-5 shadow-sm">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="mt-0.5 shrink-0 text-emerald-600" size={22} />
+              <CheckCircle2
+                className="mt-0.5 shrink-0 text-emerald-600"
+                size={22}
+              />
               <div>
                 <p className="font-bold text-brand-foreground">
                   Venda #{lastSale.orderNumber} concluída
@@ -375,7 +419,9 @@ export default function CashRegisterPOS({
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
         <section className="overflow-hidden rounded-3xl border border-brand-border bg-white shadow-sm">
           <div className="border-b border-brand-border p-5">
-            <h2 className="font-bold text-brand-foreground">Produtos disponíveis</h2>
+            <h2 className="font-bold text-brand-foreground">
+              Produtos disponíveis
+            </h2>
             <div className="relative mt-4">
               <Search
                 size={18}
@@ -422,8 +468,8 @@ export default function CashRegisterPOS({
                                 {formatCurrency(
                                   getCatalogStartingPrice(
                                     product.price,
-                                    product.configuration
-                                  )
+                                    product.configuration,
+                                  ),
                                 )}
                               </span>
                               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-primary text-brand-primary-foreground">
@@ -431,7 +477,7 @@ export default function CashRegisterPOS({
                               </span>
                             </div>
                           </button>
-                        )
+                        ),
                       )}
                     </div>
                   </div>
@@ -460,82 +506,165 @@ export default function CashRegisterPOS({
 
           {cart.length > 0 ? (
             <div className="divide-y divide-brand-border">
-              {cart.map((item) => (
-                <div key={item.lineKey} className="p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-brand-foreground">
-                        {item.name}
-                      </p>
-                      {item.variant && (
-                        <p className="mt-1 text-xs font-semibold text-brand-muted-foreground">
-                          {item.variant.name}
+              {cart.map((item) => {
+                const itemGross = item.price * item.quantity;
+                const hasDiscount =
+                  item.manualDiscount && item.manualDiscount.value > 0;
+
+                let discountAmount = 0;
+                if (hasDiscount) {
+                  discountAmount =
+                    item.manualDiscount!.type === "percent"
+                      ? itemGross * (item.manualDiscount!.value / 100)
+                      : item.manualDiscount!.value;
+                }
+                const itemNet = Math.max(0, itemGross - discountAmount);
+
+                return (
+                  <div key={item.lineKey} className="p-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-brand-foreground">
+                          {item.name}
+                        </p>
+                        {item.variant && (
+                          <p className="mt-1 text-xs font-semibold text-brand-muted-foreground">
+                            {item.variant.name}
+                          </p>
+                        )}
+                        {item.options.length > 0 && (
+                          <ul className="mt-1 space-y-0.5 text-xs text-brand-muted-foreground">
+                            {item.options.map((option) => (
+                              <li key={`${item.lineKey}-${option.id}`}>
+                                {option.presentationMode === "addition"
+                                  ? "+ "
+                                  : option.presentationMode === "removal"
+                                    ? "− "
+                                    : `${option.groupName}: `}
+                                {option.name}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                        {item.itemNotes && (
+                          <p className="mt-1 text-xs italic text-brand-muted-foreground">
+                            Obs: {item.itemNotes}
+                          </p>
+                        )}
+                        <p className="mt-1 text-xs text-brand-muted-foreground">
+                          {formatCurrency(item.price)} cada
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        aria-label={`Remover ${item.name}`}
+                        onClick={() =>
+                          setCart((current) =>
+                            current.filter(
+                              (candidate) => candidate.lineKey !== item.lineKey,
+                            ),
+                          )
+                        }
+                        className="text-red-600"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+
+                    {hasDiscount && (
+                      <div className="mt-3 rounded-lg border border-red-100 bg-red-50/50 p-3 text-xs">
+                        <div className="flex justify-between text-brand-muted-foreground">
+                          <span>Preço bruto / original</span>
+                          <span>{formatCurrency(itemGross)}</span>
+                        </div>
+                        <div className="flex items-start justify-between text-red-600 mt-1">
+                          <div>
+                            <span>
+                              Desconto manual{" "}
+                              {item.manualDiscount!.type === "percent"
+                                ? `(${item.manualDiscount!.value}%)`
+                                : "(R$)"}
+                            </span>
+                            {item.manualDiscount!.reason && (
+                              <div className="mt-0.5 text-brand-muted-foreground">
+                                Motivo: {item.manualDiscount!.reason}
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <span>-{formatCurrency(discountAmount)}</span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setCart((current) =>
+                                  current.map((c) =>
+                                    c.lineKey === item.lineKey
+                                      ? { ...c, manualDiscount: undefined }
+                                      : c,
+                                  ),
+                                );
+                              }}
+                              className="font-bold text-red-700 underline"
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        </div>
+
+                        {item.manualDiscount!.type === "fixed" &&
+                          item.manualDiscount!.value > itemGross && (
+                            <p className="mt-2 font-bold text-red-700">
+                              ⚠️ O desconto excede o valor da linha. Revise a
+                              quantidade ou remova o desconto para finalizar.
+                            </p>
+                          )}
+
+                        <div className="flex justify-between font-bold text-brand-foreground mt-2 border-t border-red-100 pt-2">
+                          <span>Total do item</span>
+                          <span>{formatCurrency(itemNet)}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="mt-3 flex items-center justify-between gap-3">
+                      <div className="flex items-center rounded-xl border border-brand-border">
+                        <button
+                          type="button"
+                          onClick={() => changeQuantity(item.lineKey, -1)}
+                          className="flex h-9 w-9 items-center justify-center text-brand-primary"
+                        >
+                          <Minus size={15} />
+                        </button>
+                        <span className="min-w-9 text-center text-sm font-bold">
+                          {item.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => changeQuantity(item.lineKey, 1)}
+                          className="flex h-9 w-9 items-center justify-center text-brand-primary"
+                        >
+                          <Plus size={15} />
+                        </button>
+                      </div>
+                      {!hasDiscount && (
+                        <p className="font-bold text-brand-foreground">
+                          {formatCurrency(itemGross)}
                         </p>
                       )}
-                      {item.options.length > 0 && (
-                        <ul className="mt-1 space-y-0.5 text-xs text-brand-muted-foreground">
-                          {item.options.map((option) => (
-                            <li key={`${item.lineKey}-${option.id}`}>
-                              {option.presentationMode === "addition"
-                                ? "+ "
-                                : option.presentationMode === "removal"
-                                  ? "− "
-                                  : `${option.groupName}: `}
-                              {option.name}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                      {item.itemNotes && (
-                        <p className="mt-1 text-xs italic text-brand-muted-foreground">
-                          Obs: {item.itemNotes}
-                        </p>
-                      )}
-                      <p className="mt-1 text-xs text-brand-muted-foreground">
-                        {formatCurrency(item.price)} cada
-                      </p>
                     </div>
                     <button
                       type="button"
-                      aria-label={`Remover ${item.name}`}
-                      onClick={() =>
-                        setCart((current) =>
-                          current.filter(
-                            (candidate) => candidate.lineKey !== item.lineKey
-                          )
-                        )
-                      }
-                      className="text-red-600"
+                      onClick={() => setDiscountingLineKey(item.lineKey)}
+                      className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-brand-border bg-brand-background py-1.5 text-xs font-semibold text-brand-muted-foreground transition hover:bg-brand-border"
                     >
-                      <Trash2 size={16} />
+                      <Tag size={13} />
+                      {item.manualDiscount
+                        ? "Editar desconto"
+                        : "Aplicar desconto"}
                     </button>
                   </div>
-                  <div className="mt-3 flex items-center justify-between gap-3">
-                    <div className="flex items-center rounded-xl border border-brand-border">
-                      <button
-                        type="button"
-                        onClick={() => changeQuantity(item.lineKey, -1)}
-                        className="flex h-9 w-9 items-center justify-center text-brand-primary"
-                      >
-                        <Minus size={15} />
-                      </button>
-                      <span className="min-w-9 text-center text-sm font-bold">
-                        {item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => changeQuantity(item.lineKey, 1)}
-                        className="flex h-9 w-9 items-center justify-center text-brand-primary"
-                      >
-                        <Plus size={15} />
-                      </button>
-                    </div>
-                    <p className="font-bold text-brand-foreground">
-                      {formatCurrency(item.price * item.quantity)}
-                    </p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="px-5 py-10 text-center text-sm text-brand-muted-foreground">
@@ -545,7 +674,9 @@ export default function CashRegisterPOS({
 
           <div className="border-t border-brand-border bg-brand-background p-5">
             <label className="block">
-              <span className="text-xs font-bold text-[#49352C]">Cliente (opcional)</span>
+              <span className="text-xs font-bold text-[#49352C]">
+                Cliente (opcional)
+              </span>
               <input
                 type="text"
                 maxLength={100}
@@ -557,7 +688,9 @@ export default function CashRegisterPOS({
             </label>
 
             <label className="mt-4 block">
-              <span className="text-xs font-bold text-[#49352C]">Observações (opcional)</span>
+              <span className="text-xs font-bold text-[#49352C]">
+                Observações (opcional)
+              </span>
               <textarea
                 maxLength={1000}
                 rows={2}
@@ -581,7 +714,7 @@ export default function CashRegisterPOS({
                             ...emptyPaymentAmounts,
                             pix: total > 0 ? total.toFixed(2) : "",
                           }
-                        : emptyPaymentAmounts
+                        : emptyPaymentAmounts,
                     );
                     setPaymentMethod("pix");
                     setCashReceived("");
@@ -605,7 +738,7 @@ export default function CashRegisterPOS({
                         onClick={() => {
                           setPaymentMethod(method.id);
                           setCashReceived(
-                            method.id === "cash" ? total.toFixed(2) : ""
+                            method.id === "cash" ? total.toFixed(2) : "",
                           );
                         }}
                         className={`flex h-11 items-center justify-center gap-2 rounded-xl border text-xs font-bold ${
@@ -639,23 +772,19 @@ export default function CashRegisterPOS({
                           onChange={(event) => {
                             const nextValue = event.target.value;
                             const previousCashAmount = Number(
-                              paymentAmounts.cash.replace(",", ".")
+                              paymentAmounts.cash.replace(",", "."),
                             );
                             const receivedAmount = Number(
-                              cashReceived.replace(",", ".")
+                              cashReceived.replace(",", "."),
                             );
                             const receivedWasAutomatic =
                               cashReceived === "" ||
                               (Number.isFinite(receivedAmount) &&
                                 Number.isFinite(previousCashAmount) &&
-                                Math.abs(
-                                  receivedAmount - previousCashAmount
-                                ) < 0.005);
+                                Math.abs(receivedAmount - previousCashAmount) <
+                                  0.005);
 
-                            if (
-                              method.id === "cash" &&
-                              receivedWasAutomatic
-                            ) {
+                            if (method.id === "cash" && receivedWasAutomatic) {
                               setCashReceived(nextValue);
                             }
 
@@ -694,7 +823,9 @@ export default function CashRegisterPOS({
                   Valor entregue pelo cliente
                 </span>
                 <div className="mt-2 flex h-11 items-center rounded-xl border border-[#DDD3CB] bg-white px-3 focus-within:border-brand-primary">
-                  <span className="mr-2 text-xs font-bold text-brand-muted-foreground">R$</span>
+                  <span className="mr-2 text-xs font-bold text-brand-muted-foreground">
+                    R$
+                  </span>
                   <input
                     type="number"
                     min={cashAmount}
@@ -719,7 +850,9 @@ export default function CashRegisterPOS({
 
             <div className="mt-5 flex items-end justify-between gap-4 border-t border-[#E5DAD3] pt-4">
               <div>
-                <p className="text-xs text-brand-muted-foreground">Total da venda</p>
+                <p className="text-xs text-brand-muted-foreground">
+                  Total da venda
+                </p>
                 <p className="mt-1 text-2xl font-bold text-brand-primary">
                   {formatCurrency(total)}
                 </p>
@@ -744,6 +877,13 @@ export default function CashRegisterPOS({
           </div>
         </section>
       </div>
+
+      <CashierManualDiscountDialog
+        item={discountingItem}
+        open={discountingLineKey !== null}
+        onOpenChange={(open) => !open && setDiscountingLineKey(null)}
+        onApply={handleApplyDiscount}
+      />
     </>
   );
 }

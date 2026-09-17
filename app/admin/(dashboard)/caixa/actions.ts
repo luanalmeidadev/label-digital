@@ -55,6 +55,11 @@ export type CashierSaleInput = {
     optionIds?: string[];
     itemNotes?: string | null;
     quantity: number;
+    manualDiscount?: {
+      type: "fixed" | "percent";
+      value: number;
+      reason?: string | null;
+    };
   }>;
   payments: Array<{
     method: PaymentMethod;
@@ -318,7 +323,27 @@ export async function createCashierSale(
 
   const authoritativeTotal = Number(
     pricedItems
-      .reduce((sum, item) => sum + item.itemTotal, 0)
+      .reduce((sum, item, index) => {
+        const inputItem = input.items[index];
+        const manualDiscount = inputItem.manualDiscount;
+        let discountAmount = 0;
+
+        if (manualDiscount && manualDiscount.value > 0) {
+          if (
+            manualDiscount.type === "percent" &&
+            manualDiscount.value <= 100
+          ) {
+            discountAmount = item.itemTotal * (manualDiscount.value / 100);
+          } else if (
+            manualDiscount.type === "fixed" &&
+            manualDiscount.value <= item.itemTotal
+          ) {
+            discountAmount = manualDiscount.value;
+          }
+        }
+
+        return sum + Math.max(0, item.itemTotal - discountAmount);
+      }, 0)
       .toFixed(2)
   );
   const paidTotal = Number(
@@ -336,12 +361,16 @@ export async function createCashierSale(
     };
   }
 
-  const snapshots = pricedItems.map((item) => {
+  const snapshots = pricedItems.map((item, index) => {
     const snapshot = buildPersistableOrderItemSnapshot(item);
+    const inputItem = input.items[index];
 
     return {
       catalog_version: item.catalogVersion,
       ...snapshot.item,
+      manual_discount_type: inputItem.manualDiscount?.type ?? null,
+      manual_discount_value: inputItem.manualDiscount?.value ?? null,
+      manual_discount_reason: inputItem.manualDiscount?.reason ?? null,
       options: snapshot.options,
     };
   });
@@ -373,14 +402,18 @@ export async function createCashierSale(
     console.error("Erro ao registrar venda no caixa:", error);
     return {
       success: false,
-      error:
-        error?.message.includes("CATALOG_CHANGED")
-          ? "O catálogo mudou. Atualize o caixa e revise a venda."
+        error:
+          error?.message.includes("CATALOG_CHANGED")
+            ? "O catálogo mudou. Atualize o caixa e revise a venda."
           : error?.message.includes("não estão disponíveis")
-            ? "Um ou mais produtos ficaram indisponíveis. Atualize o caixa."
+              ? "Um ou mais produtos ficaram indisponíveis. Atualize o caixa."
           : error?.message.includes("não está aberto")
-            ? "Este caixa não está mais aberto. Atualize a página."
-            : "Não foi possível concluir a venda.",
+              ? "Este caixa não está mais aberto. Atualize a página."
+          : error?.message.includes("INVALID_DISCOUNT")
+              ? "O desconto informado é inválido para um ou mais itens."
+          : error?.message.includes("INVALID_CASHIER_TOTAL")
+              ? "A venda não pode ser processada com o total zerado ou negativo."
+              : "Não foi possível concluir a venda.",
       ...(error?.message.includes("CATALOG_CHANGED")
         ? { code: "CATALOG_REVIEW_REQUIRED" as const }
         : {}),

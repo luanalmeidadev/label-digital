@@ -120,6 +120,10 @@ export default async function PedidosPage() {
           options_unit_price,
           item_notes,
           configuration_signature,
+          manual_discount_type,
+          manual_discount_value,
+          manual_discount_amount,
+          manual_discount_reason,
           order_item_options (
             id,
             group_name,
@@ -529,6 +533,22 @@ export default async function PedidosPage() {
 
                                   configuration_signature:
                                     item.configuration_signature,
+
+                                  manual_discount_type:
+                                    item.manual_discount_type,
+
+                                  manual_discount_value:
+                                    item.manual_discount_value === null
+                                      ? null
+                                      : Number(item.manual_discount_value),
+
+                                  manual_discount_amount:
+                                    item.manual_discount_amount === null
+                                      ? null
+                                      : Number(item.manual_discount_amount),
+
+                                  manual_discount_reason:
+                                    item.manual_discount_reason,
 
                                   order_item_options:
                                     (item.order_item_options ?? []).map(

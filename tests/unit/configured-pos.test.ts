@@ -6,9 +6,10 @@ import { beforeAll, describe, expect, it } from "vitest";
 let actionSource = "";
 let posSource = "";
 let migrationSql = "";
+let discountMigrationSql = "";
 
 beforeAll(async () => {
-  [actionSource, posSource, migrationSql] = await Promise.all([
+  [actionSource, posSource, migrationSql, discountMigrationSql] = await Promise.all([
     readFile(
       path.resolve(process.cwd(), "app/admin/(dashboard)/caixa/actions.ts"),
       "utf8"
@@ -24,7 +25,18 @@ beforeAll(async () => {
       ),
       "utf8"
     ),
+    readFile(
+      path.resolve(
+        process.cwd(),
+        "supabase/migrations/20260917100000_manual_item_discounts.sql"
+      ),
+      "utf8"
+    ),
   ]);
+
+  actionSource = actionSource.replace(/\r\n/g, "\n");
+  posSource = posSource.replace(/\r\n/g, "\n");
+  discountMigrationSql = discountMigrationSql.replace(/\r\n/g, "\n").toLowerCase();
 });
 
 describe("POS com catálogo configurável", () => {
@@ -93,5 +105,30 @@ describe("POS com catálogo configurável", () => {
     expect(sql).toMatch(
       /grant execute on function public\.create_configured_cashier_sale\([\s\S]+?to authenticated;/
     );
+  });
+
+  it("calcula o manual_discount_amount no servidor (RPC)", () => {
+    expect(discountMigrationSql).toContain("item_manual_discount_amount := round(item_line_gross * (item_manual_discount_value / 100), 2);");
+    expect(discountMigrationSql).toContain("item_manual_discount_amount := item_manual_discount_value;");
+    expect(discountMigrationSql).toContain("calculated_total := calculated_total + (item_line_gross - coalesce(item_manual_discount_amount, 0));");
+    expect(discountMigrationSql).toContain("manual_discount_amount numeric(10,2) check (manual_discount_amount > 0)");
+  });
+
+  it("rejeita descontos inválidos e vendas zeradas no servidor (RPC)", () => {
+    expect(discountMigrationSql).toContain("raise exception using errcode = '22023', message = 'invalid_discount';");
+    expect(discountMigrationSql).toContain("if calculated_total <= 0 then");
+    expect(discountMigrationSql).toContain("raise exception using errcode = '22023', message = 'invalid_cashier_total';");
+  });
+
+  it("trata erros específicos de desconto na Server Action", () => {
+    expect(actionSource).toContain('error?.message.includes("INVALID_DISCOUNT")');
+    expect(actionSource).toContain('error?.message.includes("INVALID_CASHIER_TOTAL")');
+  });
+
+  it("isola a intenção do cliente, não enviando manual_discount_amount", () => {
+    expect(actionSource).toContain("manual_discount_type: inputItem.manualDiscount?.type ?? null");
+    expect(actionSource).toContain("manual_discount_value: inputItem.manualDiscount?.value ?? null");
+    expect(actionSource).toContain("manual_discount_reason: inputItem.manualDiscount?.reason ?? null");
+    expect(actionSource).not.toMatch(/manual_discount_amount:\s*inputItem/);
   });
 });

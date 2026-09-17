@@ -108,6 +108,9 @@ export type OrderItemSnapshotInsert = {
   unit_price: number;
   item_notes: string | null;
   configuration_signature: string;
+  manual_discount_type?: "fixed" | "percent" | null;
+  manual_discount_value?: number | null;
+  manual_discount_reason?: string | null;
 };
 
 export type OrderItemOptionSnapshotInsert = {
