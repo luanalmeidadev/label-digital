@@ -38,7 +38,8 @@ export default async function Home() {
       .from("categories")
       .select("id, name, slug")
       .eq("active", true)
-      .order("sort_order"),
+      .order("sort_order")
+      .order("id"),
 
     supabase
       .from("products")
@@ -58,7 +59,8 @@ export default async function Home() {
         featured
       `)
       .eq("active", true)
-      .order("sort_order"),
+      .order("sort_order")
+      .order("id"),
     getImageDisplaySettings(),
     getPublicStoreSettings(),
   ]);

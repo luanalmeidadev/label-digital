@@ -1,10 +1,12 @@
-import { ArrowDown, ArrowUp, Package } from "lucide-react";
+import { Package } from "lucide-react";
 
 import ConfigurableProductDialog from "@/components/admin/ConfigurableProductDialog";
 import DeleteProductDialog from "@/components/admin/DeleteProductDialog";
 import EditProductDialog from "@/components/admin/EditProductDialog";
 import NewProductDialog from "@/components/admin/NewProductDialog";
 import ProductCategorySection from "@/components/admin/ProductCategorySection";
+import ProductSortableList from "@/components/admin/ProductSortableList";
+import SortableProductRow, { DragHandle } from "@/components/admin/SortableProductRow";
 import { getPublicInstallationProfile } from "@/config/installation/public";
 import { getCatalogStartingPrice } from "@/lib/cart";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -14,7 +16,7 @@ import { getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
 import {
   createProduct,
   deleteProduct,
-  moveProduct,
+  reorderCategoryProductsAction,
   toggleProductAvailability,
   toggleProductStatus,
   updateProduct,
@@ -58,7 +60,8 @@ export default async function ProdutosPage() {
         name
       )
     `)
-    .order("sort_order");
+    .order("sort_order")
+    .order("id");
 
   if (error) {
     throw new Error("Não foi possível carregar os produtos.");
@@ -68,7 +71,8 @@ export default async function ProdutosPage() {
     await supabase
       .from("categories")
       .select("id, name, active, sort_order")
-      .order("sort_order");
+      .order("sort_order")
+      .order("id");
 
   if (categoriesError) {
     throw new Error("Não foi possível carregar as categorias.");
@@ -183,10 +187,12 @@ export default async function ProdutosPage() {
                   active={group.active}
                   defaultOpen={groupIndex === 0}
                 >
-                    {group.products.map((product, productIndex) => {
-                      const firstProduct = productIndex === 0;
-                      const lastProduct =
-                        productIndex === group.products.length - 1;
+                  <ProductSortableList
+                    categoryId={group.id}
+                    initialProductIds={group.products.map((p) => p.id)}
+                    reorderAction={reorderCategoryProductsAction}
+                  >
+                    {group.products.map((product) => {
                       const productCategory = Array.isArray(
                         product.categories
                       )
@@ -207,11 +213,12 @@ export default async function ProdutosPage() {
                       );
 
                       return (
-                  <article
+                  <SortableProductRow
                     key={product.id}
-                    className="flex flex-col gap-4 p-5 lg:flex-row lg:items-center lg:justify-between"
+                    id={product.id}
                   >
                     <div className="flex items-center gap-4">
+                      <DragHandle id={product.id} name={product.name} />
                       <EditProductDialog
                         id={product.id}
                         name={product.name}
@@ -294,18 +301,14 @@ export default async function ProdutosPage() {
                         reorderOptionAction={reorderProductOption}
                       />
 
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ${
-                          product.available
-                            ? "bg-green-100 text-green-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        {product.available ? "Disponível" : "Esgotado"}
-                      </span>
+                      <div className="mx-1 hidden h-6 w-px bg-brand-border sm:block" />
 
                       <form action={toggleProductAvailability}>
-                        <input type="hidden" name="id" value={product.id} />
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={product.id}
+                        />
                         <input
                           type="hidden"
                           name="available"
@@ -317,23 +320,17 @@ export default async function ProdutosPage() {
                           className="rounded-lg border border-brand-border px-3 py-2 text-xs font-bold text-brand-primary"
                         >
                           {product.available
-                            ? "Marcar esgotado"
-                            : "Marcar disponível"}
+                            ? "Marcar Esgotado"
+                            : "Marcar Disponível"}
                         </button>
                       </form>
 
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-bold ${
-                          product.active
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-gray-100 text-gray-500"
-                        }`}
-                      >
-                        {product.active ? "Ativo" : "Inativo"}
-                      </span>
-
                       <form action={toggleProductStatus}>
-                        <input type="hidden" name="id" value={product.id} />
+                        <input
+                          type="hidden"
+                          name="id"
+                          value={product.id}
+                        />
                         <input
                           type="hidden"
                           name="active"
@@ -348,63 +345,16 @@ export default async function ProdutosPage() {
                         </button>
                       </form>
 
-                      <div className="mx-1 hidden h-6 w-px bg-brand-border sm:block" />
-
-                      <form action={moveProduct}>
-                        <input
-                          type="hidden"
-                          name="id"
-                          value={product.id}
-                        />
-                        <input
-                          type="hidden"
-                          name="direction"
-                          value="up"
-                        />
-
-                        <button
-                          type="submit"
-                          title="Mover produto para cima"
-                          aria-label={`Mover ${product.name} para cima`}
-                          disabled={firstProduct}
-                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-border text-brand-primary transition hover:border-brand-secondary disabled:cursor-not-allowed disabled:opacity-30"
-                        >
-                          <ArrowUp size={15} />
-                        </button>
-                      </form>
-
-                      <form action={moveProduct}>
-                        <input
-                          type="hidden"
-                          name="id"
-                          value={product.id}
-                        />
-                        <input
-                          type="hidden"
-                          name="direction"
-                          value="down"
-                        />
-
-                        <button
-                          type="submit"
-                          title="Mover produto para baixo"
-                          aria-label={`Mover ${product.name} para baixo`}
-                          disabled={lastProduct}
-                          className="flex h-9 w-9 items-center justify-center rounded-lg border border-brand-border text-brand-primary transition hover:border-brand-secondary disabled:cursor-not-allowed disabled:opacity-30"
-                        >
-                          <ArrowDown size={15} />
-                        </button>
-                      </form>
-
                       <DeleteProductDialog
                         id={product.id}
                         name={product.name}
                         deleteAction={deleteProduct}
                       />
                     </div>
-                  </article>
+                  </SortableProductRow>
                       );
                     })}
+                  </ProductSortableList>
                 </ProductCategorySection>
               ))}
             </div>
