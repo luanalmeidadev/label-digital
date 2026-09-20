@@ -32,6 +32,8 @@ type CheckoutItem = {
   optionIds?: string[];
   itemNotes?: string | null;
   quantity: number;
+  observedEventId?: string | null;
+  observedPromotionalBaseUnitPrice?: number | null;
 };
 
 type CheckoutAddress = {
@@ -170,7 +172,14 @@ function isCreateOrderInput(value: unknown): value is CreateOrderInput {
           item.itemNotes === null ||
           typeof item.itemNotes === "string") &&
         typeof item.quantity === "number" &&
-        Number.isFinite(item.quantity)
+        Number.isFinite(item.quantity) &&
+        (item.observedEventId === undefined ||
+          item.observedEventId === null ||
+          typeof item.observedEventId === "string") &&
+        (item.observedPromotionalBaseUnitPrice === undefined ||
+          item.observedPromotionalBaseUnitPrice === null ||
+          (typeof item.observedPromotionalBaseUnitPrice === "number" &&
+            Number.isFinite(item.observedPromotionalBaseUnitPrice)))
     ) &&
     (value.couponCode === undefined ||
       value.couponCode === null ||
@@ -387,6 +396,8 @@ export async function createOrder(
           quantity: Math.floor(
             Number(item.quantity)
           ),
+          observedEventId: item.observedEventId ?? null,
+          observedPromotionalBaseUnitPrice: item.observedPromotionalBaseUnitPrice ?? null,
         }))
         .filter(
           (item) =>
@@ -438,16 +449,36 @@ export async function createOrder(
       )
     );
 
+    let staleReason: "promotion" | "catalog" | null = null;
     const staleItem = pricedItems.find(
-      (item, index) =>
-        item.catalogVersion !== normalizedItems[index].catalogVersion
+      (item, index) => {
+        const normalized = normalizedItems[index];
+        const isPromotionStale = item.observedEventId !== normalized.observedEventId || item.observedPromotionalBaseUnitPrice !== normalized.observedPromotionalBaseUnitPrice;
+        const isCatalogStale = item.catalogVersion !== normalized.catalogVersion;
+
+        if (isPromotionStale) {
+          staleReason = "promotion";
+          return true;
+        }
+
+        if (isCatalogStale) {
+          staleReason = "catalog";
+          return true;
+        }
+
+        return false;
+      }
     );
 
     if (staleItem) {
+      const errorMessage = staleReason === "promotion"
+        ? `A promoção de ${staleItem.productName} mudou ou expirou. Revise sua sacola antes de finalizar.`
+        : `${staleItem.productName} foi atualizado. Revise sua sacola antes de finalizar.`;
+
       return {
         success: false,
         code: "CATALOG_REVIEW_REQUIRED",
-        error: `${staleItem.productName} foi atualizado. Revise sua sacola antes de finalizar.`,
+        error: errorMessage,
       };
     }
 
@@ -461,6 +492,14 @@ export async function createOrder(
      * 3.5. VALIDAR E APLICAR CUPOM
      * =========================================
      */
+
+    const couponEligibleSubtotal = pricedItems.reduce(
+      (sum, item) =>
+        item.observedPromotionalBaseUnitPrice == null
+          ? sum + item.itemTotal
+          : sum,
+      0
+    );
 
     let finalCouponCode: string | null = null;
     let finalDiscountAmount = 0;
@@ -502,7 +541,7 @@ export async function createOrder(
 
       finalCouponCode = normalizedCode;
       const discountPercent = Number(coupon.discount_percent);
-      finalDiscountAmount = Math.round((subtotal * discountPercent) / 100 * 100) / 100;
+      finalDiscountAmount = Math.round((couponEligibleSubtotal * discountPercent) / 100 * 100) / 100;
     }
 
     const orderItems = pricedItems.map((item) => {
@@ -1206,6 +1245,7 @@ export async function createOrder(
       : null;
 
     if (orderError || !order) {
+      const isPromotionChange = orderError?.message?.includes("CATALOG_CHANGED:PROMOTION") ?? false;
       const catalogChanged =
         orderError?.message?.includes("CATALOG_CHANGED:") ?? false;
 
@@ -1214,10 +1254,15 @@ export async function createOrder(
         orderError
       );
 
+      let errorMessage = "Não foi possível criar o pedido.";
+      if (isPromotionChange) {
+        errorMessage = "A promoção de um ou mais itens mudou ou expirou. Revise sua sacola antes de finalizar.";
+      } else if (catalogChanged) {
+        errorMessage = "Um item foi atualizado ou ficou indisponível. Revise sua sacola antes de finalizar.";
+      }
+
       return failProtectedRequest(
-        catalogChanged
-          ? "Um item foi atualizado ou ficou indisponível. Revise sua sacola antes de finalizar."
-          : "Não foi possível criar o pedido.",
+        errorMessage,
         catalogChanged ? "CATALOG_REVIEW_REQUIRED" : undefined
       );
     }
@@ -1312,7 +1357,7 @@ export type ValidateCouponResult =
 
 export async function validateCouponForCheckout(
   code: string,
-  currentSubtotal: number
+  items: CheckoutItem[]
 ): Promise<ValidateCouponResult> {
   try {
     if (!code || typeof code !== "string" || !code.trim()) {
@@ -1325,7 +1370,34 @@ export async function validateCouponForCheckout(
       return { valid: false, error: "Cupom inválido ou expirado." };
     }
 
+    if (!Array.isArray(items) || items.length === 0) {
+      return { valid: false, error: "Seu carrinho está vazio." };
+    }
+
     const supabase = createSupabaseAdminClient();
+    const repository = createFoodCatalogProductRepository(supabase);
+
+    let couponEligibleSubtotal = 0;
+
+    for (const item of items) {
+      const priced = await priceConfiguredCatalogItem(
+        repository,
+        {
+          productId: item.productId,
+          variantId: item.variantId,
+          optionIds: item.optionIds,
+          quantity: item.quantity,
+          itemNotes: item.itemNotes,
+        }
+      );
+
+      // Produto com promoção de evento NÃO recebe desconto de cupom
+      // Usamos observedPromotionalBaseUnitPrice para saber se o item tem preço promocional
+      if (priced.observedPromotionalBaseUnitPrice === null) {
+        couponEligibleSubtotal += priced.unitPrice * priced.quantity;
+      }
+    }
+
     const { data: coupon, error } = await supabase
       .from("coupons")
       .select("discount_percent, expires_at, active")
@@ -1346,7 +1418,7 @@ export async function validateCouponForCheckout(
     }
 
     const discountPercent = Number(coupon.discount_percent);
-    const discountAmount = Math.round((currentSubtotal * discountPercent) / 100 * 100) / 100;
+    const discountAmount = Math.round((couponEligibleSubtotal * discountPercent) / 100 * 100) / 100;
 
     return {
       valid: true,
@@ -1355,6 +1427,9 @@ export async function validateCouponForCheckout(
       discountAmount,
     };
   } catch (err) {
+    if (err instanceof CatalogPricingError) {
+      return { valid: false, error: "A promoção de um dos itens mudou. Atualize o carrinho." };
+    }
     console.error("Erro inesperado ao validar cupom para preview:", err);
     return { valid: false, error: "Ocorreu um erro ao validar o cupom." };
   }

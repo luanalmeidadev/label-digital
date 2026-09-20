@@ -366,4 +366,164 @@ testSuite("checkout configurável no Supabase local", () => {
 
     expect(result.error).not.toBeNull();
   });
+  it("reproduz o bug do pedido promocional relatado no E2E", async () => {
+    // 1. Criar o evento promocional para o burger
+    const { data: event, error: eventError } = await supabase
+      .from("promotional_events")
+      .insert({
+        name: "Dia do X-Burger E2E",
+        active: true,
+        schedule_type: "period",
+        starts_at: new Date(Date.now() - 3600000).toISOString(),
+        ends_at: new Date(Date.now() + 3600000).toISOString(),
+      })
+      .select("id")
+      .single();
+
+    expect(eventError).toBeNull();
+    const eventId = event!.id;
+
+    // O X-Burger (ids.simpleProduct) normalmente custa 24.90
+    await supabase.from("products").update({ price: 24.90 }).eq("id", ids.simpleProduct);
+
+    // O X-Bacon é um produto variant com option
+    // variant ids.variant (price 20) + cheddar (ids.cheddar) (16)
+    await supabase.from("product_options").update({ price_delta: 16 }).eq("id", ids.cheddar);
+
+    const { error: itemError } = await supabase
+      .from("promotional_event_products")
+      .insert({
+        event_id: eventId,
+        product_id: ids.simpleProduct,
+        promotional_price: 20.00, // Preço promocional do X-Burger
+      });
+    expect(itemError).toBeNull();
+
+    // 2. Criar o cupom
+    await supabase.from("coupons").delete().eq("code", "CDL10_E2E");
+    const { error: couponError } = await supabase
+      .from("coupons")
+      .insert({
+        code: "CDL10_E2E",
+        discount_percent: 10,
+        active: true,
+      });
+    expect(couponError).toBeNull();
+
+    // 3. Montar o carrinho
+    // X-Burger Promocional
+    const xBurgerSnapshot = await snapshot({
+      productId: ids.simpleProduct,
+      quantity: 1,
+      variantId: null,
+      optionIds: [],
+    });
+
+    // Validar preço que o snapshot trouxe (deveria ser 20)
+    expect(xBurgerSnapshot.unit_price).toBe(20);
+    expect(xBurgerSnapshot.base_unit_price).toBe(24.9);
+    expect(xBurgerSnapshot.observed_event_id).toBe(eventId);
+    expect(xBurgerSnapshot.observed_promotional_base_unit_price).toBe(20);
+
+    // X-Bacon Equivalente (Variant com Adicional)
+    const xBaconSnapshot = await snapshot({
+      productId: ids.burger,
+      quantity: 1,
+      variantId: ids.variant,
+      optionIds: [ids.mediumPoint, ids.cheddar]
+    });
+    expect(xBaconSnapshot.unit_price).toBe(36);
+
+    // Subtotal: 56.00
+    // Desconto (10% sobre 36): 3.60
+    // Total (    // 4. Submeter o pedido com Ordem Inversa (Sem promo -> Com promo)
+    const { data: createdOrdersReverse, error: orderErrorReverse } = await supabase.rpc("create_online_order_atomic", {
+      p_customer_id: ids.customer,
+      p_address_id: null,
+      p_order_type: "pickup",
+      p_payment_method: "pix",
+      p_cash_change_for: null,
+      p_delivery_fee: 0,
+      p_notes: "Teste de E2E Reverse",
+      p_items: [
+        xBaconSnapshot, // Item SEM promoção primeiro
+        xBurgerSnapshot // Item COM promoção segundo
+      ],
+      p_coupon_code: "CDL10_E2E",
+    });
+
+    expect(orderErrorReverse).toBeNull();
+    const orderIdReverse = createdOrdersReverse[0].order_id;
+    createdOrderIds.push(orderIdReverse);
+
+    // Validar Order Reverse
+    const { data: orderReverse } = await supabase.from("orders").select("*").eq("id", orderIdReverse).single();
+    expect(orderReverse.subtotal).toBe(56);
+    expect(orderReverse.coupon_code).toBe("CDL10_E2E");
+    expect(orderReverse.discount_amount).toBe(3.6);
+    expect(orderReverse.total).toBe(52.4);
+
+    // Validar Order Items Reverse (sem vazamento)
+    const { data: itemsReverse } = await supabase.from("order_items").select("*").eq("order_id", orderIdReverse).order("created_at", { ascending: true });
+
+    // O primeiro item do array de retorno pode não ser garantido a ordem, vamos achar por ID
+    const baconRev = itemsReverse!.find(i => i.product_id === ids.burger);
+    expect(baconRev!.unit_price).toBe(36);
+    expect(baconRev!.promotional_event_id).toBeNull();
+    expect(baconRev!.promotional_event_name).toBeNull();
+    expect(baconRev!.promotional_base_unit_price).toBeNull();
+
+    const burgerRev = itemsReverse!.find(i => i.product_id === ids.simpleProduct);
+    expect(burgerRev!.base_unit_price).toBe(24.9);
+    expect(burgerRev!.promotional_base_unit_price).toBe(20);
+    expect(burgerRev!.promotional_event_id).toBe(eventId);
+    // promotional_event_name do event
+    expect(burgerRev.promotional_event_name).toBe("Dia do X-Burger E2E");
+
+    // Limpar o evento para os proximos testes n quebrarem
+    await supabase.from("promotional_event_products").delete().eq("event_id", eventId);
+    await supabase.from("promotional_events").delete().eq("id", eventId);
+  });
+
+  it("rejeita snapshot promocional adulterado e garante autoridade do servidor", async () => {
+    // Criar o evento promocional para o burger
+    const { data: event } = await supabase
+      .from("promotional_events")
+      .insert({
+        name: "Dia da Autoridade",
+        active: true,
+        schedule_type: "period",
+        starts_at: new Date(Date.now() - 3600000).toISOString(),
+        ends_at: new Date(Date.now() + 3600000).toISOString(),
+      })
+      .select("id")
+      .single();
+    const eventId = event!.id;
+
+    await supabase.from("products").update({ price: 25.00 }).eq("id", ids.simpleProduct);
+    await supabase.from("promotional_event_products").insert({
+        event_id: eventId,
+        product_id: ids.simpleProduct,
+        promotional_price: 18.00,
+    });
+
+    const validSnapshot = await snapshot({
+      productId: ids.simpleProduct,
+      quantity: 1,
+    });
+
+    // Cenário A: Cliente tenta adulterar o observed_promotional_base_unit_price
+    const fakePriceSnapshot = { ...validSnapshot, observed_promotional_base_unit_price: 10, unit_price: 10 };
+    const fakePriceResult = await createOrder([fakePriceSnapshot]);
+    expect(fakePriceResult.error?.message).toContain("CATALOG_CHANGED:PROMOTION");
+
+    // Cenário B: Cliente tenta adulterar o observed_event_id
+    const fakeIdSnapshot = { ...validSnapshot, observed_event_id: ids.customer };
+    const fakeIdResult = await createOrder([fakeIdSnapshot]);
+    expect(fakeIdResult.error?.message).toContain("CATALOG_CHANGED:PROMOTION");
+
+    // Limpar o evento para os proximos testes n quebrarem
+    await supabase.from("promotional_event_products").delete().eq("event_id", eventId);
+    await supabase.from("promotional_events").delete().eq("id", eventId);
+  });
 });

@@ -59,7 +59,7 @@ export async function listAdminAccounts() {
       return [
         {
           id: profile.id,
-          name: profile.name,
+          name: profile.name ?? "",
           email: user.email,
           role,
           permissions: getAdminPermissions(
@@ -73,7 +73,9 @@ export async function listAdminAccounts() {
         },
       ];
     })
-    .sort((first, second) =>
-      first.name.localeCompare(second.name, "pt-BR")
-    );
+    .sort((first, second) => {
+      const nameA = first.name || first.email || "";
+      const nameB = second.name || second.email || "";
+      return nameA.localeCompare(nameB, "pt-BR");
+    });
 }

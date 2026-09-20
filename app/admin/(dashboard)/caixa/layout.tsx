@@ -8,4 +8,3 @@ export default async function CaixaLayout({
   await requireAdminPagePermission("cashier");
   return children;
 }
-

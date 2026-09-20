@@ -44,11 +44,19 @@ export type CartItem = CartProduct & {
   basePrice: number;
   optionsPrice: number;
   quantity: number;
+  observedEventId: string | null;
+  observedPromotionalBaseUnitPrice: number | null;
+  observedEffectiveBasePrice: number;
+  observedEffectiveAvailability: boolean;
 };
 
 export type CartCatalogProduct = CartProduct & {
   available: boolean;
   configuration: FoodCatalogConfiguration;
+  observedEventId: string | null;
+  promotionalBaseUnitPrice: number | null;
+  effectiveBaseUnitPrice: number;
+  effectiveAvailable: boolean;
 };
 
 export type CatalogSelection = {
@@ -82,6 +90,10 @@ export type CatalogSelectionEstimate = {
     option: ProductOption;
   }>;
   errors: CatalogSelectionErrors;
+  observedEventId: string | null;
+  promotionalBaseUnitPrice: number | null;
+  effectiveBaseUnitPrice: number;
+  effectiveAvailable: boolean;
 };
 
 type PersistedCart = {
@@ -215,7 +227,9 @@ export function estimateCatalogSelection(
 
       if (!variant) {
         errors.variant = "A opção escolhida não pertence a este produto.";
-      } else if (!variant.available) {
+      } else if (variant.effectiveAvailable === false) {
+        errors.variant = "Esta opção está indisponível durante a promoção.";
+      } else if (!variant.available && variant.effectiveAvailable !== true) {
         errors.variant = "Esta opção está indisponível no momento.";
       } else {
         basePrice = variant.price;
@@ -282,7 +296,8 @@ export function estimateCatalogSelection(
     (total, selected) => total + selected.option.priceDelta,
     0
   );
-  const unitPrice = basePrice + optionsPrice;
+  const effectiveBaseUnitPrice = configuration.pricingMode === "variant" ? (variant?.effectiveBaseUnitPrice ?? variant?.price ?? product.price) : ((product as CartCatalogProduct).effectiveBaseUnitPrice ?? product.price);
+  const unitPrice = effectiveBaseUnitPrice + optionsPrice;
   const safeQuantity = quantity ?? 1;
   const valid =
     !errors.variant &&
@@ -302,11 +317,15 @@ export function estimateCatalogSelection(
     variant,
     options: selectedOptions,
     errors,
+    observedEventId: configuration.pricingMode === "variant" ? (variant?.observedEventId ?? null) : (product as CartCatalogProduct).observedEventId ?? null,
+    promotionalBaseUnitPrice: configuration.pricingMode === "variant" ? (variant?.promotionalBaseUnitPrice ?? null) : (product as CartCatalogProduct).promotionalBaseUnitPrice ?? null,
+    effectiveBaseUnitPrice,
+    effectiveAvailable: configuration.pricingMode === "variant" ? (variant?.effectiveAvailable ?? variant?.available ?? false) : ((product as CartCatalogProduct).effectiveAvailable ?? false),
   };
 }
 
 export function createSimpleCartItem(
-  product: CartProduct,
+  product: CartCatalogProduct,
   quantity = 1
 ): CartItem {
   const safeQuantity = normalizeQuantity(quantity);
@@ -324,6 +343,7 @@ export function createSimpleCartItem(
 
   return {
     ...product,
+    price: product.effectiveBaseUnitPrice ?? product.price,
     lineKey: createCartLineKey(identity),
     configurationSignature: createCartConfigurationSignature(identity),
     pricingMode: "simple",
@@ -333,6 +353,10 @@ export function createSimpleCartItem(
     basePrice: product.price,
     optionsPrice: 0,
     quantity: safeQuantity,
+    observedEventId: product.observedEventId ?? null,
+    observedPromotionalBaseUnitPrice: product.promotionalBaseUnitPrice ?? null,
+    observedEffectiveBasePrice: product.effectiveBaseUnitPrice ?? product.price,
+    observedEffectiveAvailability: product.effectiveAvailable ?? product.available,
   };
 }
 
@@ -384,6 +408,10 @@ export function createConfiguredCartItem(input: {
     basePrice: estimate.basePrice,
     optionsPrice: estimate.optionsPrice,
     quantity: estimate.quantity,
+    observedEventId: estimate.observedEventId,
+    observedPromotionalBaseUnitPrice: estimate.promotionalBaseUnitPrice,
+    observedEffectiveBasePrice: estimate.effectiveBaseUnitPrice,
+    observedEffectiveAvailability: estimate.effectiveAvailable,
   } satisfies CartItem;
 }
 
@@ -519,6 +547,10 @@ function parsePersistedItem(value: unknown, legacyCatalogVersion = false): CartI
       basePrice: value.basePrice,
       optionsPrice: value.optionsPrice,
       quantity,
+      observedEventId: typeof (value as Record<string, unknown>).observedEventId === "string" ? ((value as Record<string, unknown>).observedEventId as string) : null,
+      observedPromotionalBaseUnitPrice: typeof (value as Record<string, unknown>).observedPromotionalBaseUnitPrice === "number" ? ((value as Record<string, unknown>).observedPromotionalBaseUnitPrice as number) : null,
+      observedEffectiveBasePrice: typeof (value as Record<string, unknown>).observedEffectiveBasePrice === "number" ? ((value as Record<string, unknown>).observedEffectiveBasePrice as number) : value.basePrice,
+      observedEffectiveAvailability: typeof (value as Record<string, unknown>).observedEffectiveAvailability === "boolean" ? ((value as Record<string, unknown>).observedEffectiveAvailability as boolean) : true,
     };
   } catch {
     return null;
@@ -548,6 +580,16 @@ function parseLegacyItem(value: unknown): CartItem | null {
       price: value.price,
       image_url: value.image_url,
       catalogVersion: 0,
+      available: true,
+      configuration: {
+        pricingMode: "simple",
+        variants: [],
+        optionGroups: [],
+      },
+      observedEventId: null,
+      promotionalBaseUnitPrice: null,
+      effectiveBaseUnitPrice: value.price,
+      effectiveAvailable: true,
     },
     quantity
   );

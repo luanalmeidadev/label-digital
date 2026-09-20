@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = createSupabaseAdminClient();
     const healthCheckKeys = getHealthCheckKeys();
-    
+
     const checks = healthCheckKeys.map((name) => {
       if (name === "database") {
         return {

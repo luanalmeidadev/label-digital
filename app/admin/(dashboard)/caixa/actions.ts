@@ -60,6 +60,8 @@ export type CashierSaleInput = {
       value: number;
       reason?: string | null;
     };
+    observedEventId?: string | null;
+    observedPromotionalBaseUnitPrice?: number | null;
   }>;
   payments: Array<{
     method: PaymentMethod;
@@ -307,17 +309,36 @@ export async function createCashierSale(
     };
   }
 
-  if (
-    pricedItems.some(
-      (item, index) =>
-        item.catalogVersion !== input.items[index].catalogVersion
-    )
-  ) {
+  let staleReason: "promotion" | "catalog" | null = null;
+  const staleItem = pricedItems.find(
+    (item, index) => {
+      const inputItem = input.items[index];
+      const isPromotionStale = item.observedEventId !== (inputItem.observedEventId ?? null) || item.observedPromotionalBaseUnitPrice !== (inputItem.observedPromotionalBaseUnitPrice ?? null);
+      const isCatalogStale = item.catalogVersion !== inputItem.catalogVersion;
+
+      if (isPromotionStale) {
+        staleReason = "promotion";
+        return true;
+      }
+
+      if (isCatalogStale) {
+        staleReason = "catalog";
+        return true;
+      }
+
+      return false;
+    }
+  );
+
+  if (staleItem) {
+    const errorMessage = staleReason === "promotion"
+      ? `A promoção de um ou mais itens mudou ou expirou. Revise a venda antes de finalizar.`
+      : `O preço ou a configuração de um item mudou. Revise a venda antes de finalizar.`;
+
     return {
       success: false,
       code: "CATALOG_REVIEW_REQUIRED",
-      error:
-        "O preço ou a configuração de um item mudou. Revise a venda antes de finalizar.",
+      error: errorMessage,
     };
   }
 
@@ -403,7 +424,9 @@ export async function createCashierSale(
     return {
       success: false,
         error:
-          error?.message.includes("CATALOG_CHANGED")
+          error?.message.includes("CATALOG_CHANGED:PROMOTION")
+            ? "A promoção de um ou mais itens mudou ou expirou. Atualize o caixa e revise a venda."
+          : error?.message.includes("CATALOG_CHANGED")
             ? "O catálogo mudou. Atualize o caixa e revise a venda."
           : error?.message.includes("não estão disponíveis")
               ? "Um ou mais produtos ficaram indisponíveis. Atualize o caixa."

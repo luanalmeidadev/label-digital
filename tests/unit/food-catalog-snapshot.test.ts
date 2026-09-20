@@ -31,6 +31,10 @@ function createPricedItem(): PricedCatalogItem {
         optionSortOrder: 0,
       },
     ],
+    observedEventId: null,
+    observedPromotionalBaseUnitPrice: null,
+    observedEffectiveBasePrice: 20,
+    observedEffectiveAvailability: true,
   };
 }
 

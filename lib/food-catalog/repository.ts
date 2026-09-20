@@ -260,11 +260,15 @@ export async function getConfiguredFoodCatalogProduct(
     getProductOptionGroups(supabase, productId, options),
   ]);
 
-  return {
+  const result = {
     ...product,
     variants,
     optionGroups,
   };
+
+  await applyPromotionsToCatalog(supabase, [{ id: product.id, price: product.price, available: product.available, pricingMode: product.pricingMode, ref: result }], { [product.id]: result });
+
+  return result;
 }
 
 export async function getFoodCatalogConfigurations(
@@ -414,4 +418,70 @@ export function createFoodCatalogProductRepository(
       return getConfiguredFoodCatalogProduct(supabase, productId);
     },
   };
+}
+
+export async function applyPromotionsToCatalog(
+  supabase: SupabaseClient,
+  products: { id: string; price: number; available: boolean; pricingMode: string; ref?: unknown; observedEventId?: string | null; promotionalBaseUnitPrice?: number | null; effectiveBaseUnitPrice?: number; effectiveAvailable?: boolean }[],
+  configurations: Record<string, FoodCatalogConfiguration>
+) {
+  const { data: allPromotions, error } = await supabase.rpc("resolve_catalog_promotions", {
+    p_timezone: "America/Sao_Paulo",
+  });
+
+  if (error) {
+    console.error("Failed to resolve catalog promotions:", error);
+    return;
+  }
+
+  const promoMap = new Map<string, { product_id: string; variant_id: string | null; event_id: string; promotional_price: number | null; availability_mode: string }>();
+  for (const promo of allPromotions || []) {
+    const key = `${promo.product_id}_${promo.variant_id ?? "null"}`;
+    promoMap.set(key, promo as { product_id: string; variant_id: string | null; event_id: string; promotional_price: number | null; availability_mode: string });
+  }
+
+  for (const p of products) {
+    if (p.pricingMode === 'simple') {
+      const key = `${p.id}_null`;
+      const row = promoMap.get(key);
+
+      let effectiveAvailable = p.available;
+      if (row?.availability_mode === "unavailable_during_event") {
+        effectiveAvailable = false;
+      } else if (row?.availability_mode === "available_during_event") {
+        effectiveAvailable = true;
+      }
+
+      const effectiveBaseUnitPrice = row?.promotional_price ?? p.price;
+
+      const target = (p.ref as Record<string, unknown>) || p;
+
+      target.observedEventId = row?.event_id ?? null;
+      target.promotionalBaseUnitPrice = row?.promotional_price != null ? Number(row.promotional_price) : null;
+      target.effectiveBaseUnitPrice = Number(effectiveBaseUnitPrice);
+      target.effectiveAvailable = effectiveAvailable;
+    }
+
+    const config = configurations[p.id];
+    if (config?.variants) {
+      for (const v of config.variants) {
+        const key = `${p.id}_${v.id}`;
+        const row = promoMap.get(key);
+
+        let effectiveAvailable = v.available;
+        if (row?.availability_mode === "unavailable_during_event") {
+          effectiveAvailable = false;
+        } else if (row?.availability_mode === "available_during_event") {
+          effectiveAvailable = true;
+        }
+
+        const effectiveBaseUnitPrice = row?.promotional_price ?? v.price;
+
+        v.observedEventId = row?.event_id ?? null;
+        v.promotionalBaseUnitPrice = row?.promotional_price != null ? Number(row.promotional_price) : null;
+        v.effectiveBaseUnitPrice = Number(effectiveBaseUnitPrice);
+        v.effectiveAvailable = effectiveAvailable;
+      }
+    }
+  }
 }

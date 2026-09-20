@@ -15,7 +15,7 @@ import {
   estimateCatalogSelection,
   MAX_CART_ITEM_QUANTITY,
   MAX_ITEM_NOTES_LENGTH,
-  type CartProduct,
+  type CartCatalogProduct,
 } from "@/lib/cart";
 import type {
   FoodCatalogConfiguration,
@@ -25,7 +25,7 @@ import type {
 import { useCart } from "./CartProvider";
 
 type ProductConfiguratorDialogProps = {
-  product: CartProduct;
+  product: CartCatalogProduct;
   configuration: FoodCatalogConfiguration;
 };
 

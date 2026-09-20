@@ -21,6 +21,10 @@ export type ProductVariant = {
   active: boolean;
   available: boolean;
   sortOrder: number;
+  observedEventId?: string | null;
+  promotionalBaseUnitPrice?: number | null;
+  effectiveBaseUnitPrice?: number;
+  effectiveAvailable?: boolean;
 };
 
 export type ProductOption = {
@@ -56,6 +60,10 @@ export type FoodCatalogProduct = {
   available: boolean;
   variants: ProductVariant[];
   optionGroups: ProductOptionGroup[];
+  observedEventId?: string | null;
+  promotionalBaseUnitPrice?: number | null;
+  effectiveBaseUnitPrice?: number;
+  effectiveAvailable?: boolean;
 };
 
 export type FoodCatalogConfiguration = Pick<
@@ -95,6 +103,10 @@ export type PricedCatalogItem = {
   itemTotal: number;
   itemNotes: string | null;
   optionSnapshots: OrderItemOptionSnapshot[];
+  observedEventId: string | null;
+  observedPromotionalBaseUnitPrice: number | null;
+  observedEffectiveBasePrice: number;
+  observedEffectiveAvailability: boolean;
 };
 
 export type OrderItemSnapshotInsert = {
@@ -111,6 +123,8 @@ export type OrderItemSnapshotInsert = {
   manual_discount_type?: "fixed" | "percent" | null;
   manual_discount_value?: number | null;
   manual_discount_reason?: string | null;
+  observed_event_id: string | null;
+  observed_promotional_base_unit_price: number | null;
 };
 
 export type OrderItemOptionSnapshotInsert = {

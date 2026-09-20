@@ -20,6 +20,7 @@ import {
   Truck,
   Users,
   Ticket,
+  CalendarRange,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -140,6 +141,12 @@ const menuSections: Array<{
         label: "Cupons",
         href: "/admin/cupons",
         icon: Ticket,
+        adminOnly: true,
+      },
+      {
+        label: "Eventos",
+        href: "/admin/eventos",
+        icon: CalendarRange,
         adminOnly: true,
       },
     ],

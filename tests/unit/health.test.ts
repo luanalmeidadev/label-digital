@@ -47,7 +47,7 @@ describe("GET /api/health", () => {
     process.env = { ...originalEnv };
     process.env.PLATFORM_HEALTH_SECRET = "test-secret";
     process.env.CORE_VERSION = "1.0.0";
-    
+
     mockLimit.mockResolvedValue({ data: [{ id: 1 }], error: null });
     mockList.mockResolvedValue({ data: [{ name: "test" }], error: null });
   });
@@ -106,7 +106,7 @@ describe("GET /api/health", () => {
 
   it("returns 503 degraded if database fails", async () => {
     mockLimit.mockResolvedValueOnce({ error: new Error("DB Error") });
-    
+
     const res = await GET(createReq("Bearer test-secret"));
     expect(res.status).toBe(503);
     const json = await res.json();
@@ -123,7 +123,7 @@ describe("GET /api/health", () => {
 
   it("returns 503 degraded if storage fails", async () => {
     mockList.mockResolvedValueOnce({ error: new Error("Storage Error") });
-    
+
     const res = await GET(createReq("Bearer test-secret"));
     expect(res.status).toBe(503);
     const json = await res.json();
@@ -134,35 +134,35 @@ describe("GET /api/health", () => {
   it("treats timeout as degraded", async () => {
     vi.useFakeTimers();
     mockLimit.mockReturnValue(new Promise(() => {})); // Never resolves
-    
+
     const promise = GET(createReq("Bearer test-secret"));
-    
+
     // Fast-forward time
     vi.advanceTimersByTime(3500);
-    
+
     const res = await promise;
     expect(res.status).toBe(503);
     const json = await res.json();
     expect(json.checks.database).toBe("failed");
-    
+
     vi.useRealTimers();
   });
 
   it("never leaks internal error messages, PLATFORM_HEALTH_SECRET, or SUPABASE_SERVICE_ROLE_KEY", async () => {
     const internalMsg = "Internal Supabase Error Connection Failed";
     mockLimit.mockResolvedValueOnce({ error: new Error(internalMsg) });
-    
+
     // Add fake service role key to env to ensure it doesn't leak
     process.env.SUPABASE_SERVICE_ROLE_KEY = "fake-service-role-key";
 
     const res = await GET(createReq("Bearer test-secret"));
     expect(res.status).toBe(503);
     const responseText = await res.text();
-    
+
     expect(responseText).not.toContain(internalMsg);
     expect(responseText).not.toContain("test-secret");
     expect(responseText).not.toContain("fake-service-role-key");
-    
+
     // Ensure it's still a valid JSON and matches the contract
     const json = JSON.parse(responseText);
     expect(json.status).toBe("degraded");

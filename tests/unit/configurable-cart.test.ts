@@ -12,16 +12,31 @@ import {
   mergeCartItem,
   serializeCart,
   synchronizeCartWithCatalog,
+  type CartCatalogProduct,
   type CartProduct,
 } from "@/lib/cart";
 import type { FoodCatalogConfiguration } from "@/lib/food-catalog/types";
 
-const product: CartProduct = {
+const baseProduct: CartProduct = {
   catalogVersion: 1,
   id: "product-x-bacon",
   name: "X-Bacon",
   price: 28,
   image_url: "/x-bacon.jpg",
+};
+
+const product: CartCatalogProduct = {
+  ...baseProduct,
+  available: true,
+  configuration: {
+    pricingMode: "simple",
+    variants: [],
+    optionGroups: [],
+  },
+  observedEventId: null,
+  promotionalBaseUnitPrice: null,
+  effectiveBaseUnitPrice: 28,
+  effectiveAvailable: true,
 };
 
 const configurableCatalog: FoodCatalogConfiguration = {
@@ -280,7 +295,7 @@ describe("identidade e persistência do carrinho V2", () => {
 
   it("agrupa configurações iguais e separa adicionais ou observações diferentes", () => {
     const cheddar = createConfiguredCartItem({
-      product,
+      product: baseProduct,
       configuration: configurableCatalog,
       selection: validSelection({
         optionIds: ["option-medium", "option-cheddar"],
@@ -288,7 +303,7 @@ describe("identidade e persistência do carrinho V2", () => {
       }),
     });
     const sameCheddar = createConfiguredCartItem({
-      product,
+      product: baseProduct,
       configuration: configurableCatalog,
       selection: validSelection({
         optionIds: ["option-cheddar", "option-medium"],
@@ -296,7 +311,7 @@ describe("identidade e persistência do carrinho V2", () => {
       }),
     });
     const noCheddar = createConfiguredCartItem({
-      product,
+      product: baseProduct,
       configuration: configurableCatalog,
       selection: validSelection({
         optionIds: ["option-medium"],
@@ -304,7 +319,7 @@ describe("identidade e persistência do carrinho V2", () => {
       }),
     });
     const note = createConfiguredCartItem({
-      product,
+      product: baseProduct,
       configuration: configurableCatalog,
       selection: validSelection({
         optionIds: ["option-medium", "option-cheddar"],
@@ -325,7 +340,7 @@ describe("identidade e persistência do carrinho V2", () => {
 
   it("persiste e reidrata o envelope versionado", () => {
     const item = createConfiguredCartItem({
-      product,
+      product: baseProduct,
       configuration: configurableCatalog,
       selection: validSelection(),
     });
@@ -338,7 +353,7 @@ describe("identidade e persistência do carrinho V2", () => {
 
   it("migra o carrinho legado simples sem quebrar a aplicação", () => {
     const restored = deserializeCart(
-      JSON.stringify([{ ...product, quantity: 2 }])
+      JSON.stringify([{ ...baseProduct, quantity: 2 }])
     );
 
     expect(restored).toHaveLength(1);
@@ -355,7 +370,7 @@ describe("identidade e persistência do carrinho V2", () => {
 
   it("migra o envelope V2 e recebe a versão atual ao sincronizar", () => {
     const current = createConfiguredCartItem({
-      product,
+      product: baseProduct,
       configuration: configurableCatalog,
       selection: validSelection(),
     });
@@ -390,7 +405,7 @@ describe("identidade e persistência do carrinho V2", () => {
 
   it("ressincroniza preços configurados com o catálogo público atual", () => {
     const item = createConfiguredCartItem({
-      product,
+      product: baseProduct,
       configuration: configurableCatalog,
       selection: validSelection({
         optionIds: ["option-medium", "option-cheddar"],

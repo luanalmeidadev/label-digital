@@ -33,6 +33,10 @@ type Product = {
   available: boolean;
   featured: boolean;
   configuration: FoodCatalogConfiguration;
+  observedEventId: string | null;
+  promotionalBaseUnitPrice: number | null;
+  effectiveBaseUnitPrice: number;
+  effectiveAvailable: boolean;
 };
 
 type MenuSectionsProps = {
@@ -95,14 +99,33 @@ function ProductCard({
           )}
 
           <div className="mt-auto pt-4">
-            <p className="font-bold text-brand-primary">
-              {configurable && (
-                <span className="mr-1 text-xs font-semibold text-brand-muted-foreground">
-                  A partir de
+            <div className="flex items-center gap-2">
+              <p className="font-bold text-brand-primary">
+                {configurable && (
+                  <span className="mr-1 text-xs font-semibold text-brand-muted-foreground">
+                    A partir de
+                  </span>
+                )}
+                {product.promotionalBaseUnitPrice != null ? (
+                  <>
+                    <span className="text-xs text-brand-muted-foreground line-through mr-2">
+                      {formatCurrency(startingPrice)}
+                    </span>
+                    <span className="text-brand-primary">
+                      {formatCurrency(product.promotionalBaseUnitPrice)}
+                    </span>
+                  </>
+                ) : (
+                  <span>{formatCurrency(startingPrice)}</span>
+                )}
+              </p>
+
+              {product.promotionalBaseUnitPrice != null && (
+                <span className="rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-red-600">
+                  Oferta
                 </span>
               )}
-              {formatCurrency(startingPrice)}
-            </p>
+            </div>
 
             {product.available ? (
               configurable ? (
@@ -113,6 +136,12 @@ function ProductCard({
                     price: Number(product.price),
                     image_url: product.image_url,
                     catalogVersion: product.catalog_version,
+                    available: product.available,
+                    configuration: product.configuration,
+                    observedEventId: product.observedEventId,
+                    promotionalBaseUnitPrice: product.promotionalBaseUnitPrice,
+                    effectiveBaseUnitPrice: product.effectiveBaseUnitPrice,
+                    effectiveAvailable: product.effectiveAvailable,
                   }}
                   configuration={product.configuration}
                 />
@@ -124,6 +153,12 @@ function ProductCard({
                     price: Number(product.price),
                     image_url: product.image_url,
                     catalogVersion: product.catalog_version,
+                    available: product.available,
+                    configuration: product.configuration,
+                    observedEventId: product.observedEventId,
+                    promotionalBaseUnitPrice: product.promotionalBaseUnitPrice,
+                    effectiveBaseUnitPrice: product.effectiveBaseUnitPrice,
+                    effectiveAvailable: product.effectiveAvailable,
                   }}
                 />
               )

@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { validateCouponForCheckout } from "@/app/store/checkout/actions";
+import type { CartItem, CartOptionSnapshot } from "@/lib/cart";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -19,12 +20,14 @@ export type AppliedCoupon = {
 
 type CheckoutCouponSectionProps = {
   subtotal: number;
+  cartItems: CartItem[];
   open: boolean;
   onCouponResolved: (coupon: AppliedCoupon | null) => void;
 };
 
 export default function CheckoutCouponSection({
   subtotal,
+  cartItems,
   open,
   onCouponResolved,
 }: CheckoutCouponSectionProps) {
@@ -34,6 +37,7 @@ export default function CheckoutCouponSection({
   const [couponMessage, setCouponMessage] = useState("");
 
   const appliedCouponCode = appliedCoupon?.code;
+  const hasPromotionalItems = cartItems.some(i => i.observedPromotionalBaseUnitPrice != null);
 
   // Limpa o cupom resolvido no pai quando desmonta (carrinho zerado)
   useEffect(() => {
@@ -47,14 +51,26 @@ export default function CheckoutCouponSection({
     onCouponResolved(appliedCoupon);
   }, [appliedCoupon, onCouponResolved]);
 
-  // Re-validar desconto visualmente caso subtotal mude
+  // Construir o payload de itens
+  const checkoutItemsPayload = useMemo(() => cartItems.map(item => ({
+    productId: item.id,
+    catalogVersion: item.catalogVersion,
+    variantId: item.variant?.id || null,
+    optionIds: item.options?.map((o: CartOptionSnapshot) => o.id) || [],
+    quantity: item.quantity,
+    itemNotes: item.itemNotes || null,
+    observedEventId: item.observedEventId || null,
+    observedPromotionalBaseUnitPrice: item.observedPromotionalBaseUnitPrice ?? null,
+  })), [cartItems]);
+
+  // Re-validar desconto visualmente caso subtotal/itens mudem
   useEffect(() => {
     let active = true;
 
     async function revalidate() {
       if (!appliedCouponCode || !open) return;
 
-      const result = await validateCouponForCheckout(appliedCouponCode, subtotal);
+      const result = await validateCouponForCheckout(appliedCouponCode, checkoutItemsPayload);
 
       if (!active) return;
 
@@ -75,7 +91,7 @@ export default function CheckoutCouponSection({
     return () => {
       active = false;
     };
-  }, [subtotal, open, appliedCouponCode]);
+  }, [subtotal, checkoutItemsPayload, open, appliedCouponCode]);
 
   async function handleApplyCoupon() {
     if (!couponCodeInput.trim()) {
@@ -85,7 +101,7 @@ export default function CheckoutCouponSection({
     }
     setCouponLoading(true);
     setCouponMessage("");
-    const result = await validateCouponForCheckout(couponCodeInput, subtotal);
+    const result = await validateCouponForCheckout(couponCodeInput, checkoutItemsPayload);
     setCouponLoading(false);
 
     if (result.valid) {
@@ -148,6 +164,11 @@ export default function CheckoutCouponSection({
             </p>
           )}
         </label>
+        {hasPromotionalItems && (
+          <p className="mt-2 text-xs text-brand-muted-foreground">
+            Produtos em promoção não acumulam cupom.
+          </p>
+        )}
       </div>
 
       {appliedCoupon && (

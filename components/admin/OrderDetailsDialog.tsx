@@ -428,7 +428,11 @@ export default function OrderDetailsDialog({
                       {hasDiscount && (
                         <div className="mt-3 rounded-lg border border-brand-border bg-gray-50/50 p-3 text-xs">
                           <div className="flex justify-between text-brand-muted-foreground">
-                            <span>Preço bruto da linha</span>
+                            <span>
+                              {snapshot.hasPromotion
+                                ? "Preço promocional da linha"
+                                : "Preço bruto da linha"}
+                            </span>
                             <span>
                               {formatCurrency(
                                 snapshot.unitPrice * snapshot.quantity,

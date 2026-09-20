@@ -1,10 +1,6 @@
 import { getPublicInstallationProfile } from "@/config/installation/public";
 import { formatInstallationAddress } from "@/lib/installation-presentation";
 
-const installation = getPublicInstallationProfile();
-const messageBrandName = installation.identity.name.replaceAll("'", "’");
-const messageShortName = installation.identity.shortName.replaceAll("'", "’");
-
 export type NotifiableOrderStatus =
   | "confirmed"
   | "out_for_delivery"
@@ -86,13 +82,18 @@ export function buildOrderStatusWhatsAppMessage({
   orderNumber,
   status,
   trackingUrl,
-  pickupAddress = formatInstallationAddress(installation),
+  pickupAddress,
 }: {
   orderNumber: number;
   status: NotifiableOrderStatus;
   trackingUrl: string;
   pickupAddress?: string;
 }) {
+  const installation = getPublicInstallationProfile();
+  const resolvedPickupAddress = pickupAddress ?? formatInstallationAddress(installation);
+  const messageBrandName = installation.identity.name.replaceAll("'", "’");
+  const messageShortName = installation.identity.shortName.replaceAll("'", "’");
+
   const statusMessage =
     status === "confirmed"
       ? [
@@ -114,7 +115,7 @@ export function buildOrderStatusWhatsAppMessage({
             `Pedido #${orderNumber}`,
             "",
             "Você já pode vir buscar seu pedido na loja.",
-            pickupAddress,
+            resolvedPickupAddress,
           ];
 
   return [

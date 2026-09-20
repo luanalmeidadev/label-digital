@@ -84,6 +84,9 @@ export default async function ImprimirPedidoPage({
         options_unit_price,
         item_notes,
         configuration_signature,
+        promotional_event_id,
+        promotional_event_name,
+        promotional_base_unit_price,
         order_item_options (
           id,
           group_name,

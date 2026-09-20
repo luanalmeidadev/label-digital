@@ -20,7 +20,7 @@ export default async function AdminLayout({
         <AdminSidebar
           permissions={access.permissions}
           role={access.role}
-          name={access.profile.name}
+          name={access.profile.name || access.user.email || "Usuário"}
           storeName={installation.identity.name}
           logoUrl={installation.identity.assets.logos.onPrimary}
         />

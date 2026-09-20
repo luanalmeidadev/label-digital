@@ -20,6 +20,8 @@ export const applicationTables = Object.freeze([
   "store_settings",
   "business_hours",
   "delivery_zones",
+  "promotional_events",
+  "promotional_event_products",
 ]);
 
 export const storageResources = Object.freeze([

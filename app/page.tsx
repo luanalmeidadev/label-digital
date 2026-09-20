@@ -12,7 +12,7 @@ import StoreRealtimeRefresh from "@/components/store/StoreRealtimeRefresh";
 
 import { getPublicInstallationProfile } from "@/config/installation/public";
 import { buildStoreSchemaOrg } from "@/lib/installation-presentation";
-import { getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
+import { applyPromotionsToCatalog, getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
 import type { FoodCatalogConfiguration } from "@/lib/food-catalog/types";
 import { createSupabasePublicServerClient } from "@/lib/supabase/public-server";
 import { getImageDisplaySettings } from "@/lib/image-display-settings-store";
@@ -100,8 +100,6 @@ export default async function Home() {
 
   const products = (productsResult.data ?? []).map((product) => ({
     ...product,
-    image_zoom:
-      imageSettings.dailyProductZoom[product.id] ?? 100,
     configuration:
       catalogConfigurations[product.id] ??
       ({
@@ -109,6 +107,34 @@ export default async function Home() {
         variants: [],
         optionGroups: [],
       } satisfies FoodCatalogConfiguration),
+    observedEventId: null as string | null,
+    promotionalBaseUnitPrice: null as number | null,
+    effectiveBaseUnitPrice: Number(product.price),
+    effectiveAvailable: product.available,
+  }));
+
+  if (!productsResult.error && products.length) {
+    try {
+      await applyPromotionsToCatalog(
+        supabase,
+        products.map((p) => ({
+          id: p.id,
+          price: Number(p.price),
+          available: p.available,
+          pricingMode: p.pricing_mode,
+          ref: p,
+        })),
+        catalogConfigurations
+      );
+    } catch (error) {
+      console.error("Erro ao resolver promoções do catálogo:", error);
+    }
+  }
+
+  const productsWithZoom = products.map((product) => ({
+    ...product,
+    image_zoom:
+      imageSettings.dailyProductZoom[product.id] ?? 100,
   }));
 
   const hasLoadError =
@@ -135,7 +161,7 @@ export default async function Home() {
       catalogProducts={
         productsResult.error || !catalogConfigurationsLoaded
           ? undefined
-          : products.map((product) => ({
+          : productsWithZoom.map((product) => ({
               id: product.id,
               name: product.name,
               price: Number(product.price),
@@ -143,6 +169,10 @@ export default async function Home() {
               catalogVersion: Number(product.catalog_version),
               available: product.available,
               configuration: product.configuration,
+              observedEventId: product.observedEventId ?? null,
+              promotionalBaseUnitPrice: product.promotionalBaseUnitPrice,
+              effectiveBaseUnitPrice: product.effectiveBaseUnitPrice ?? Number(product.price),
+              effectiveAvailable: product.effectiveAvailable ?? product.available,
             }))
       }
     >
@@ -182,7 +212,7 @@ export default async function Home() {
 
           <MenuSections
             categories={categories}
-            products={products}
+            products={productsWithZoom}
           />
 
           <PreorderBanner />

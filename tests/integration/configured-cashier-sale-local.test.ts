@@ -378,4 +378,74 @@ testSuite("venda configurável no caixa local", () => {
     ]);
     expect(changedPrice.error?.message).toContain("CATALOG_CHANGED");
   });
+
+  it("calcula corretamente descontos manuais (percentual e fixo) sobre preço promocional", async () => {
+    // Restaurar preço e simular um evento ativo!
+    await service
+      .from("product_variants")
+      .update({ price: 28 })
+      .eq("id", ids.variant);
+
+    // Criar um evento no DB
+    const eventId = crypto.randomUUID();
+    const { error: evError } = await service.from("promotional_events").insert({
+      id: eventId,
+      name: "Promo Cashier",
+      schedule_type: "period",
+      active: true,
+      starts_at: new Date(Date.now() - 3600000).toISOString(),
+      ends_at: new Date(Date.now() + 3600000).toISOString()
+    });
+    expect(evError).toBeNull();
+    await service.from("promotional_event_products").insert({
+      event_id: eventId,
+      product_id: ids.burger,
+      variant_id: ids.variant,
+      promotional_price: 20,
+      availability_mode: "inherit"
+    });
+
+    // gross = promo 20 + option 5 = 25
+    const promoItem = await snapshot({
+      productId: ids.burger,
+      variantId: ids.variant,
+      optionIds: [ids.mediumPoint, ids.bacon],
+      quantity: 1,
+    });
+
+    expect(promoItem.unit_price).toBe(25);
+    expect(promoItem.base_unit_price).toBe(28); // The normal base
+    expect(promoItem.observed_promotional_base_unit_price).toBe(20);
+    expect(promoItem.observed_event_id).toBe(eventId);
+
+    // Testar percentual: 10% de 25 = 2.50. net = 22.50
+    const percentSale = await sale(
+      [{
+        ...promoItem,
+        manual_discount_type: "percent",
+        manual_discount_value: 10,
+        manual_discount_reason: "Desconto amigo"
+      }],
+      [{ method: "pix", amount: 22.50, tendered_amount: null, change_amount: null }]
+    );
+    expect(percentSale.error).toBeNull();
+    expect(percentSale.row?.total).toBe(22.50);
+
+    // Testar fixo: 5 de desconto sobre 25. net = 20
+    const fixedSale = await sale(
+      [{
+        ...promoItem,
+        manual_discount_type: "fixed",
+        manual_discount_value: 5,
+        manual_discount_reason: "Desconto fixo"
+      }],
+      [{ method: "pix", amount: 20.00, tendered_amount: null, change_amount: null }]
+    );
+    expect(fixedSale.error).toBeNull();
+    expect(fixedSale.row?.total).toBe(20.00);
+
+    // Limpar o evento
+    await service.from("promotional_event_products").delete().eq("event_id", eventId);
+    await service.from("promotional_events").delete().eq("id", eventId);
+  });
 });

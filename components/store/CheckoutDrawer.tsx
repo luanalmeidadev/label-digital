@@ -620,6 +620,12 @@ export default function CheckoutDrawer({
 
                 quantity:
                   item.quantity,
+
+                observedEventId:
+                  item.observedEventId,
+
+                observedPromotionalBaseUnitPrice:
+                  item.observedPromotionalBaseUnitPrice,
               })
             ),
 
@@ -953,32 +959,34 @@ export default function CheckoutDrawer({
 
         <div className="min-h-0 flex-1 overflow-y-auto p-5">
           {/* RESUMO */}
-          <div className="flex items-center justify-between rounded-2xl bg-brand-surface-muted p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand-primary">
-                <ShoppingBag
-                  size={18}
-                />
+          {step !== "review" && (
+            <div className="flex items-center justify-between rounded-2xl bg-brand-surface-muted p-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-brand-primary">
+                  <ShoppingBag
+                    size={18}
+                  />
+                </div>
+
+                <div>
+                  <p className="text-xs text-brand-muted-foreground">
+                    Sua sacola
+                  </p>
+
+                  <p className="text-sm font-bold text-brand-foreground">
+                    {totalItems}{" "}
+                    item(ns)
+                  </p>
+                </div>
               </div>
 
-              <div>
-                <p className="text-xs text-brand-muted-foreground">
-                  Sua sacola
-                </p>
-
-                <p className="text-sm font-bold text-brand-foreground">
-                  {totalItems}{" "}
-                  item(ns)
-                </p>
-              </div>
+              <p className="font-bold text-brand-primary">
+                {formatCurrency(
+                  subtotal
+                )}
+              </p>
             </div>
-
-            <p className="font-bold text-brand-primary">
-              {formatCurrency(
-                subtotal
-              )}
-            </p>
-          </div>
+          )}
 
           {/* =================================
               ETAPA 1 - CLIENTE
@@ -1519,6 +1527,65 @@ export default function CheckoutDrawer({
           {step ===
             "review" && (
             <div className="mt-7 space-y-5">
+              {/* SACOLA */}
+              <section className="rounded-2xl border border-brand-border bg-white p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
+                    Sua sacola
+                  </p>
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="text-xs font-bold text-brand-primary hover:underline"
+                  >
+                    Editar sacola
+                  </button>
+                </div>
+
+                <div className="mt-4 divide-y divide-[#E6DDD6]">
+                  {items.map((item) => (
+                    <div key={item.lineKey} className="py-3 first:pt-0 last:pb-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-sm font-bold text-[#49352C]">
+                            {item.quantity}x {item.name}
+                          </p>
+
+                          {item.observedPromotionalBaseUnitPrice != null && (
+                            <span className="mt-1 inline-block rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700">
+                              OFERTA
+                            </span>
+                          )}
+
+                          {item.variant && (
+                            <p className="mt-1 text-xs text-brand-muted-foreground">
+                              {item.variant.name}
+                            </p>
+                          )}
+
+                          {item.options.map((opt) => (
+                            <p key={opt.id} className="mt-0.5 text-xs text-brand-muted-foreground">
+                              + {opt.name}
+                            </p>
+                          ))}
+                        </div>
+
+                        <div className="text-right">
+                          {item.observedPromotionalBaseUnitPrice != null && (
+                            <p className="text-xs font-medium text-brand-muted-foreground line-through">
+                              {formatCurrency(item.basePrice * item.quantity)}
+                            </p>
+                          )}
+                          <p className="text-sm font-bold text-[#49352C]">
+                            {formatCurrency(item.price * item.quantity)}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
               {/* CLIENTE */}
               <section className="rounded-2xl border border-brand-border bg-white p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand-primary">
@@ -1730,6 +1797,7 @@ export default function CheckoutDrawer({
                 {items.length > 0 && (
                   <CheckoutCouponSection
                     subtotal={subtotal}
+                    cartItems={items}
                     open={open}
                     onCouponResolved={setAppliedCoupon}
                   />

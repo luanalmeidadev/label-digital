@@ -326,6 +326,8 @@ export default function CashRegisterPOS({
           itemNotes: item.itemNotes,
           quantity: item.quantity,
           manualDiscount: item.manualDiscount,
+          observedEventId: item.observedEventId,
+          observedPromotionalBaseUnitPrice: item.observedPromotionalBaseUnitPrice,
         })),
         payments: selectedPayments.map((payment) => ({
           method: payment.method,
@@ -573,10 +575,26 @@ export default function CashRegisterPOS({
 
                     {hasDiscount && (
                       <div className="mt-3 rounded-lg border border-red-100 bg-red-50/50 p-3 text-xs">
-                        <div className="flex justify-between text-brand-muted-foreground">
-                          <span>Preço bruto / original</span>
-                          <span>{formatCurrency(itemGross)}</span>
-                        </div>
+                        {item.observedPromotionalBaseUnitPrice !== null ||
+                        (item.basePrice > 0 && item.basePrice > item.price) ? (
+                          <>
+                            <div className="flex justify-between text-brand-muted-foreground">
+                              <span>Preço normal</span>
+                              <span className="line-through">
+                                {formatCurrency(item.basePrice * item.quantity)}
+                              </span>
+                            </div>
+                            <div className="flex justify-between font-semibold text-brand-primary mt-0.5">
+                              <span>Promoção</span>
+                              <span>{formatCurrency(itemGross)}</span>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="flex justify-between text-brand-muted-foreground">
+                            <span>Preço bruto / original</span>
+                            <span>{formatCurrency(itemGross)}</span>
+                          </div>
+                        )}
                         <div className="flex items-start justify-between text-red-600 mt-1">
                           <div>
                             <span>

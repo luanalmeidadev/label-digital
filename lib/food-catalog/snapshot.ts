@@ -38,6 +38,8 @@ export function buildPersistableOrderItemSnapshot(
       unit_price: item.unitPrice,
       item_notes: item.itemNotes,
       configuration_signature: createCatalogConfigurationSignature(item),
+      observed_event_id: item.observedEventId,
+      observed_promotional_base_unit_price: item.observedPromotionalBaseUnitPrice,
     },
     options: item.optionSnapshots.map((option) => ({
       option_group_id: option.optionGroupId,
@@ -51,4 +53,3 @@ export function buildPersistableOrderItemSnapshot(
     })),
   };
 }
-

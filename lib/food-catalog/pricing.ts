@@ -122,10 +122,30 @@ function resolveBasePrice(
       );
     }
 
+    if (product.effectiveAvailable === false) {
+      throw new CatalogPricingError(
+        "PRODUCT_UNAVAILABLE",
+        "Este produto está indisponível durante a promoção."
+      );
+    }
+
+    if (!product.available && product.effectiveAvailable !== true) {
+      throw new CatalogPricingError(
+        "PRODUCT_UNAVAILABLE",
+        "Este produto está indisponível no momento."
+      );
+    }
+
     return {
       variantId: null,
       variantName: null,
-      baseUnitPriceCents: toMoneyCents(product.price, "products.price"),
+      baseUnitPriceCents: toMoneyCents(
+        product.price,
+        "products.price"
+      ),
+      observedEventId: product.observedEventId ?? null,
+      promotionalBaseUnitPrice: product.promotionalBaseUnitPrice ?? null,
+      effectiveAvailable: product.effectiveAvailable ?? product.available,
     };
   }
 
@@ -145,10 +165,17 @@ function resolveBasePrice(
     );
   }
 
-  if (!variant.active || !variant.available) {
+  if (variant.effectiveAvailable === false) {
     throw new CatalogPricingError(
       "VARIANT_UNAVAILABLE",
-      "A variante escolhida está indisponível."
+      "A variante escolhida está indisponível durante a promoção."
+    );
+  }
+
+  if (!variant.available && variant.effectiveAvailable !== true) {
+    throw new CatalogPricingError(
+      "VARIANT_UNAVAILABLE",
+      "A variante escolhida está indisponível no momento."
     );
   }
 
@@ -159,6 +186,9 @@ function resolveBasePrice(
       variant.price,
       "product_variants.price"
     ),
+    observedEventId: variant.observedEventId ?? null,
+    promotionalBaseUnitPrice: variant.promotionalBaseUnitPrice ?? null,
+    effectiveAvailable: variant.effectiveAvailable ?? variant.available,
   };
 }
 
@@ -285,8 +315,11 @@ export async function priceConfiguredCatalogItem(
 
   const base = resolveBasePrice(product, selection.variantId ?? null);
   const options = resolveOptionSnapshots(product, normalized.optionIds);
-  const unitPriceCents =
-    base.baseUnitPriceCents + options.optionsUnitPriceCents;
+  const effectiveBaseCents = base.promotionalBaseUnitPrice != null
+    ? toMoneyCents(base.promotionalBaseUnitPrice, "promotionalBaseUnitPrice")
+    : base.baseUnitPriceCents;
+
+  const unitPriceCents = effectiveBaseCents + options.optionsUnitPriceCents;
   const itemTotalCents = unitPriceCents * selection.quantity;
 
   return {
@@ -302,5 +335,9 @@ export async function priceConfiguredCatalogItem(
     itemTotal: fromMoneyCents(itemTotalCents),
     itemNotes: normalized.itemNotes,
     optionSnapshots: options.snapshots,
+    observedEventId: base.observedEventId,
+    observedPromotionalBaseUnitPrice: base.promotionalBaseUnitPrice,
+    observedEffectiveBasePrice: fromMoneyCents(base.baseUnitPriceCents),
+    observedEffectiveAvailability: base.effectiveAvailable,
   };
 }

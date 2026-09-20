@@ -77,4 +77,60 @@ describe("mensagem institucional do pedido", () => {
     expect(message).toContain("• + Cheddar");
     expect(message).toContain("• Obs: sem cebola");
   });
+
+  it("gera a mensagem do WhatsApp usando a identidade resolvida do preset demo-burger (BRASA BURGER)", () => {
+    const originalPreset = process.env.NEXT_PUBLIC_INSTALLATION_PRESET;
+    try {
+      process.env.NEXT_PUBLIC_INSTALLATION_PRESET = "demo-burger";
+      const message = buildWhatsAppMessage({
+        orderNumber: "114",
+        customerName: "Cliente Demo",
+        phone: "5511999999999",
+        orderType: "delivery",
+        address: "Rua Teste, 100",
+        items: [
+          { name: "X-Burger", quantity: 1, unitPrice: 20 },
+        ],
+        subtotal: 20,
+        total: 20,
+      });
+
+      expect(message).toContain("NOVO PEDIDO - BRASA BURGER");
+      expect(message).not.toContain("LA'BEL CONFEITARIA");
+      expect(message).toContain("Pedido gerado pelo Cardápio Brasa Burger.");
+    } finally {
+      if (originalPreset !== undefined) {
+        process.env.NEXT_PUBLIC_INSTALLATION_PRESET = originalPreset;
+      } else {
+        delete process.env.NEXT_PUBLIC_INSTALLATION_PRESET;
+      }
+    }
+  });
+
+  it("gera a mensagem do WhatsApp usando a identidade resolvida do preset label (LA'BEL)", () => {
+    const originalPreset = process.env.NEXT_PUBLIC_INSTALLATION_PRESET;
+    try {
+      process.env.NEXT_PUBLIC_INSTALLATION_PRESET = "label";
+      const message = buildWhatsAppMessage({
+        orderNumber: "115",
+        customerName: "Cliente Label",
+        phone: "5548999999999",
+        orderType: "pickup",
+        items: [
+          { name: "Bolo", quantity: 1, unitPrice: 50 },
+        ],
+        subtotal: 50,
+        total: 50,
+      });
+
+      expect(message).toContain("NOVO PEDIDO - LA'BEL");
+      expect(message).toContain("Pedido gerado pelo Cardápio La'Bel.");
+    } finally {
+      if (originalPreset !== undefined) {
+        process.env.NEXT_PUBLIC_INSTALLATION_PRESET = originalPreset;
+      } else {
+        delete process.env.NEXT_PUBLIC_INSTALLATION_PRESET;
+      }
+    }
+  });
 });

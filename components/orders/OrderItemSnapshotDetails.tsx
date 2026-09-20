@@ -19,7 +19,7 @@ export default function OrderItemSnapshotDetails({
 }: OrderItemSnapshotDetailsProps) {
   const snapshot = normalizeOrderItemSnapshot(item);
 
-  if (!snapshot.hasConfiguration) {
+  if (!snapshot.hasConfiguration && !snapshot.hasPromotion) {
     return null;
   }
 
@@ -48,7 +48,19 @@ export default function OrderItemSnapshotDetails({
         </p>
       )}
 
-      {showPriceBreakdown && formatCurrency && snapshot.baseUnitPrice !== null && (
+      {snapshot.hasPromotion && formatCurrency && (
+        <p className={print ? "font-semibold" : "pt-0.5 font-medium text-brand-foreground"}>
+          <span className="text-brand-muted-foreground">
+            Preço normal: {formatCurrency(snapshot.baseUnitPrice ?? snapshot.unitPrice)}
+          </span>
+          {" • "}
+          <span className="font-semibold text-brand-primary">
+            Promo{snapshot.promotionalEventName ? ` "${snapshot.promotionalEventName}"` : ""}: {formatCurrency(snapshot.promotionalBaseUnitPrice ?? snapshot.unitPrice)}
+          </span>
+        </p>
+      )}
+
+      {showPriceBreakdown && formatCurrency && snapshot.baseUnitPrice !== null && !snapshot.hasPromotion && (
         <p className="pt-1 font-semibold text-brand-foreground">
           Base {formatCurrency(snapshot.baseUnitPrice)}
           {snapshot.optionsUnitPrice > 0

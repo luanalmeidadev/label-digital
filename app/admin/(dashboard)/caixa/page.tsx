@@ -14,7 +14,7 @@ import {
   affectsPhysicalCash,
   calculateExpectedCash,
 } from "@/lib/cash-register";
-import { getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
+import { applyPromotionsToCatalog, getFoodCatalogConfigurations } from "@/lib/food-catalog/repository";
 import {
   isPaymentMethod,
   type PaymentMethod,
@@ -94,7 +94,7 @@ export default async function CaixaPage() {
   }
 
   const openSession = sessionResult.data;
-  let openerName = access.profile.name;
+  let openerName = access.profile.name || access.user.email || "Usuário administrativo";
 
   if (openSession?.opened_by && openSession.opened_by !== access.user.id) {
     const { data: opener } = await access.supabase
@@ -129,8 +129,30 @@ export default async function CaixaPage() {
         variants: [],
         optionGroups: [],
       },
+      observedEventId: null as string | null,
+      promotionalBaseUnitPrice: null as number | null,
+      effectiveBaseUnitPrice: Number(product.price),
+      effectiveAvailable: product.available,
     };
   });
+
+  if (products.length > 0) {
+    try {
+      await applyPromotionsToCatalog(
+        access.supabase,
+        products.map(p => ({
+          id: p.id,
+          price: p.price,
+          available: p.available,
+          pricingMode: p.configuration.pricingMode,
+          ref: p,
+        })),
+        catalogConfigurations
+      );
+    } catch (e) {
+      console.error("Erro ao aplicar promoções do catálogo no caixa:", e);
+    }
+  }
   const todaySales = salesResult.data ?? [];
   const todayRevenue = todaySales.reduce(
     (sum, sale) => sum + Number(sale.total),

@@ -6,14 +6,11 @@ function getEnv(key: string) {
   return undefined;
 }
 
-const effectivePublicInstallation: PublicInstallationProfile =
-  resolveInstallationPreset({
+export function getPublicInstallationProfile(): PublicInstallationProfile {
+  return resolveInstallationPreset({
     requestedPreset: getEnv(['NEXT_PUBLIC', 'INSTALLATION_PRESET'].join('_')),
     requestedManifest: getEnv(['NEXT_PUBLIC', 'PLATFORM_DEMO_MANIFEST'].join('_')),
     demoMode: getEnv(['NEXT_PUBLIC', 'INSTALLATION_DEMO_MODE'].join('_')),
     publicSupabaseUrl: getEnv(['NEXT_PUBLIC', 'SUPABASE_URL'].join('_')),
   });
-
-export function getPublicInstallationProfile(): PublicInstallationProfile {
-  return effectivePublicInstallation;
 }

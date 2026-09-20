@@ -4,14 +4,10 @@ import { Plus } from "lucide-react";
 
 import { useCart } from "./CartProvider";
 
+import { type CartCatalogProduct } from "@/lib/cart";
+
 type AddToCartButtonProps = {
-  product: {
-    id: string;
-    name: string;
-    price: number;
-    image_url: string | null;
-    catalogVersion: number;
-  };
+  product: CartCatalogProduct;
 };
 
 export default function AddToCartButton({

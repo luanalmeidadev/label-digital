@@ -26,6 +26,9 @@ export type OrderItemSnapshotInput = {
   manual_discount_value?: number | string | null;
   manual_discount_amount?: number | string | null;
   manual_discount_reason?: string | null;
+  promotional_event_id?: string | null;
+  promotional_event_name?: string | null;
+  promotional_base_unit_price?: number | string | null;
 };
 
 export type OrderItemOptionSnapshotView = {
@@ -56,6 +59,10 @@ export type OrderItemSnapshotView = {
   manualDiscountValue: number | null;
   manualDiscountAmount: number | null;
   manualDiscountReason: string | null;
+  promotionalEventId: string | null;
+  promotionalEventName: string | null;
+  promotionalBaseUnitPrice: number | null;
+  hasPromotion: boolean;
 };
 
 function toFiniteNumber(
@@ -132,6 +139,20 @@ export function normalizeOrderItemSnapshot(
   const manualDiscountReason = normalizeOptionalText(
     item.manual_discount_reason,
   );
+  const promotionalEventId = normalizeOptionalText(
+    item.promotional_event_id,
+  );
+  const promotionalEventName = normalizeOptionalText(
+    item.promotional_event_name,
+  );
+  const promotionalBaseUnitPrice =
+    item.promotional_base_unit_price === null ||
+    item.promotional_base_unit_price === undefined
+      ? null
+      : Math.max(0, toFiniteNumber(item.promotional_base_unit_price));
+  const hasPromotion = Boolean(
+    promotionalBaseUnitPrice !== null || promotionalEventName
+  );
 
   const grossTotal = unitPrice * quantity;
   const itemTotal = Math.max(0, grossTotal - (manualDiscountAmount ?? 0));
@@ -153,6 +174,10 @@ export function normalizeOrderItemSnapshot(
     manualDiscountValue,
     manualDiscountAmount,
     manualDiscountReason,
+    promotionalEventId,
+    promotionalEventName,
+    promotionalBaseUnitPrice,
+    hasPromotion,
   };
 }
 

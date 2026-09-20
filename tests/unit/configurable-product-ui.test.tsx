@@ -55,6 +55,10 @@ function renderProduct(configuration: FoodCatalogConfiguration) {
           available: true,
           featured: false,
           configuration,
+          observedEventId: null,
+          promotionalBaseUnitPrice: null,
+          effectiveBaseUnitPrice: 28,
+          effectiveAvailable: true,
         },
       ]}
     />

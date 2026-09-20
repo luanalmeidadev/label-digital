@@ -124,6 +124,9 @@ export default async function PedidosPage() {
           manual_discount_value,
           manual_discount_amount,
           manual_discount_reason,
+          promotional_event_id,
+          promotional_event_name,
+          promotional_base_unit_price,
           order_item_options (
             id,
             group_name,
@@ -549,6 +552,17 @@ export default async function PedidosPage() {
 
                                   manual_discount_reason:
                                     item.manual_discount_reason,
+
+                                  promotional_event_id:
+                                    item.promotional_event_id,
+
+                                  promotional_event_name:
+                                    item.promotional_event_name,
+
+                                  promotional_base_unit_price:
+                                    item.promotional_base_unit_price === null
+                                      ? null
+                                      : Number(item.promotional_base_unit_price),
 
                                   order_item_options:
                                     (item.order_item_options ?? []).map(

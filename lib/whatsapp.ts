@@ -5,9 +5,7 @@ import {
 } from "@/lib/order-item-display";
 import { buildWhatsAppShortUrl } from "@/lib/whatsapp-link";
 
-const installation = getPublicInstallationProfile();
-
-type WhatsAppItem = {
+export type WhatsAppItem = {
   name: string;
   quantity: number;
   unitPrice: number;
@@ -18,32 +16,23 @@ type WhatsAppItem = {
   options?: OrderItemOptionSnapshotInput[];
 };
 
-type WhatsAppOrder = {
+export type WhatsAppOrder = {
   orderNumber: string;
-
   customerName: string;
   phone: string;
-
-
   orderType: "pickup" | "delivery";
-
   address?: string;
-
   items: WhatsAppItem[];
-
   subtotal: number;
-
   couponCode?: string | null;
   discountAmount?: number | null;
-
   deliveryFee?: number;
-
   total: number;
-
   notes?: string;
 };
 
 function currency(value: number) {
+  const installation = getPublicInstallationProfile();
   return new Intl.NumberFormat(installation.regionalization.locale, {
     style: "currency",
     currency: installation.regionalization.currency,
@@ -51,6 +40,7 @@ function currency(value: number) {
 }
 
 export function buildWhatsAppMessage(order: WhatsAppOrder) {
+  const installation = getPublicInstallationProfile();
   const items = order.items
     .map((item) => {
       const configured = Boolean(

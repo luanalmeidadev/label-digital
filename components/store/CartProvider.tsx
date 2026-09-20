@@ -11,7 +11,6 @@ import {
   synchronizeCartWithCatalog,
   type CartCatalogProduct,
   type CartItem,
-  type CartProduct,
 } from "@/lib/cart";
 
 export type { CartItem, CartProduct } from "@/lib/cart";
@@ -20,7 +19,8 @@ type CartContextType = {
   items: CartItem[];
   totalItems: number;
   subtotal: number;
-  addItem: (product: CartProduct) => void;
+  couponEligibleSubtotal: number;
+  addItem: (product: CartCatalogProduct) => void;
   addConfiguredItem: (item: CartItem) => void;
   increaseItem: (lineKey: string) => void;
   decreaseItem: (lineKey: string) => void;
@@ -80,7 +80,7 @@ export default function CartProvider({
     window.localStorage.setItem(STORAGE_KEY, serializeCart(items));
   }, [items, loaded]);
 
-  function addItem(product: CartProduct) {
+  function addItem(product: CartCatalogProduct) {
     setItems((current) =>
       mergeCartItem(current, createSimpleCartItem(product))
     );
@@ -140,6 +140,13 @@ export default function CartProvider({
     (total, item) => total + Number(item.price) * item.quantity,
     0
   );
+  const couponEligibleSubtotal = items.reduce(
+    (total, item) =>
+      item.observedPromotionalBaseUnitPrice == null
+        ? total + Number(item.price) * item.quantity
+        : total,
+    0
+  );
 
   return (
     <CartContext.Provider
@@ -147,6 +154,7 @@ export default function CartProvider({
         items,
         totalItems,
         subtotal,
+        couponEligibleSubtotal,
         addItem,
         addConfiguredItem,
         increaseItem,
