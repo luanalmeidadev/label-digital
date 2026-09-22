@@ -200,7 +200,7 @@ export default function EventForm({
                 value={form.name}
                 onChange={e => setForm({ ...form, name: e.target.value })}
                 className="w-full rounded-xl border-brand-border bg-gray-50 px-4 py-3"
-                placeholder="Ex: Semana do X-Burger"
+                placeholder="Ex: Promoção de fim de semana"
               />
             </div>
 

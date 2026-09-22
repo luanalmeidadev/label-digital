@@ -235,7 +235,7 @@ export default function ConfigurableProductDialog({
         render={
           <button
             type="button"
-            className="flex items-center gap-2 rounded-lg border border-brand-border px-3 py-2 text-xs font-bold text-brand-primary transition hover:border-brand-secondary"
+            className="flex items-center gap-1.5 rounded-lg border border-brand-border/70 px-2.5 py-1.5 text-xs font-medium text-brand-muted-foreground transition hover:border-brand-border hover:bg-brand-background hover:text-brand-foreground"
           />
         }
       >

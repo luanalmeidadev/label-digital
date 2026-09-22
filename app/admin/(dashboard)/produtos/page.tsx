@@ -258,9 +258,13 @@ export default async function ProdutosPage() {
                             </span>
                           )}
 
-                          <span className="rounded-full bg-brand-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-primary">
-                            {configurable ? "Configurável" : "Simples"}
-                          </span>
+                          {configurable && (
+                            <span className="rounded-full bg-brand-primary/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-brand-primary">
+                              {catalogConfiguration.pricingMode === "variant"
+                                ? "Por variante"
+                                : "Configurável"}
+                            </span>
+                          )}
                         </div>
 
                         <p className="mt-1 text-sm text-brand-muted-foreground">
