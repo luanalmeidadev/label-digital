@@ -112,3 +112,24 @@ export async function updateCoupon(formData: FormData) {
 
   revalidatePath('/admin/cupons');
 }
+
+export async function deleteCoupon(formData: FormData) {
+  const id = formData.get("id")?.toString();
+
+  if (!id) {
+    throw new Error("Cupom inválido.");
+  }
+
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("coupons")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    console.error("Erro ao excluir cupom:", error);
+    throw new Error("Não foi possível excluir o cupom.");
+  }
+
+  revalidatePath("/admin/cupons");
+}

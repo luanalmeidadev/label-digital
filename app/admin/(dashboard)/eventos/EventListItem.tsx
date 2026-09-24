@@ -5,6 +5,7 @@ import { Edit2, Loader2, Calendar } from "lucide-react";
 import Link from "next/link";
 import { toggleEventStatus } from "./actions";
 import { cn } from "@/lib/utils";
+import DeleteEventButton from "./DeleteEventButton";
 
 export default function EventListItem({ event }: { event: { id: string; name: string; status: string; schedule_type: string; weekdays: number[] | null; start_time: string | null; end_time: string | null; starts_at: string | null; ends_at: string | null; itemsCount: number; active: boolean; } }) {
   const [isPending, startTransition] = useTransition();
@@ -83,6 +84,7 @@ export default function EventListItem({ event }: { event: { id: string; name: st
         >
           <Edit2 size={18} />
         </Link>
+        <DeleteEventButton id={event.id} />
       </div>
     </div>
   );

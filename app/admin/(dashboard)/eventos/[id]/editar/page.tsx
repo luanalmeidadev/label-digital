@@ -45,8 +45,9 @@ async function getEventAndCatalog(id: string) {
   return { event, catalog };
 }
 
-export default async function EditarEventoPage({ params }: { params: { id: string } }) {
-  const { event, catalog } = await getEventAndCatalog(params.id);
+export default async function EditarEventoPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { event, catalog } = await getEventAndCatalog(id);
 
   if (!event) {
     notFound();

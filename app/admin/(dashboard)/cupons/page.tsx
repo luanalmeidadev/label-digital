@@ -1,6 +1,7 @@
 import { Ticket } from "lucide-react";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import CouponDialog from "@/components/admin/CouponDialog";
+import DeleteCouponDialog from "@/components/admin/DeleteCouponDialog";
 import { toggleCouponStatus } from "./actions";
 
 async function getCouponsData() {
@@ -142,6 +143,8 @@ export default async function CuponsPage() {
                         {coupon.active ? "Desativar" : "Ativar"}
                       </button>
                     </form>
+
+                    <DeleteCouponDialog id={coupon.id} />
                   </div>
                 </div>
               );
