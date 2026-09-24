@@ -31,6 +31,7 @@ export default async function Home() {
   const [
     categoriesResult,
     productsResult,
+    promotionsResult,
     imageSettings,
     storeSettings,
   ] = await Promise.all([
@@ -41,26 +42,37 @@ export default async function Home() {
       .order("sort_order")
       .order("id"),
 
-    supabase
-      .from("products")
-      .select(`
-        id,
-        category_id,
-        name,
-        description,
-        price,
-        catalog_version,
-        pricing_mode,
-        image_url,
-        image_position_x,
-        image_position_y,
-        product_type,
-        available,
-        featured
-      `)
-      .eq("active", true)
-      .order("sort_order")
-      .order("id"),
+    supabase.rpc("resolve_catalog_promotions", { p_timezone: "America/Sao_Paulo" })
+      .then(res => {
+        const promoIds = res.data?.map((p: { product_id: string }) => p.product_id) || [];
+        const uniquePromoIds = Array.from(new Set(promoIds));
+        const q = supabase
+          .from("products")
+          .select(`
+            id,
+            category_id,
+            name,
+            description,
+            price,
+            catalog_version,
+            pricing_mode,
+            image_url,
+            image_position_x,
+            image_position_y,
+            product_type,
+            available,
+            featured,
+            active
+          `)
+          .order("sort_order")
+          .order("id");
+
+        if (uniquePromoIds.length > 0) {
+          return q.or(`active.eq.true,id.in.(${uniquePromoIds.join(",")})`);
+        }
+        return q.eq("active", true);
+      }),
+    supabase.rpc("resolve_catalog_promotions", { p_timezone: "America/Sao_Paulo" }),
     getImageDisplaySettings(),
     getPublicStoreSettings(),
   ]);
@@ -87,10 +99,12 @@ export default async function Home() {
 
   if (!productsResult.error && productsResult.data?.length) {
     try {
+      const promoProductIds = promotionsResult.data?.map((p: { product_id: string }) => p.product_id) || [];
+      const promoVariantIds = promotionsResult.data?.map((p: { variant_id: string | null }) => p.variant_id).filter(Boolean) as string[] || [];
       catalogConfigurations = await getFoodCatalogConfigurations(
         supabase,
         productsResult.data.map((product) => product.id),
-        { publicOnly: true }
+        { publicOnly: true, promoProductIds, promoVariantIds }
       );
     } catch (error) {
       catalogConfigurationsLoaded = false;

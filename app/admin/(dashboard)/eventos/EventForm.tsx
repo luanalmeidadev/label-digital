@@ -39,7 +39,7 @@ export default function EventForm({
   catalog,
   initialData,
 }: {
-  catalog: { id: string; name: string; variants: { id: string; name: string }[] }[];
+  catalog: { id: string; name: string; active?: boolean; available?: boolean; variants: { id: string; name: string }[] }[];
   initialData?: {
     id: string;
     name: string;
@@ -323,6 +323,16 @@ export default function EventForm({
                     />
                   )}
                   <span className="font-bold">{product.name}</span>
+                  {product.active === false && (
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-bold text-gray-500">
+                      Inativo
+                    </span>
+                  )}
+                  {product.available === false && (
+                    <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-700">
+                      Esgotado
+                    </span>
+                  )}
                 </div>
 
                 {!hasVariants && isProductSelected && (

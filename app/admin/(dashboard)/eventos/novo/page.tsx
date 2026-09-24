@@ -8,10 +8,9 @@ async function getCatalog() {
   const { data: products, error } = await supabase
     .from("products")
     .select(`
-      id, name,
+      id, name, active, available,
       product_variants ( id, name )
     `)
-    .eq("active", true)
     .order("name", { ascending: true });
 
   if (error) throw new Error("Não foi possível carregar o catálogo");
@@ -19,6 +18,8 @@ async function getCatalog() {
   return products.map(p => ({
     id: p.id,
     name: p.name,
+    active: p.active,
+    available: p.available,
     variants: p.product_variants.sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name))
   }));
 }

@@ -28,10 +28,9 @@ async function getEventAndCatalog(id: string) {
   const { data: products, error: catalogError } = await supabase
     .from("products")
     .select(`
-      id, name,
+      id, name, active, available,
       product_variants ( id, name )
     `)
-    .eq("active", true)
     .order("name", { ascending: true });
 
   if (catalogError) throw new Error("Não foi possível carregar o catálogo");
@@ -39,6 +38,8 @@ async function getEventAndCatalog(id: string) {
   const catalog = products.map(p => ({
     id: p.id,
     name: p.name,
+    active: p.active,
+    available: p.available,
     variants: p.product_variants.sort((a: { name: string }, b: { name: string }) => a.name.localeCompare(b.name))
   }));
 

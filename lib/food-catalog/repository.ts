@@ -58,6 +58,8 @@ type ProductOptionRow = {
 
 type CatalogReadOptions = {
   publicOnly?: boolean;
+  promoProductIds?: string[];
+  promoVariantIds?: string[];
 };
 
 export interface FoodCatalogProductRepository {
@@ -300,8 +302,17 @@ export async function getFoodCatalogConfigurations(
     .order("id", { ascending: true });
 
   if (options.publicOnly) {
-    productsQuery = productsQuery.eq("active", true);
-    variantsQuery = variantsQuery.eq("active", true);
+    if (options.promoProductIds && options.promoProductIds.length > 0) {
+      productsQuery = productsQuery.or(`active.eq.true,id.in.(${options.promoProductIds.join(",")})`);
+    } else {
+      productsQuery = productsQuery.eq("active", true);
+    }
+
+    if (options.promoVariantIds && options.promoVariantIds.length > 0) {
+      variantsQuery = variantsQuery.or(`active.eq.true,id.in.(${options.promoVariantIds.join(",")})`);
+    } else {
+      variantsQuery = variantsQuery.eq("active", true);
+    }
     groupsQuery = groupsQuery.eq("active", true);
   }
 
